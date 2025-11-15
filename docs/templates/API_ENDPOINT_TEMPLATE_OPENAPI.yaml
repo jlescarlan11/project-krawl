@@ -1,0 +1,425 @@
+openapi: 3.0.3
+info:
+  title: Krawl API
+  description: |
+    API documentation template for Krawl endpoints.
+    Copy this template and fill in the details for each endpoint.
+  version: 1.0.0
+  contact:
+    name: Krawl Development Team
+    email: dev@krawl.app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.krawl.app/api/v1
+    description: Production server
+
+tags:
+  - name: authentication
+    description: Authentication endpoints
+  - name: gems
+    description: Gem management endpoints
+  - name: krawls
+    description: Krawl management endpoints
+  - name: users
+    description: User management endpoints
+  - name: search
+    description: Search endpoints
+
+paths:
+  # ============================================
+  # TEMPLATE ENDPOINT - Copy and modify as needed
+  # ============================================
+  /endpoint-path/{id}:
+    # HTTP Method: GET, POST, PUT, DELETE, PATCH
+    get:
+      tags:
+        - tag-name
+      summary: Brief summary of what this endpoint does
+      description: |
+        Detailed description of the endpoint functionality.
+        Can include multiple lines and formatting.
+        
+        **Important Notes:**
+        - Note 1
+        - Note 2
+      operationId: getEndpointById
+      
+      # Authentication requirements
+      security:
+        - bearerAuth: []  # Use empty array if auth required, omit if public
+      
+      # Path parameters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier for the resource
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      
+      # Query parameters
+      # Uncomment and modify as needed
+      # - name: page
+      #   in: query
+      #   required: false
+      #   description: Page number for pagination
+      #   schema:
+      #     type: integer
+      #     minimum: 1
+      #     default: 1
+      #     example: 1
+      # - name: limit
+      #   in: query
+      #   required: false
+      #   description: Number of items per page
+      #   schema:
+      #     type: integer
+      #     minimum: 1
+      #     maximum: 100
+      #     default: 20
+      #     example: 20
+      
+      # Request body (for POST, PUT, PATCH)
+      # Uncomment and modify as needed
+      # requestBody:
+      #   required: true
+      #   description: Request body description
+      #   content:
+      #     application/json:
+      #       schema:
+      #         $ref: '#/components/schemas/RequestSchemaName'
+      #       examples:
+      #         example1:
+      #           summary: Example request
+      #           value:
+      #             field1: "value1"
+      #             field2: 123
+      
+      # Response schemas
+      responses:
+        '200':
+          description: Successful response description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseSchemaName'
+              examples:
+                success:
+                  summary: Example successful response
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    name: "Example Name"
+                    createdAt: "2025-11-14T10:00:00Z"
+        
+        '400':
+          description: Bad Request - Validation error or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationError:
+                  summary: Validation error example
+                  value:
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "Validation failed"
+                      details:
+                        field: "Error message for field"
+        
+        '401':
+          description: Unauthorized - Authentication required or failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized error example
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Authentication required. Please sign in."
+                      details:
+                        reason: "Missing or invalid JWT token"
+        
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Forbidden error example
+                  value:
+                    error:
+                      code: "FORBIDDEN"
+                      message: "You do not have permission to perform this action."
+        
+        '404':
+          description: Not Found - Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  summary: Not found error example
+                  value:
+                    error:
+                      code: "NOT_FOUND"
+                      message: "Resource not found"
+        
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimit:
+                  summary: Rate limit error example
+                  value:
+                    error:
+                      code: "RATE_LIMIT_EXCEEDED"
+                      message: "Rate limit exceeded. Please try again later."
+                      retryAfter: 3600
+        
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server error example
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An internal server error occurred."
+
+# Components section - Reusable schemas, security schemes, etc.
+components:
+  # Security schemes
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication endpoint
+    
+    # Alternative: Cookie-based authentication
+    # cookieAuth:
+    #   type: apiKey
+    #   in: cookie
+    #   name: session_token
+    #   description: Session token stored in httpOnly cookie
+  
+  # Reusable schemas
+  schemas:
+    # Error response schema
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Error code identifier
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Validation failed"
+            details:
+              type: object
+              description: Additional error details
+              additionalProperties: true
+            retryAfter:
+              type: integer
+              description: Seconds to wait before retrying (for rate limit errors)
+              example: 3600
+    
+    # Pagination schema
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number (1-indexed)
+          example: 1
+        limit:
+          type: integer
+          description: Number of items per page
+          example: 20
+        total:
+          type: integer
+          description: Total number of items
+          example: 100
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 5
+        hasNext:
+          type: boolean
+          description: Whether there is a next page
+          example: true
+        hasPrev:
+          type: boolean
+          description: Whether there is a previous page
+          example: false
+    
+    # Example request schema - Replace with actual schema
+    RequestSchemaName:
+      type: object
+      required:
+        - field1
+      properties:
+        field1:
+          type: string
+          description: Description of field1
+          minLength: 3
+          maxLength: 100
+          example: "Example value"
+        field2:
+          type: integer
+          description: Description of field2
+          minimum: 0
+          maximum: 100
+          example: 42
+        field3:
+          type: boolean
+          description: Description of field3
+          example: true
+        field4:
+          type: array
+          description: Description of field4
+          items:
+            type: string
+          example: ["item1", "item2"]
+        nestedObject:
+          type: object
+          description: Example nested object
+          properties:
+            nestedField1:
+              type: string
+            nestedField2:
+              type: number
+    
+    # Example response schema - Replace with actual schema
+    ResponseSchemaName:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          description: Name of the resource
+          example: "Example Name"
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp (ISO 8601)
+          example: "2025-11-14T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp (ISO 8601)
+          example: "2025-11-14T11:00:00Z"
+    
+    # User schema example
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        displayName:
+          type: string
+          example: "User Name"
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/avatar.jpg"
+        bio:
+          type: string
+          nullable: true
+          example: "User bio text"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-11-14T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-11-14T10:00:00Z"
+    
+    # Gem schema example
+    Gem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        category:
+          type: string
+          enum: [historic, cultural, food, nature, art, religious, market, other]
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        vouchesCount:
+          type: integer
+        averageRating:
+          type: number
+          format: float
+          nullable: true
+        creator:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+# External documentation
+externalDocs:
+  description: Find more information about the API
+  url: https://docs.krawl.app
+
