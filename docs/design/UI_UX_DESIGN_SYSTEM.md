@@ -1847,7 +1847,8 @@ src/
 ### Recommended Stack (All Free or Generous Free Tiers)
 
 #### Framework: Next.js
-- **Version:** Next.js 14.x (latest stable as of November 2025)
+- **Version:** Next.js 16.0.3 (installed version)
+- **React:** React 19.2.0 (installed version)
 - **License:** MIT License (Free)
 - **Free Tier:** Completely free
 - **URL:** https://nextjs.org

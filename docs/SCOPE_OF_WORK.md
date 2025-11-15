@@ -8,7 +8,7 @@ This Scope of Work (SOW) document provides a comprehensive description of the Kr
 
 **Technology Stack Summary (Finalized):**
 - **Backend:** Java 25 LTS + Spring Boot 3.5.7 + Maven
-- **Frontend:** Next.js 14.x + TypeScript + Zustand
+- **Frontend:** Next.js 16.0.3 + React 19.2.0 + TypeScript 5.x + Tailwind CSS v4
 - **Database:** Aiven PostgreSQL (free tier)
 - **Backend Deployment:** Oracle Cloud Infrastructure (Always Free Tier)
 - **Frontend Hosting:** Vercel (free tier)
@@ -29,9 +29,10 @@ All technology decisions prioritize mobile-first design, scalability, maintainab
 |---------|------|--------|---------|
 | 1.0.0 | 2025-11-14 | Development Team | Initial version |
 | 1.1.0 | 2025-11-14 | Development Team | Updated frontend framework from React to Next.js 14.x for better PWA support and SEO |
+| 1.3.0 | 2025-11-15 | Development Team | Updated frontend framework to Next.js 16.0.3 with React 19.2.0 and Tailwind CSS v4 |
 | 1.2.0 | 2025-11-14 | Development Team | Comprehensive UX improvements: Added onboarding flow, empty/loading/error states, progressive disclosure, accessibility enhancements, mobile gestures, haptic feedback, and Google-level UX patterns |
 
-**Current Version:** 1.2.0  
+**Current Version:** 1.3.0  
 **Last Updated:** 2025-11-15  
 **Status:** Draft
 
@@ -123,9 +124,9 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - **Alternative:** Oracle Autonomous Database (if Aiven free tier unavailable)
 
 ### Frontend
-- **Framework:** Next.js 14.x (latest stable version as of November 2025)
+- **Framework:** Next.js 16.0.3 (installed version)
   - **Rationale:** 
-    - Built on React 18 with enhanced features
+    - Built on React 19.2.0 with enhanced features
     - Superior PWA support with built-in configuration
     - Server-side rendering (SSR) and static site generation (SSG) for better performance
     - Built-in image optimization and automatic code splitting
@@ -153,9 +154,10 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - **Alternative:** React Context API for simple state (can migrate to Zustand later if needed)
 
 ### Frontend Styling
-- **CSS Framework:** Tailwind CSS v4 (CSS-based configuration with @theme directive)
+- **CSS Framework:** Tailwind CSS v4 (installed version, CSS-based configuration with @tailwindcss/postcss)
   - **Rationale:** Utility-first CSS framework, highly customizable, excellent documentation, free and open-source
-  - **Configuration:** CSS-based using @theme directive (no JavaScript config file needed)
+  - **Configuration:** CSS-based using @tailwindcss/postcss plugin (no JavaScript config file needed)
+  - **PostCSS:** Configured with @tailwindcss/postcss plugin
   - **Component Library:** shadcn/ui (optional, for accessible components built on Radix UI and Tailwind CSS)
   - **Documentation:** See [BRAND_GUIDELINES.md](./design/BRAND_GUIDELINES.md) for visual identity tokens and [UI_UX_DESIGN_SYSTEM.md](./design/UI_UX_DESIGN_SYSTEM.md) for component library specs and implementation patterns
 
@@ -2034,9 +2036,12 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 ### Frontend Requirements
 
 1. **Framework**
-   - Next.js 14.x (latest stable version)
-   - TypeScript 5.x (recommended for type safety and maintainability)
-   - PWA support (next-pwa plugin for Service Workers and Web App Manifest)
+   - Next.js 16.0.3 (installed version)
+   - React 19.2.0 (installed version)
+   - TypeScript 5.x (installed version, recommended for type safety and maintainability)
+   - Tailwind CSS v4 (installed version, CSS-based configuration)
+   - ESLint 9.x (installed version, with eslint-config-next)
+   - PWA support (next-pwa plugin for Service Workers and Web App Manifest - planned)
    - Server-side rendering (SSR) and static site generation (SSG)
    - Built-in image optimization
    - Mobile-first responsive design
@@ -2545,13 +2550,18 @@ Content lifecycle management ensures that Gems and Krawls remain accurate, up-to
 - **Maven:** 3.9.x (latest stable version)
 - **JUnit:** 5.10.x (latest stable version for testing)
 
-#### Frontend Framework Versions (as of 2025-11-14)
-- **Next.js:** 14.x (latest stable version)
-- **React:** 18.2.x (included with Next.js)
-- **TypeScript:** 5.3.x (latest stable, recommended)
-- **Zustand:** 4.4.x (latest stable version for state management)
-- **Mapbox GL JS:** 3.x (latest stable version)
-- **next-pwa:** Latest version (PWA plugin for Next.js)
+#### Frontend Framework Versions (as of 2025-11-15)
+- **Next.js:** 16.0.3 (installed version)
+- **React:** 19.2.0 (installed version)
+- **React-DOM:** 19.2.0 (installed version)
+- **TypeScript:** 5.x (installed version)
+- **Tailwind CSS:** v4 (installed version, CSS-based configuration)
+- **@tailwindcss/postcss:** ^4 (installed version)
+- **ESLint:** 9.x (installed version)
+- **eslint-config-next:** 16.0.3 (installed version)
+- **Zustand:** 4.4.x (planned, for state management)
+- **Mapbox GL JS:** 3.x (planned, latest stable version)
+- **next-pwa:** Latest version (planned, PWA plugin for Next.js)
 - **Node.js:** 20.x LTS (required for Next.js)
 
 #### Database
@@ -2570,8 +2580,8 @@ Content lifecycle management ensures that Gems and Krawls remain accurate, up-to
 - **Node.js:** 20.x LTS (required for Next.js)
 - **npm/yarn/pnpm:** Latest version (package manager)
 - **Next.js CLI:** Built-in (no separate build tool needed)
-- **ESLint:** Latest version (code linting, included with Next.js)
-- **Prettier:** Latest version (code formatting)
+- **ESLint:** 9.x (installed version, code linting with eslint-config-next)
+- **Prettier:** Latest version (code formatting, optional)
 
 ### Appendix B: API Endpoint Summary
 

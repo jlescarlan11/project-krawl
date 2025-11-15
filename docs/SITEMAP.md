@@ -752,10 +752,13 @@ Key stores:
 - [PROJECT_BRIEF.md](./PROJECT_BRIEF.md) - Project overview and objectives
 
 ### Technology Stack
-- **Next.js 14.x** - [Next.js Documentation](https://nextjs.org/docs)
-- **NextAuth.js v5 (Auth.js)** - [NextAuth.js Documentation](https://next-auth.js.org/)
-- **Mapbox GL JS 3.x** - [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
-- **Zustand 4.4.x** - [Zustand Documentation](https://github.com/pmndrs/zustand)
+- **Next.js 16.0.3** (installed) - [Next.js Documentation](https://nextjs.org/docs)
+- **React 19.2.0** (installed) - [React Documentation](https://react.dev)
+- **TypeScript 5.x** (installed) - [TypeScript Documentation](https://www.typescriptlang.org/docs)
+- **Tailwind CSS v4** (installed) - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- **NextAuth.js v5 (Auth.js)** (planned) - [NextAuth.js Documentation](https://next-auth.js.org/)
+- **Mapbox GL JS 3.x** (planned) - [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
+- **Zustand 4.4.x** (planned) - [Zustand Documentation](https://github.com/pmndrs/zustand)
 
 ### Free Tools for Visual Sitemap Creation
 - **Slickplan** - 14-day free trial, drag-and-drop sitemap builder

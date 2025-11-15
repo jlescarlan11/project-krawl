@@ -410,12 +410,12 @@ This document provides a centralized glossary of all terms, concepts, and techni
 
 ## Technology Stack Terms
 
-### Next.js 14.x
+### Next.js 16.0.3
 **Definition:** React framework for production with server-side rendering, static site generation, and built-in optimizations.
 
-**Usage:** Krawl's frontend is built with Next.js 14.x, providing PWA support, SEO optimization, and excellent performance.
+**Usage:** Krawl's frontend is built with Next.js 16.0.3 (installed version), providing PWA support, SEO optimization, and excellent performance. The project uses React 19.2.0, TypeScript 5.x, and Tailwind CSS v4.
 
-**Related Terms:** React, TypeScript, Frontend Framework, PWA
+**Related Terms:** React, TypeScript, Frontend Framework, PWA, Tailwind CSS
 
 ---
 
