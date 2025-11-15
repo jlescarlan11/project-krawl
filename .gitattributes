@@ -1,0 +1,45 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.md text
+*.txt text
+*.json text
+*.yml text
+*.yaml text
+*.xml text
+*.html text
+*.css text
+*.js text
+*.ts text
+*.jsx text
+*.tsx text
+*.py text
+*.java text
+*.c text
+*.cpp text
+*.h text
+*.hpp text
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+# Force LF line endings for shell scripts
+*.sh text eol=lf
+
+# Force CRLF line endings for batch files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
