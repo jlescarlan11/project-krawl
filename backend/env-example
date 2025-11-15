@@ -71,9 +71,6 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 # Google OAuth Client Secret
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Google OAuth Redirect URI (must match Google Cloud Console)
-GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback
-
 # ============================================
 # Cloudinary Configuration (Image Management)
 # ============================================
