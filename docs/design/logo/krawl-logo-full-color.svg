@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Krawl Logo: Full Color Version -->
+  <!-- Breadcrumb trail connecting cultural Gems -->
+  <defs>
+    <style>
+      .primary-green{fill:#2D7A3E}
+      .accent-orange{fill:#FF6B35}
+      .warm-yellow{fill:#F7B801}
+      .trail-path{stroke:#2D7A3E;stroke-width:6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+  
+  <!-- Trail path connecting the Gems -->
+  <path class="trail-path" d="M 20 92 Q 36 76, 52 60 Q 68 72, 84 84 Q 96 64, 108 44" opacity="0.3"/>
+  
+  <!-- Gems (cultural points) along the trail -->
+  <circle class="primary-green" cx="20" cy="92" r="12"/>
+  <circle class="accent-orange" cx="52" cy="60" r="12"/>
+  <circle class="warm-yellow" cx="84" cy="84" r="12"/>
+  <circle class="primary-green" cx="108" cy="44" r="12"/>
+</svg>
+
