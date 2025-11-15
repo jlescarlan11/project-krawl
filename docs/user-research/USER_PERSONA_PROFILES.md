@@ -826,7 +826,7 @@ All user personas share common technology preferences that inform Krawl's techni
 
 #### Backend Framework
 
-- **Spring Boot 3.2.x:** Java framework for backend services
+- **Spring Boot 3.5.7:** Java framework for backend services
   - **Status:** Actively maintained by Spring team
   - **Free Tier:** Open-source, free to use
   - **Documentation:** Extensive Spring Boot documentation
