@@ -7,7 +7,7 @@ This Scope of Work (SOW) document provides a comprehensive description of the Kr
 **Project Overview:** Krawl is a community-driven PWA that maps authentic Filipino culture through user-curated points of interest ("Gems") and guided trails ("Krawls"). The initial launch will be limited to Cebu City, Philippines, with core features including location-aware guided experiences, offline capability, and community-driven quality control mechanisms.
 
 **Technology Stack Summary (Finalized):**
-- **Backend:** Java 25 LTS + Spring Boot 3.2.x + Maven
+- **Backend:** Java 25 LTS + Spring Boot 3.5.7 + Maven
 - **Frontend:** Next.js 14.x + TypeScript + Zustand
 - **Database:** Aiven PostgreSQL (free tier)
 - **Backend Deployment:** Oracle Cloud Infrastructure (Always Free Tier)
@@ -105,7 +105,7 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 ### Backend
 - **Language:** Java 25 LTS (Long-Term Support version, released September 2025, supported until September 2033)
   - **Rationale:** Latest LTS version with improved performance, pattern matching, and modern language features. Better than Java 17 for new projects while maintaining long-term support.
-- **Framework:** Spring Boot 3.2.x (latest stable 3.x version as of November 2025)
+- **Framework:** Spring Boot 3.5.7 (latest stable version as of installation date)
   - **Rationale:** Industry standard, excellent documentation, strong community support, built-in security, and seamless integration with Spring ecosystem.
 - **Build Tool:** Maven 3.9.x (latest stable version)
   - **Rationale:** Standard for Spring Boot projects, excellent IDE support, widely adopted, easier for students to learn with extensive documentation.
@@ -2001,7 +2001,7 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 
 1. **Java Version**
    - Java 25 LTS (latest stable LTS version)
-   - Spring Boot 3.x (latest stable version)
+   - Spring Boot 3.5.7 (installed version)
    - Maven or Gradle for build management
 
 2. **Database**
@@ -2089,7 +2089,7 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 ### Code Deliverables
 
 1. **Backend Code**
-   - Complete Java 25 Spring Boot 3.2.x application
+   - Complete Java 25 Spring Boot 3.5.7 application
    - Database schema and migrations (Flyway or Liquibase)
    - RESTful API endpoints implementation
    - Unit tests (JUnit 5)
@@ -2539,9 +2539,9 @@ Content lifecycle management ensures that Gems and Krawls remain accurate, up-to
 
 #### Backend Framework Versions (as of 2025-11-14)
 - **Java:** Java 25 LTS (Long-Term Support, released September 2025)
-- **Spring Boot:** 3.2.x (latest stable 3.x version)
-- **Spring Security:** 6.2.x (latest compatible with Spring Boot 3.2)
-- **Spring Data JPA:** 3.2.x (latest compatible version)
+- **Spring Boot:** 3.5.7 (installed version)
+- **Spring Security:** 6.3.x (compatible with Spring Boot 3.5.7)
+- **Spring Data JPA:** 3.5.x (compatible with Spring Boot 3.5.7)
 - **Maven:** 3.9.x (latest stable version)
 - **JUnit:** 5.10.x (latest stable version for testing)
 

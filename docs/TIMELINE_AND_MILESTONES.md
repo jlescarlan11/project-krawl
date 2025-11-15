@@ -89,7 +89,7 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
 **Tasks:**
 - [ ] **Day 1-2: Project Initialization**
   - Set up Git repository (GitHub - free tier)
-  - Initialize backend project (Java 25 + Spring Boot 3.2.x + Maven)
+  - Initialize backend project (Java 25 + Spring Boot 3.5.7 + Maven)
   - Initialize frontend project (Next.js 14.x + TypeScript)
   - Configure development environment (IDE, Node.js 20.x LTS, Java 25)
   - Set up project management tool (GitHub Projects - free tier)
@@ -257,7 +257,7 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
 
 **Tools Used:**
 - Google OAuth 2.0 (free, unlimited users)
-- Spring Security 6.2.x (open source)
+- Spring Security 6.3.x (open source, compatible with Spring Boot 3.5.7)
 - Next.js 14.x (open source)
 
 ---
@@ -1019,7 +1019,7 @@ All tools and services listed below have been verified for current availability 
 
 #### Backend Technologies
 - **Java 25 LTS** - ✅ Current (released September 2025, supported until September 2033)
-- **Spring Boot 3.2.x** - ✅ Current (latest stable 3.x version)
+- **Spring Boot 3.5.7** - ✅ Current (installed version)
 - **Maven 3.9.x** - ✅ Current (latest stable version)
 - **PostgreSQL** - ✅ Current (via Aiven, latest stable version)
 

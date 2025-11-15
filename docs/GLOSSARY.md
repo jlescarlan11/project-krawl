@@ -419,10 +419,10 @@ This document provides a centralized glossary of all terms, concepts, and techni
 
 ---
 
-### Spring Boot 3.2.x
+### Spring Boot 3.5.7
 **Definition:** Java framework for building production-ready applications with minimal configuration.
 
-**Usage:** Krawl's backend is built with Spring Boot 3.2.x, providing RESTful API, security, and database integration.
+**Usage:** Krawl's backend is built with Spring Boot 3.5.7, providing RESTful API, security, and database integration.
 
 **Related Terms:** Java 25, Backend Framework, RESTful API
 
