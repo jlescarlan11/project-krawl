@@ -1,0 +1,150 @@
+# ============================================
+# Krawl Frontend - Environment Variables Template
+# ============================================
+# Copy this file to .env.local in the frontend directory and fill in your actual values
+# NEVER commit .env.local to version control
+#
+# Note: Next.js automatically loads .env.local, .env.development, .env.production
+# Variables prefixed with NEXT_PUBLIC_ are exposed to the browser
+
+# ============================================
+# Application Configuration
+# ============================================
+# Application Environment (development, staging, production)
+NEXT_PUBLIC_APP_ENV=development
+
+# Application Name
+NEXT_PUBLIC_APP_NAME=Krawl
+
+# Application Base URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# ============================================
+# Backend API Configuration
+# ============================================
+# Backend API Base URL (without trailing slash)
+# Development: http://localhost:8080
+# Production: https://api.yourdomain.com
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# Backend API Version (if versioned)
+NEXT_PUBLIC_API_VERSION=v1
+
+# ============================================
+# Google OAuth Configuration (NextAuth.js)
+# ============================================
+# Get these from Google Cloud Console:
+# https://console.cloud.google.com/apis/credentials
+# 
+# Create OAuth 2.0 Client ID with:
+# - Authorized JavaScript origins: http://localhost:3000 (dev), https://yourdomain.com (prod)
+# - Authorized redirect URIs: http://localhost:3000/api/auth/callback/google
+
+# Google OAuth Client ID
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
+# Google OAuth Client Secret (server-side only, not exposed to browser)
+# This is used by NextAuth.js on the server
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# NextAuth.js Secret (generate a strong random string)
+# Use: openssl rand -base64 32
+# This is used to encrypt cookies and tokens
+NEXTAUTH_SECRET=your-nextauth-secret-key-change-this-in-production
+
+# NextAuth.js URL (base URL of your application)
+NEXTAUTH_URL=http://localhost:3000
+
+# ============================================
+# Mapbox Configuration
+# ============================================
+# Get this from Mapbox Account:
+# https://account.mapbox.com/access-tokens/
+# 
+# Create a public token for client-side map rendering
+# Note: This will be exposed in the browser, so use a public token with restricted scopes
+
+# Mapbox Access Token (public token for client-side)
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your-mapbox-public-access-token
+
+# Mapbox Style URL (optional, defaults to Mapbox standard style)
+NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/mapbox/streets-v12
+
+# ============================================
+# Cloudinary Configuration (Image Upload)
+# ============================================
+# Get these from Cloudinary Dashboard:
+# https://cloudinary.com/console
+# 
+# For direct client-side uploads, you'll need:
+# - Cloud name (public)
+# - Upload preset (unsigned, for public uploads)
+
+# Cloudinary Cloud Name (public, safe to expose)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+
+# Cloudinary Upload Preset (unsigned preset for client-side uploads)
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-unsigned-upload-preset
+
+# Cloudinary API Key (if using signed uploads from server)
+# Note: Only use signed uploads if you have a server-side API endpoint
+CLOUDINARY_API_KEY=your-cloudinary-api-key
+
+# Cloudinary API Secret (server-side only, never expose to browser)
+CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+
+# ============================================
+# Feature Flags (Optional)
+# ============================================
+# Enable/disable features via environment variables
+
+# Enable debug mode (shows debug information in UI)
+NEXT_PUBLIC_DEBUG=false
+
+# Enable analytics (if using analytics service)
+NEXT_PUBLIC_ENABLE_ANALYTICS=false
+
+# Enable service worker / PWA features
+NEXT_PUBLIC_ENABLE_PWA=true
+
+# ============================================
+# Cebu City Boundary Configuration
+# ============================================
+# Geographic boundaries for Cebu City (for validation)
+# Format: minLat,minLng,maxLat,maxLng
+
+NEXT_PUBLIC_CEBU_BOUNDS_MIN_LAT=10.25
+NEXT_PUBLIC_CEBU_BOUNDS_MIN_LNG=123.80
+NEXT_PUBLIC_CEBU_BOUNDS_MAX_LAT=10.40
+NEXT_PUBLIC_CEBU_BOUNDS_MAX_LNG=123.95
+
+# ============================================
+# API Rate Limiting (Client-side awareness)
+# ============================================
+# These are informational - actual rate limiting is handled by backend
+# Used for user feedback and retry logic
+
+# Maximum requests per minute (informational)
+NEXT_PUBLIC_API_RATE_LIMIT=60
+
+# ============================================
+# Error Tracking (Optional)
+# ============================================
+# Sentry DSN for frontend error tracking
+# Get from: https://sentry.io/
+# Note: This will be exposed to the browser
+
+NEXT_PUBLIC_SENTRY_DSN=
+
+# Sentry Environment
+NEXT_PUBLIC_SENTRY_ENVIRONMENT=development
+
+# ============================================
+# Development Tools (Development only)
+# ============================================
+# Enable React Query DevTools (development only)
+NEXT_PUBLIC_ENABLE_DEVTOOLS=true
+
+# Mock API responses (for development/testing)
+NEXT_PUBLIC_MOCK_API=false
+

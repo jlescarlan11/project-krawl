@@ -1,3 +1,39 @@
 spring:
   application:
     name: krawl-backend
+  
+  # Database Configuration (Aiven PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?sslmode=${DB_SSL_MODE:require}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    
+    # HikariCP Connection Pool Configuration
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_SIZE:5}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT:600000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME:1800000}
+      pool-name: KrawlHikariPool
+      register-mbeans: true
+      
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Use 'validate' in production, 'update' for development
+    show-sql: false  # Set to true for debugging SQL queries
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
