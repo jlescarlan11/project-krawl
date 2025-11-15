@@ -1,0 +1,141 @@
+# ============================================
+# Krawl Backend - Environment Variables Template
+# ============================================
+# Copy this file to .env in the backend directory and fill in your actual values
+# NEVER commit .env to version control
+
+# ============================================
+# Database Configuration (Aiven PostgreSQL)
+# ============================================
+# Get these values from your Aiven PostgreSQL service console:
+# https://console.aiven.io/
+
+# Database Host (e.g., your-service-name.a.aivencloud.com)
+DB_HOST=your-service-name.a.aivencloud.com
+
+# Database Port (usually 12345 or similar)
+DB_PORT=12345
+
+# Database Name (usually 'defaultdb' for Aiven)
+DB_NAME=defaultdb
+
+# Database Username (usually 'avnadmin' for Aiven)
+DB_USERNAME=avnadmin
+
+# Database Password (get from Aiven console - click "Show password")
+DB_PASSWORD=your-password-here
+
+# SSL Mode (use 'require' for Aiven)
+DB_SSL_MODE=require
+
+# ============================================
+# Connection Pool Configuration (HikariCP)
+# ============================================
+# Maximum pool size (Aiven free tier allows 25 connections)
+# Set to 20 to leave room for admin connections
+DB_POOL_MAX_SIZE=20
+
+# Minimum pool size
+DB_POOL_MIN_SIZE=5
+
+# Connection timeout in milliseconds
+DB_POOL_CONNECTION_TIMEOUT=30000
+
+# Idle timeout in milliseconds
+DB_POOL_IDLE_TIMEOUT=600000
+
+# Maximum lifetime in milliseconds
+DB_POOL_MAX_LIFETIME=1800000
+
+# ============================================
+# Application Configuration
+# ============================================
+# Spring Boot Profile (development, staging, production)
+SPRING_PROFILES_ACTIVE=development
+
+# Server Port (default: 8080)
+SERVER_PORT=8080
+
+# Application Base URL (for CORS and API documentation)
+APP_BASE_URL=http://localhost:8080
+
+# ============================================
+# Google OAuth Configuration
+# ============================================
+# Get these from Google Cloud Console:
+# https://console.cloud.google.com/apis/credentials
+
+# Google OAuth Client ID
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
+# Google OAuth Client Secret
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Google OAuth Redirect URI (must match Google Cloud Console)
+GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback
+
+# ============================================
+# Cloudinary Configuration (Image Management)
+# ============================================
+# Get these from Cloudinary Dashboard:
+# https://cloudinary.com/console
+
+# Cloudinary Cloud Name
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+
+# Cloudinary API Key
+CLOUDINARY_API_KEY=your-api-key
+
+# Cloudinary API Secret
+CLOUDINARY_API_SECRET=your-api-secret
+
+# Cloudinary Upload Preset (for unsigned uploads, if used)
+CLOUDINARY_UPLOAD_PRESET=your-upload-preset
+
+# ============================================
+# Brevo Email Service Configuration
+# ============================================
+# Get these from Brevo Dashboard:
+# https://app.brevo.com/settings/keys/api
+
+# Brevo API Key
+BREVO_API_KEY=your-brevo-api-key
+
+# Brevo Sender Email (verified sender)
+BREVO_SENDER_EMAIL=noreply@yourdomain.com
+
+# Brevo Sender Name
+BREVO_SENDER_NAME=Krawl
+
+# ============================================
+# Mapbox Configuration
+# ============================================
+# Get this from Mapbox Account:
+# https://account.mapbox.com/access-tokens/
+
+# Mapbox Access Token (for backend geocoding/routing if needed)
+MAPBOX_ACCESS_TOKEN=your-mapbox-access-token
+
+# ============================================
+# Security Configuration
+# ============================================
+# JWT Secret (generate a strong random string)
+# Use: openssl rand -base64 32
+JWT_SECRET=your-jwt-secret-key-change-this-in-production
+
+# JWT Expiration Time (in milliseconds, default: 24 hours)
+JWT_EXPIRATION=86400000
+
+# CORS Allowed Origins (comma-separated)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# ============================================
+# Logging and Monitoring
+# ============================================
+# Log Level (DEBUG, INFO, WARN, ERROR)
+LOG_LEVEL=INFO
+
+# Sentry DSN (for error tracking, optional)
+# Get from: https://sentry.io/
+SENTRY_DSN=
+

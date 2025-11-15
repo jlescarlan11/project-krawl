@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: krawl-backend-test
+  
+  # Database Configuration for Testing
+  # Uses same environment variables as main application
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?sslmode=${DB_SSL_MODE:require}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    
+    # HikariCP Connection Pool Configuration for Testing
+    hikari:
+      maximum-pool-size: 5  # Smaller pool for testing
+      minimum-idle: 2
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 900000
+      pool-name: KrawlHikariPool-Test
+      
+  # JPA Configuration for Testing
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Use validate for tests
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
