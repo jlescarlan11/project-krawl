@@ -904,7 +904,8 @@ export default function GemImage({ src, alt, width = 800, height = 600 }) {
 #### Framework: Next.js
 
 - **Why:** React framework with server-side rendering, excellent performance, built-in optimizations, PWA support
-- **Version:** Next.js 14.x (latest stable version as of November 2025)
+- **Version:** Next.js 16.0.3 (installed version)
+- **React:** React 19.2.0 (installed version)
 - **License:** MIT License (Free)
 - **Free Tier:** Completely free
 - **URL:** https://nextjs.org

@@ -800,18 +800,28 @@ All user personas share common technology preferences that inform Krawl's techni
 
 #### Frontend Framework
 
-- **Next.js 14.x:** React framework with PWA support
+- **Next.js 16.0.3:** React framework with PWA support (installed version)
   - **Status:** Actively maintained by Vercel
   - **Free Tier:** Open-source, free to use
   - **PWA Support:** Built-in PWA capabilities
   - **Documentation:** Comprehensive Next.js documentation
 
-- **TypeScript 5.x:** Type-safe JavaScript
+- **React 19.2.0:** JavaScript library for building user interfaces (installed version)
+  - **Status:** Actively maintained by Meta
+  - **Free Tier:** Open-source, free to use
+  - **Documentation:** Extensive React documentation
+
+- **TypeScript 5.x:** Type-safe JavaScript (installed version)
   - **Status:** Actively maintained by Microsoft
   - **Free Tier:** Open-source, free to use
   - **Documentation:** Extensive TypeScript documentation
 
-- **Zustand 4.4.x:** Lightweight state management
+- **Tailwind CSS v4:** Utility-first CSS framework (installed version)
+  - **Status:** Actively maintained
+  - **Free Tier:** Open-source, free to use
+  - **Documentation:** Comprehensive Tailwind CSS documentation
+
+- **Zustand 4.4.x:** Lightweight state management (planned)
   - **Status:** Actively maintained
   - **Free Tier:** Open-source, free to use
   - **Documentation:** Clear Zustand documentation

@@ -115,10 +115,12 @@ project-krawl/
 - **Database:** Aiven PostgreSQL (free tier)
 
 ### Frontend
-- **Framework:** Next.js 14.x
+- **Framework:** Next.js 16.0.3
 - **Language:** TypeScript 5.x
-- **State Management:** Zustand 4.4.x
-- **Maps:** Mapbox GL JS 3.x
+- **React:** React 19.2.0
+- **Styling:** Tailwind CSS v4 (CSS-based configuration)
+- **State Management:** Zustand 4.4.x (planned)
+- **Maps:** Mapbox GL JS 3.x (planned)
 
 ### Services & Infrastructure
 - **Backend Hosting:** Oracle Cloud Infrastructure (Always Free Tier)

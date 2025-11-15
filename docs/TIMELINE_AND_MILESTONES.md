@@ -90,7 +90,7 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
 - [ ] **Day 1-2: Project Initialization**
   - Set up Git repository (GitHub - free tier)
   - Initialize backend project (Java 25 + Spring Boot 3.5.7 + Maven)
-  - Initialize frontend project (Next.js 14.x + TypeScript)
+  - Initialize frontend project (Next.js 16.0.3 + React 19.2.0 + TypeScript 5.x + Tailwind CSS v4)
   - Configure development environment (IDE, Node.js 20.x LTS, Java 25)
   - Set up project management tool (GitHub Projects - free tier)
 
@@ -156,9 +156,11 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
   - Design empty, loading, and error states
 
 - [ ] **Day 5: Frontend Foundation**
-  - Set up Next.js 14.x project with TypeScript
-  - Configure PWA support (next-pwa plugin)
-  - Set up Zustand for state management
+  - Set up Next.js 16.0.3 project with React 19.2.0 and TypeScript 5.x
+  - Configure Tailwind CSS v4 (CSS-based configuration with @tailwindcss/postcss)
+  - Configure ESLint 9.x with eslint-config-next
+  - Configure PWA support (next-pwa plugin - planned)
+  - Set up Zustand for state management (planned)
   - Configure routing and navigation structure
   - Set up basic layout components
   - Set up monitoring tools (Sentry) for frontend error tracking
@@ -174,9 +176,11 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
 
 **Tools Used:**
 - Figma (free tier for individuals)
-- Next.js 14.x (open source)
-- TypeScript 5.x (open source)
-- Zustand 4.4.x (open source)
+- Next.js 16.0.3 (open source, installed)
+- React 19.2.0 (open source, installed)
+- TypeScript 5.x (open source, installed)
+- Tailwind CSS v4 (open source, installed)
+- Zustand 4.4.x (open source, planned)
 
 **Milestone 1: Project Foundation Complete**
 - ✅ Development environment ready
@@ -1024,11 +1028,14 @@ All tools and services listed below have been verified for current availability 
 - **PostgreSQL** - ✅ Current (via Aiven, latest stable version)
 
 #### Frontend Technologies
-- **Next.js 14.x** - ✅ Current (latest stable version, excellent PWA support)
-- **TypeScript 5.x** - ✅ Current (latest stable version)
-- **React 18.2.x** - ✅ Current (included with Next.js)
-- **Zustand 4.4.x** - ✅ Current (latest stable version)
-- **Mapbox GL JS 3.x** - ✅ Current (latest stable version)
+- **Next.js 16.0.3** - ✅ Installed (excellent PWA support)
+- **React 19.2.0** - ✅ Installed
+- **React-DOM 19.2.0** - ✅ Installed
+- **TypeScript 5.x** - ✅ Installed
+- **Tailwind CSS v4** - ✅ Installed (CSS-based configuration)
+- **ESLint 9.x** - ✅ Installed (with eslint-config-next)
+- **Zustand 4.4.x** - ⏳ Planned (for state management)
+- **Mapbox GL JS 3.x** - ⏳ Planned (latest stable version)
 
 #### Third-Party Services (Free Tiers)
 - **Aiven PostgreSQL** - ✅ Free tier: 1 CPU, 1GB RAM, 5GB storage
