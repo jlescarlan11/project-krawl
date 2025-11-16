@@ -1249,7 +1249,7 @@ The project follows a flexible sprint structure aligned with the phase breakdown
 - [ ] Google OAuth 2.0 credentials configured
 - [ ] Cloudinary account created (free tier)
 - [ ] Brevo account created (free tier)
-- [ ] Mapbox account created (free tier)
+- [x] Mapbox account created (free tier) ✅ (see [MAPBOX_SETUP.md](./private-docs/operations/MAPBOX_SETUP.md))
 - [ ] Sentry account created (free tier)
 - [ ] Oracle Cloud Infrastructure account created (Always Free Tier)
 - [ ] All API keys and credentials securely stored
