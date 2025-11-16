@@ -265,7 +265,7 @@ UI_UX_DESIGN_SYSTEM.md (UI components & implementation)
    - Set up Google OAuth credentials
    - Create Cloudinary account
    - Create Brevo account
-   - Create Mapbox account
+   - [x] Create Mapbox account ✅ (see [MAPBOX_SETUP.md](./docs/private-docs/operations/MAPBOX_SETUP.md))
    - Create Sentry account
    - Set up Oracle Cloud Infrastructure account
 
