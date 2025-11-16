@@ -37,3 +37,14 @@ spring:
 # Server Configuration
 server:
   port: ${SERVER_PORT:8080}
+
+
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
+  sender:
+    email: ${BREVO_SENDER_EMAIL:noreply@yourdomain.com}
+    name: ${BREVO_SENDER_NAME:Krawl}
+  limits:
+    daily: 300
+    monthly: 9000
