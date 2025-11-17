@@ -32,6 +32,30 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Both fonts support English, Tagalog, and Cebuano languages. For complete typography specifications, see `docs/design/BRAND_GUIDELINES.md`.
 
+## Component Library
+
+Krawl includes a comprehensive component library with reusable UI components built with TypeScript, accessibility, and the design system in mind.
+
+### Available Components
+
+- **Buttons:** Primary, secondary, outline, text, and accent variants with loading states
+- **Cards:** Standard, interactive, and elevated variants with image support
+- **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload with validation states
+
+### Usage
+
+```tsx
+// Import components from the barrel export
+import { Button, Card, Input } from '@/components'
+
+// Use components with TypeScript support
+<Button variant="primary" size="md">Create Gem</Button>
+<Card variant="standard" padding="default">Content</Card>
+<Input label="Email" type="email" required />
+```
+
+For complete component documentation, see [`components/README.md`](./components/README.md).
+
 ## Design Tokens
 
 Krawl uses a comprehensive design token system for consistent styling across the application. Design tokens are defined in `app/globals.css` using Tailwind CSS v4's `@theme` directive and are accessible via:
