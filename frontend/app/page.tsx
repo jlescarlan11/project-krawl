@@ -1,5 +1,17 @@
 import Image from "next/image";
 
+/**
+ * Default Home Page (Placeholder)
+ * 
+ * Note: This is a placeholder page from Next.js template.
+ * It uses default Tailwind classes for demonstration purposes.
+ * 
+ * For production pages, use Krawl design tokens from globals.css:
+ * - Colors: bg-bg-light, bg-bg-white, text-text-primary, etc.
+ * - Typography: font-sans, text-base, text-lg, etc.
+ * 
+ * See frontend/docs/DESIGN_TOKENS.md for complete token reference.
+ */
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">

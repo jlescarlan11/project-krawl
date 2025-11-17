@@ -42,6 +42,7 @@ This project includes comprehensive documentation organized in the `docs/` direc
 
 - **[UI_UX_DESIGN_SYSTEM.md](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Comprehensive UI/UX design system with component library, spacing, typography, color usage, and interaction patterns
 - **[WIREFRAMES.md](./docs/design/WIREFRAMES.md)** - Low-fidelity wireframes for all pages, including UI states, accessibility specifications, and micro-interaction patterns
+- **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
 - **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
 - **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints
 - **[FEATURE_LIST_AND_USER_STORIES.md](./docs/user-research/FEATURE_LIST_AND_USER_STORIES.md)** - Comprehensive feature list with corresponding user stories
@@ -68,6 +69,17 @@ This project includes comprehensive documentation organized in the `docs/` direc
 project-krawl/
 ├── README.md                          # This file - project overview
 ├── CHANGELOG.md                       # Project changelog
+│
+├── frontend/                          # Frontend application
+│   ├── app/                           # Next.js app directory
+│   │   ├── globals.css                # Design tokens (Tailwind CSS v4 @theme)
+│   │   ├── layout.tsx                 # Root layout with font configuration
+│   │   └── page.tsx                   # Home page
+│   ├── lib/                           # Utility libraries
+│   │   └── design-tokens.ts           # TypeScript design token exports
+│   ├── docs/                          # Frontend documentation
+│   │   └── DESIGN_TOKENS.md           # Design tokens quick reference
+│   └── README.md                      # Frontend setup and usage guide
 │
 └── docs/                              # Documentation directory
     ├── PROJECT_BRIEF.md               # Project brief and objectives
@@ -118,7 +130,9 @@ project-krawl/
 - **Framework:** Next.js 16.0.3
 - **Language:** TypeScript 5.x
 - **React:** React 19.2.0
-- **Styling:** Tailwind CSS v4 (CSS-based configuration)
+- **Styling:** Tailwind CSS v4 (CSS-based configuration with `@theme` directive)
+- **Fonts:** Inter (primary), Plus Jakarta Sans (secondary) - Optimized via `next/font/google`
+- **Design Tokens:** CSS custom properties and TypeScript exports (see `frontend/docs/DESIGN_TOKENS.md`)
 - **State Management:** Zustand 4.4.x (planned)
 - **Maps:** Mapbox GL JS 3.x (planned)
 
