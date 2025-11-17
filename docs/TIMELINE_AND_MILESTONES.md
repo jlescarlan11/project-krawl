@@ -1250,7 +1250,7 @@ The project follows a flexible sprint structure aligned with the phase breakdown
 - [ ] Cloudinary account created (free tier)
 - [ ] Brevo account created (free tier)
 - [x] Mapbox account created (free tier) ✅ (see [MAPBOX_SETUP.md](./private-docs/operations/MAPBOX_SETUP.md))
-- [ ] Sentry account created (free tier)
+- [x] Sentry account created (free tier) ✅ (see [SENTRY_SETUP.md](./private-docs/operations/SENTRY_SETUP.md))
 - [ ] Oracle Cloud Infrastructure account created (Always Free Tier)
 - [ ] All API keys and credentials securely stored
 - [ ] Environment variables documented
