@@ -43,6 +43,7 @@ This project includes comprehensive documentation organized in the `docs/` direc
 - **[UI_UX_DESIGN_SYSTEM.md](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Comprehensive UI/UX design system with component library, spacing, typography, color usage, and interaction patterns
 - **[WIREFRAMES.md](./docs/design/WIREFRAMES.md)** - Low-fidelity wireframes for all pages, including UI states, accessibility specifications, and micro-interaction patterns
 - **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
+- **[Component Library](./frontend/components/README.md)** - Reusable UI component library (buttons, cards, forms) with TypeScript support and accessibility features
 - **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
 - **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints
 - **[FEATURE_LIST_AND_USER_STORIES.md](./docs/user-research/FEATURE_LIST_AND_USER_STORIES.md)** - Comprehensive feature list with corresponding user stories
@@ -75,8 +76,21 @@ project-krawl/
 │   │   ├── globals.css                # Design tokens (Tailwind CSS v4 @theme)
 │   │   ├── layout.tsx                 # Root layout with font configuration
 │   │   └── page.tsx                   # Home page
+│   ├── components/                   # Component library
+│   │   ├── ui/                        # Base UI components
+│   │   │   ├── button.tsx            # Button component
+│   │   │   ├── card.tsx              # Card component
+│   │   │   ├── input.tsx             # Input component
+│   │   │   ├── textarea.tsx          # Textarea component
+│   │   │   ├── select.tsx            # Select component
+│   │   │   ├── checkbox.tsx          # Checkbox component
+│   │   │   ├── radio.tsx             # Radio component
+│   │   │   └── file-upload.tsx       # FileUpload component
+│   │   ├── index.ts                   # Barrel exports
+│   │   └── README.md                 # Component library documentation
 │   ├── lib/                           # Utility libraries
-│   │   └── design-tokens.ts           # TypeScript design token exports
+│   │   ├── design-tokens.ts           # TypeScript design token exports
+│   │   └── utils.ts                   # Utility functions (cn helper)
 │   ├── docs/                          # Frontend documentation
 │   │   └── DESIGN_TOKENS.md           # Design tokens quick reference
 │   └── README.md                      # Frontend setup and usage guide

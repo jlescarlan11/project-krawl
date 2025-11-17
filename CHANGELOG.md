@@ -14,10 +14,11 @@ This document tracks major changes, updates, and milestones across the entire Kr
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.0.2 | 2025-11-17 | Development Team | TASK-022 completed: Component library (buttons, cards, forms) implemented |
 | 1.0.1 | 2025-11-17 | Development Team | TASK-021 completed: Design tokens and typography system implemented |
 | 1.0.0 | 2025-11-15 | Development Team | Initial changelog creation |
 
-**Current Version:** 1.0.1  
+**Current Version:** 1.0.2  
 **Last Updated:** 2025-11-17  
 **Status:** Active
 
@@ -80,6 +81,44 @@ Each changelog entry follows this format:
 ---
 
 ### [1.0.2] - 2025-11-17
+
+#### Added
+- **Component Library** (`frontend/components/`) - Comprehensive reusable UI component library
+  - Button component (`components/ui/button.tsx`) - 5 variants (primary, secondary, outline, text, accent), 3 sizes, loading states, icon support
+  - Card component (`components/ui/card.tsx`) - 3 variants (standard, interactive, elevated), image support, compound components (CardHeader, CardBody, CardFooter, CardActions)
+  - Input component (`components/ui/input.tsx`) - Text input with validation states, icons, accessibility
+  - Textarea component (`components/ui/textarea.tsx`) - Multi-line input with resize options
+  - Select component (`components/ui/select.tsx`) - Dropdown with custom styling
+  - Checkbox component (`components/ui/checkbox.tsx`) - Custom styled checkbox with validation
+  - Radio component (`components/ui/radio.tsx`) - Custom styled radio buttons with grouping
+  - FileUpload component (`components/ui/file-upload.tsx`) - Drag-and-drop file upload with validation and preview
+- Component library documentation (`frontend/components/README.md`) - Comprehensive usage guide with examples
+- Utility function (`frontend/lib/utils.ts`) - `cn()` helper for Tailwind class merging
+- Component barrel exports (`frontend/components/index.ts`) - Clean import API for all components
+- JSDoc comments - Complete documentation for all component interfaces
+
+#### Changed
+- Updated `frontend/package.json` - Added dependencies: `lucide-react`, `clsx`, `tailwind-merge`
+- Updated `README.md` - Added component library to project structure
+- Updated `frontend/README.md` - Added component library section with usage examples
+- Updated `CHANGELOG.md` - Added TASK-022 completion entry
+
+#### Fixed
+- Improved FileUpload error handling - Now displays all validation errors, not just the last one
+- Fixed CardBody empty className string - Removed unnecessary empty string parameter
+- Enhanced FileUpload key generation - More unique keys using file metadata
+
+#### Technical Details
+- All components are fully typed with TypeScript
+- WCAG 2.1 Level AA compliant accessibility
+- Mobile-first responsive design
+- Uses design tokens from `globals.css`
+- Proper ARIA attributes and keyboard navigation
+- Production-ready with comprehensive error handling
+
+---
+
+### [1.0.1] - 2025-11-17
 
 #### Added
 - Design token system implementation (`frontend/app/globals.css`) - Complete color palette, typography, spacing, and border radius tokens using Tailwind CSS v4 `@theme` directive
