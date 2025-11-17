@@ -267,7 +267,7 @@ UI_UX_DESIGN_SYSTEM.md (UI components & implementation)
    - Create Brevo account
    - [x] Create Mapbox account ✅ (see [MAPBOX_SETUP.md](./docs/private-docs/operations/MAPBOX_SETUP.md))
    - [x] Create Sentry account ✅ (see [SENTRY_SETUP.md](./docs/private-docs/operations/SENTRY_SETUP.md))
-   - Set up Oracle Cloud Infrastructure account
+   - [x] Set up Oracle Cloud Infrastructure account ✅ (see [OCI_SETUP.md](./docs/private-docs/operations/OCI_SETUP.md))
 
 4. **Initialize projects**
    - Initialize backend project
