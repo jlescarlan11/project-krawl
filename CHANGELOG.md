@@ -6,7 +6,7 @@ This document tracks major changes, updates, and milestones across the entire Kr
 
 **Purpose:** To maintain a comprehensive record of project changes, making it easy to track project evolution and understand what has changed over time.
 
-**Current Date:** November 15, 2025
+**Current Date:** November 17, 2025
 
 ---
 
@@ -14,10 +14,11 @@ This document tracks major changes, updates, and milestones across the entire Kr
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.0.1 | 2025-11-17 | Development Team | TASK-021 completed: Design tokens and typography system implemented |
 | 1.0.0 | 2025-11-15 | Development Team | Initial changelog creation |
 
-**Current Version:** 1.0.0  
-**Last Updated:** 2025-11-15  
+**Current Version:** 1.0.1  
+**Last Updated:** 2025-11-17  
 **Status:** Active
 
 ---
@@ -75,6 +76,28 @@ Each changelog entry follows this format:
 - Deployment guide completion
 - Claim Your Gem feature implementation
 - Content lifecycle management system
+
+---
+
+### [1.0.2] - 2025-11-17
+
+#### Added
+- Design token system implementation (`frontend/app/globals.css`) - Complete color palette, typography, spacing, and border radius tokens using Tailwind CSS v4 `@theme` directive
+- TypeScript design token exports (`frontend/lib/design-tokens.ts`) - Type-safe access to design tokens
+- Design tokens developer reference (`frontend/docs/DESIGN_TOKENS.md`) - Quick reference guide for developers
+- Font configuration (`frontend/app/layout.tsx`) - Inter and Plus Jakarta Sans fonts with Filipino language support
+
+#### Changed
+- Updated `frontend/app/layout.tsx` - Replaced Geist fonts with Inter and Plus Jakarta Sans
+- Updated `frontend/app/globals.css` - Complete design token system with comprehensive documentation
+- Updated `frontend/README.md` - Added design tokens section with usage examples
+- Updated `README.md` - Added design tokens reference and updated frontend tech stack
+- Updated `docs/design/UI_UX_DESIGN_SYSTEM.md` - Added implementation status and references
+- Updated `docs/private-docs/tasks/WEEK_02_TASKS.md` - Marked TASK-021 as completed
+
+#### Fixed
+- Updated project structure in `README.md` to include frontend directory structure
+- Added placeholder documentation in `frontend/app/page.tsx`
 
 ---
 

@@ -26,7 +26,45 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load fonts from Google Fonts:
+- **[Inter](https://fonts.google.com/specimen/Inter)** - Primary typeface for body text and UI elements
+- **[Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans)** - Secondary typeface (optional for headings)
+
+Both fonts support English, Tagalog, and Cebuano languages. For complete typography specifications, see `docs/design/BRAND_GUIDELINES.md`.
+
+## Design Tokens
+
+Krawl uses a comprehensive design token system for consistent styling across the application. Design tokens are defined in `app/globals.css` using Tailwind CSS v4's `@theme` directive and are accessible via:
+
+- **Tailwind CSS utilities:** `bg-primary-green`, `text-text-primary`, `font-sans`, etc.
+- **CSS custom properties:** `var(--color-primary-green)`, `var(--font-family-sans)`, etc.
+- **TypeScript exports:** Import from `lib/design-tokens.ts` for type-safe access
+
+### Quick Reference
+
+For a complete reference of all available design tokens, see [`docs/DESIGN_TOKENS.md`](./docs/DESIGN_TOKENS.md).
+
+### Usage Examples
+
+```tsx
+// Using Tailwind classes (recommended)
+<button className="bg-primary-green text-white px-6 py-3 rounded-lg">
+  Create Gem
+</button>
+
+// Using TypeScript design tokens
+import { colors } from '@/lib/design-tokens';
+const primaryColor = colors.primary.green; // '#2D7A3E'
+```
+
+### Design Token Categories
+
+- **Colors:** Primary, text, background, and semantic colors
+- **Typography:** Font families, sizes, weights, line heights, letter spacing
+- **Spacing:** 8px-based spacing scale
+- **Border Radius:** Consistent rounded corner values
+
+All design tokens follow WCAG 2.1 Level AA accessibility standards.
 
 ## Learn More
 

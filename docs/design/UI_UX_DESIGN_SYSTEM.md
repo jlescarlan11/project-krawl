@@ -231,10 +231,12 @@ All components, patterns, and interactions should follow consistent design langu
 
 #### Tailwind CSS v4 @theme Configuration
 
+**✅ IMPLEMENTED:** Design tokens are now implemented in `frontend/app/globals.css` using Tailwind CSS v4's `@theme` directive.
+
 For Tailwind CSS v4, define colors in the `@theme` directive in your `globals.css`:
 
 ```css
-/* src/app/globals.css */
+/* frontend/app/globals.css */
 @import "tailwindcss";
 
 @theme {
@@ -264,11 +266,7 @@ For Tailwind CSS v4, define colors in the `@theme` directive in your `globals.cs
   --color-warning: #F7B801;
   --color-info: #3B82F6;
   
-  /* Gray scale (for borders, dividers) */
-  --color-gray-200: #E5E5E5;
-  --color-gray-300: #D1D5DB;
-  --color-gray-600: #4B5563;
-  --color-gray-700: #374151;
+  /* Typography tokens, spacing, border radius also defined */
 }
 ```
 
@@ -279,6 +277,11 @@ After defining in `@theme`, you can use these colors directly in Tailwind classe
 - `bg-dark-green`, `hover:bg-dark-green`
 - `text-text-primary`, `text-text-secondary`
 - `bg-bg-light`, `bg-bg-medium`
+
+**Developer Reference:**
+- **Quick Reference:** See [`frontend/docs/DESIGN_TOKENS.md`](../../frontend/docs/DESIGN_TOKENS.md) for complete token reference
+- **TypeScript Exports:** Import from `frontend/lib/design-tokens.ts` for type-safe access
+- **Implementation:** See `frontend/app/globals.css` for complete token definitions
 
 ---
 
