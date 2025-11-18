@@ -2905,6 +2905,8 @@ Updating offline downloads...
 
 ## Accessibility Specifications
 
+> **Note:** This section provides accessibility patterns and examples. For comprehensive accessibility guidelines covering all WCAG 2.1 Level AA requirements, see [ACCESSIBILITY_GUIDELINES.md](./ACCESSIBILITY_GUIDELINES.md). For developer and QA checklists, see [ACCESSIBILITY_CHECKLIST.md](./ACCESSIBILITY_CHECKLIST.md).
+
 This section documents accessibility requirements and patterns to ensure the application is usable by everyone.
 
 ### Focus States

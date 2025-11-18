@@ -1667,6 +1667,22 @@ Krawl design system prioritizes accessibility to ensure inclusive design.
 
 ---
 
+## Comprehensive Accessibility Guidelines
+
+For complete accessibility guidelines covering all WCAG 2.1 Level AA requirements, detailed implementation examples, and comprehensive testing procedures, see:
+
+- **[ACCESSIBILITY_GUIDELINES.md](./ACCESSIBILITY_GUIDELINES.md)** - Comprehensive accessibility guidelines document
+- **[ACCESSIBILITY_CHECKLIST.md](./ACCESSIBILITY_CHECKLIST.md)** - Developer and QA checklists
+
+The guidelines document includes:
+- Complete WCAG 2.1 Level AA requirements
+- Implementation examples from the component library
+- Common accessibility patterns
+- Testing tools and procedures
+- Audit process and issue tracking
+
+---
+
 ## Responsive Design
 
 ### Breakpoints

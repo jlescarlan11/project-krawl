@@ -382,6 +382,10 @@ All components are built with accessibility in mind:
 - Test with high contrast mode
 - Test at 200% zoom
 
+For complete accessibility guidelines and checklists, see:
+- [ACCESSIBILITY_GUIDELINES.md](../../../docs/design/ACCESSIBILITY_GUIDELINES.md) - Comprehensive accessibility guidelines
+- [ACCESSIBILITY_CHECKLIST.md](../../../docs/design/ACCESSIBILITY_CHECKLIST.md) - Developer and QA checklists
+
 ## Responsive Design
 
 Components are mobile-first and responsive:
@@ -495,4 +499,5 @@ components/
 
 **Last Updated:** 2025-11-16  
 **Version:** 1.0.0
+
 
