@@ -87,8 +87,54 @@ const primaryColor = colors.primary.green; // '#2D7A3E'
 - **Typography:** Font families, sizes, weights, line heights, letter spacing
 - **Spacing:** 8px-based spacing scale
 - **Border Radius:** Consistent rounded corner values
+- **Breakpoints:** Responsive breakpoints for mobile-first design
 
 All design tokens follow WCAG 2.1 Level AA accessibility standards.
+
+## Responsive Breakpoints
+
+Krawl uses a mobile-first responsive design approach with Tailwind CSS breakpoints. The breakpoint system is available through:
+
+- **Tailwind CSS classes:** `sm:`, `md:`, `lg:`, `xl:`, `2xl:` prefixes
+- **TypeScript constants:** Import from `lib/design-tokens` or `lib/breakpoints`
+- **React hooks:** `useIsMobile()`, `useIsTablet()`, `useIsDesktop()`, `useBreakpoint()`
+
+### Breakpoint Values
+
+- **Mobile:** 0px - 639px (default, no prefix)
+- **Tablet:** 640px - 1023px (`sm:` prefix)
+- **Desktop:** 1024px - 1279px (`lg:` prefix)
+- **Large Desktop:** 1280px - 1535px (`xl:` prefix)
+- **Extra Large:** 1536px+ (`2xl:` prefix)
+
+### Usage Examples
+
+```tsx
+// Using Tailwind responsive classes (recommended)
+<div className="
+  grid grid-cols-1 gap-4
+  sm:grid-cols-2 sm:gap-6
+  lg:grid-cols-3 lg:gap-8
+">
+  {/* Content */}
+</div>
+
+// Using React hooks for conditional rendering
+import { useIsMobile, useIsDesktop } from '@/lib/design-tokens';
+
+function MyComponent() {
+  const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
+  
+  return (
+    <div>
+      {isMobile ? <MobileView /> : <DesktopView />}
+    </div>
+  );
+}
+```
+
+For complete breakpoint documentation and examples, see [`docs/DESIGN_TOKENS.md`](./docs/DESIGN_TOKENS.md#breakpoints).
 
 ## Learn More
 

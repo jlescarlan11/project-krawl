@@ -89,6 +89,7 @@ project-krawl/
 │   │   ├── index.ts                   # Barrel exports
 │   │   └── README.md                 # Component library documentation
 │   ├── lib/                           # Utility libraries
+│   │   ├── breakpoints.ts             # Responsive breakpoints and React hooks
 │   │   ├── design-tokens.ts           # TypeScript design token exports
 │   │   └── utils.ts                   # Utility functions (cn helper)
 │   ├── docs/                          # Frontend documentation
