@@ -42,6 +42,8 @@ This project includes comprehensive documentation organized in the `docs/` direc
 
 - **[UI_UX_DESIGN_SYSTEM.md](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Comprehensive UI/UX design system with component library, spacing, typography, color usage, and interaction patterns
 - **[WIREFRAMES.md](./docs/design/WIREFRAMES.md)** - Low-fidelity wireframes for all pages, including UI states, accessibility specifications, and micro-interaction patterns
+- **[ACCESSIBILITY_GUIDELINES.md](./docs/design/ACCESSIBILITY_GUIDELINES.md)** - Comprehensive WCAG 2.1 Level AA accessibility guidelines with implementation examples, testing procedures, and common patterns
+- **[ACCESSIBILITY_CHECKLIST.md](./docs/design/ACCESSIBILITY_CHECKLIST.md)** - Developer and QA checklists for accessibility compliance during development and testing
 - **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
 - **[Component Library](./frontend/components/README.md)** - Reusable UI component library (buttons, cards, forms) with TypeScript support and accessibility features
 - **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
@@ -368,8 +370,8 @@ For complete glossary, see [GLOSSARY.md](./docs/GLOSSARY.md).
 ## 📞 Contact
 
 **Project Team:** Solo Developer – contact `hello@krawl.app` (update with full roster before Week 3)  
-**Last Updated:** November 15, 2025  
-**Status:** Planning Phase
+**Last Updated:** November 19, 2025  
+**Status:** Development Phase - Week 2
 
 ---
 
