@@ -3,7 +3,7 @@
 This document provides a quick reference for Krawl design tokens.
 
 **Reference:** For complete documentation, see `docs/design/BRAND_GUIDELINES.md`  
-**Last Updated:** 2025-11-16
+**Last Updated:** 2025-11-18
 
 ---
 
@@ -93,6 +93,206 @@ This document provides a quick reference for Krawl design tokens.
 - `rounded-xl` - 12px - Large rounded corners
 - `rounded-2xl` - 16px - Extra large rounded corners
 - `rounded-full` - Full circle/pill shape
+
+---
+
+## Breakpoints
+
+### Tailwind CSS Breakpoints
+
+Krawl uses Tailwind CSS default breakpoints for responsive design. All designs follow a **mobile-first approach**, meaning styles start with mobile as the base and progressively enhance for larger screens.
+
+- **Mobile (default):** 0px - 639px - No prefix
+- **Tablet:** 640px - 1023px - `sm:` prefix
+- **Desktop:** 1024px - 1279px - `lg:` prefix
+- **Large Desktop:** 1280px - 1535px - `xl:` prefix
+- **Extra Large:** 1536px+ - `2xl:` prefix
+
+### Usage
+
+#### Tailwind Classes (Recommended)
+
+The primary way to use breakpoints is through Tailwind CSS responsive classes. Tailwind uses a mobile-first approach, so base styles apply to mobile, and you add responsive prefixes for larger screens.
+
+```tsx
+// Responsive grid
+<div className="
+  grid grid-cols-1 gap-4
+  sm:grid-cols-2 sm:gap-6
+  lg:grid-cols-3 lg:gap-8
+  xl:grid-cols-4 xl:gap-10
+">
+  {/* Content */}
+</div>
+
+// Responsive typography
+<h1 className="
+  text-2xl font-bold leading-tight
+  sm:text-3xl
+  lg:text-4xl
+  xl:text-5xl
+">
+  Responsive Heading
+</h1>
+
+// Responsive spacing
+<div className="
+  p-4 gap-4
+  sm:p-6 sm:gap-6
+  lg:p-8 lg:gap-8
+  xl:p-10 xl:gap-10
+">
+  Content with responsive spacing
+</div>
+
+// Responsive navigation (show/hide based on breakpoint)
+{/* Mobile Navigation */}
+<nav className="fixed bottom-0 left-0 right-0 lg:hidden">
+  {/* Bottom nav items */}
+</nav>
+
+{/* Desktop Navigation */}
+<nav className="hidden lg:flex lg:sticky lg:top-0">
+  {/* Top nav items */}
+</nav>
+```
+
+#### TypeScript Constants
+
+For programmatic breakpoint detection in JavaScript/TypeScript:
+
+```tsx
+import { breakpoints, isMobile, isTablet, isDesktop } from '@/lib/design-tokens';
+
+// Access breakpoint values
+const tabletBreakpoint = breakpoints.sm; // 640
+
+// Check breakpoint in JavaScript
+if (typeof window !== 'undefined') {
+  const width = window.innerWidth;
+  if (isMobile(width)) {
+    // Mobile-specific logic
+  } else if (isTablet(width)) {
+    // Tablet-specific logic
+  } else if (isDesktop(width)) {
+    // Desktop-specific logic
+  }
+}
+```
+
+#### React Hooks
+
+For dynamic responsive behavior in React components:
+
+```tsx
+import { useIsMobile, useIsDesktop, useBreakpoint } from '@/lib/design-tokens';
+
+function MyComponent() {
+  const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
+  
+  // Or use the general hook
+  const isTablet = useBreakpoint('sm', 'min') && useBreakpoint('lg', 'max');
+  
+  return (
+    <div>
+      {isMobile ? (
+        <MobileView />
+      ) : isDesktop ? (
+        <DesktopView />
+      ) : (
+        <TabletView />
+      )}
+    </div>
+  );
+}
+```
+
+### Responsive Patterns
+
+#### Grid System
+
+```tsx
+// Mobile: 1 column, Tablet: 2 columns, Desktop: 3 columns, Large Desktop: 4 columns
+<div className="
+  grid grid-cols-1 gap-4
+  sm:grid-cols-2 sm:gap-6
+  lg:grid-cols-3 lg:gap-8
+  xl:grid-cols-4 xl:gap-10
+">
+  {/* Grid items */}
+</div>
+```
+
+#### Typography Scaling
+
+```tsx
+// Responsive heading sizes
+<h1 className="
+  text-2xl font-bold leading-tight
+  sm:text-3xl
+  lg:text-4xl
+  xl:text-5xl
+">
+  Responsive Heading
+</h1>
+
+// Responsive body text
+<p className="
+  text-sm leading-relaxed
+  sm:text-base
+  lg:text-lg
+">
+  Responsive body text that scales appropriately
+</p>
+```
+
+#### Spacing Scaling
+
+```tsx
+// Responsive padding and gaps
+<div className="
+  p-4 gap-4
+  sm:p-6 sm:gap-6
+  lg:p-8 lg:gap-8
+  xl:p-10 xl:gap-10
+">
+  {/* Content with responsive spacing */}
+</div>
+```
+
+#### Container Max-Width
+
+```tsx
+// Responsive container with max-width
+<div className="
+  w-full px-4
+  sm:px-6
+  lg:px-8
+  xl:max-w-7xl xl:mx-auto xl:px-10
+">
+  {/* Content constrained to max-width on large screens */}
+</div>
+```
+
+### Best Practices
+
+1. **Mobile-First:** Always start with mobile styles (no prefix), then add responsive classes for larger screens
+2. **Use Tailwind Classes:** Prefer Tailwind responsive classes over JavaScript breakpoint detection when possible
+3. **Test on Real Devices:** Use browser dev tools initially, but test on real devices for accuracy
+4. **Consider Touch Targets:** Ensure interactive elements are at least 44px × 44px on mobile
+5. **Progressive Enhancement:** Add features and complexity as screen size increases
+6. **Consistent Breakpoints:** Always use the standard breakpoints defined above
+
+### Breakpoint Reference
+
+| Breakpoint | Min Width | Tailwind Prefix | Device Category |
+|------------|-----------|-----------------|-----------------|
+| Mobile | 0px | (none) | Mobile |
+| Tablet | 640px | `sm:` | Tablet |
+| Desktop | 1024px | `lg:` | Desktop |
+| Large Desktop | 1280px | `xl:` | Large Desktop |
+| Extra Large | 1536px | `2xl:` | Extra Large |
 
 ---
 

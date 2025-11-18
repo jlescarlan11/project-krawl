@@ -3,8 +3,28 @@
  * 
  * Provides type-safe access to design tokens
  * Reference: docs/design/BRAND_GUIDELINES.md
- * Last Updated: 2025-11-16
+ * Last Updated: 2025-11-18
  */
+
+// Re-export breakpoints for convenience
+export {
+  breakpoints,
+  deviceCategories,
+  tailwindBreakpoints,
+  isMobile,
+  isTablet,
+  isDesktop,
+  isLargeDesktop,
+  getDeviceCategory,
+  useBreakpoint,
+  useIsMobile,
+  useIsTablet,
+  useIsDesktop,
+  useIsLargeDesktop,
+  type BreakpointKey,
+  type DeviceCategory,
+  type MediaQueryType,
+} from './breakpoints';
 
 export const colors = {
   primary: {

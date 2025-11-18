@@ -10,7 +10,7 @@
  * - Border radius scale
  * 
  * Reference: docs/design/BRAND_GUIDELINES.md
- * Last Updated: 2025-11-16
+ * Last Updated: 2025-11-18
  */
 
 /* Font Variables
@@ -230,6 +230,29 @@
   --color-gray-300: #D1D5DB;   /* Light borders */
   --color-gray-600: #4B5563;   /* Medium gray text */
   --color-gray-700: #374151;   /* Dark gray text */
+  
+  /* ============================================
+   * RESPONSIVE BREAKPOINTS
+   * ============================================ */
+  
+  /* Breakpoint values (for reference)
+   * Tailwind CSS uses these values by default.
+   * Use Tailwind responsive classes (sm:, md:, lg:, xl:, 2xl:) instead of these variables.
+   * These variables are provided for documentation and programmatic access.
+   */
+  --breakpoint-sm: 640px;   /* Tablet and up */
+  --breakpoint-md: 768px;   /* Medium screens */
+  --breakpoint-lg: 1024px;  /* Desktop and up */
+  --breakpoint-xl: 1280px;  /* Large desktop and up */
+  --breakpoint-2xl: 1536px; /* Extra large screens */
+  
+  /* Device category ranges (for reference) */
+  --device-mobile-max: 639px;
+  --device-tablet-min: 640px;
+  --device-tablet-max: 1023px;
+  --device-desktop-min: 1024px;
+  --device-desktop-max: 1279px;
+  --device-large-desktop-min: 1280px;
 }
 
 /* ============================================
