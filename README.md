@@ -149,7 +149,7 @@ project-krawl/
 - **React:** React 19.2.0
 - **Styling:** Tailwind CSS v4 (CSS-based configuration with `@theme` directive)
 - **Fonts:** Inter (primary), Plus Jakarta Sans (secondary) - Optimized via `next/font/google`
-- **Design Tokens:** CSS custom properties and TypeScript exports (see `frontend/docs/DESIGN_TOKENS.md`)
+- **Design Tokens:** CSS custom properties and TypeScript exports covering colors, typography, spacing, shadows, transitions, z-index layers, borders, and breakpoints (see `frontend/docs/DESIGN_TOKENS.md`)
 - **State Management:** Zustand 4.4.x (planned)
 - **Maps:** Mapbox GL JS 3.x (planned)
 

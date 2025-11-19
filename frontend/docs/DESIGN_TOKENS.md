@@ -96,6 +96,207 @@ This document provides a quick reference for Krawl design tokens.
 
 ---
 
+## Shadows / Elevation
+
+Krawl uses a 6-level elevation system for consistent depth and visual hierarchy. Shadows are defined using rgba for opacity control and work well on both light and dark backgrounds.
+
+### Elevation Levels
+
+- `shadow-elevation-0` - No shadow (flat elements)
+- `shadow-elevation-1` - Subtle elevation (cards, inputs) - `0 1px 2px 0 rgba(0, 0, 0, 0.05)`
+- `shadow-elevation-2` - Low elevation (hover states, dropdowns) - `0 2px 4px 0 rgba(0, 0, 0, 0.1)`
+- `shadow-elevation-3` - Medium elevation (elevated cards, modals) - `0 4px 8px 0 rgba(0, 0, 0, 0.15)`
+- `shadow-elevation-4` - High elevation (overlays, popovers) - `0 8px 16px 0 rgba(0, 0, 0, 0.2)`
+- `shadow-elevation-5` - Highest elevation (tooltips, toasts) - `0 16px 32px 0 rgba(0, 0, 0, 0.25)`
+
+### Usage Guidelines
+
+- **Cards (standard):** Use `elevation-1`
+- **Cards (interactive hover):** Use `elevation-2`
+- **Cards (elevated variant):** Use `elevation-3`
+- **Modals (future):** Use `elevation-4` or `elevation-5`
+- **Dropdowns (future):** Use `elevation-2` or `elevation-3`
+- **Tooltips (future):** Use `elevation-5`
+- **Toasts (future):** Use `elevation-4`
+- **Existing components:** Replace `shadow-sm` / `shadow-md` usages in files like `frontend/components/ui/card.tsx` with the matching `shadow-elevation-*` token for consistency.
+
+### Examples
+
+```tsx
+// Card with standard elevation
+<div className="bg-bg-white rounded-xl p-4 shadow-elevation-1">
+  Standard card
+</div>
+
+// Card with hover elevation
+<div className="bg-bg-white rounded-xl p-4 shadow-elevation-1 hover:shadow-elevation-2 transition-all-normal">
+  Interactive card
+</div>
+
+// Elevated card
+<div className="bg-bg-white rounded-xl p-4 shadow-elevation-3">
+  Elevated card
+</div>
+
+// Using TypeScript
+import { shadows } from '@/lib/design-tokens';
+const cardStyle = { boxShadow: shadows.elevation1 };
+```
+
+---
+
+## Transitions
+
+Krawl provides standardized transition durations and easing functions for consistent animations across the application.
+
+### Durations
+
+- `duration-fast` - 150ms - Quick interactions (buttons, inputs)
+- `duration-normal` - 200ms - Standard transitions (cards, hover)
+- `duration-slow` - 300ms - Deliberate transitions (modals, page transitions)
+
+### Easing Functions
+
+- `ease-in` - `cubic-bezier(0.4, 0, 1, 1)` - Accelerating
+- `ease-out` - `cubic-bezier(0, 0, 0.2, 1)` - Decelerating
+- `ease-in-out` - `cubic-bezier(0.4, 0, 0.2, 1)` - Accelerating then decelerating
+- `linear` - `linear` - Constant speed
+
+### Pre-composed Patterns
+
+- `transition-all-fast` - All properties, 150ms, ease-in-out
+- `transition-all-normal` - All properties, 200ms, ease-in-out
+- `transition-colors-fast` - Color and background-color, 150ms, ease-in-out
+- `transition-transform-fast` - Transform only, 150ms, ease-in-out
+- **Existing components:** Update `frontend/components/ui/button.tsx`, `card.tsx`, and other UI primitives to use the new duration/easing tokens instead of hardcoded `duration-150`, `duration-200`, etc.
+
+### Examples
+
+```tsx
+// Button with fast transition
+<button className="bg-primary-green text-white px-6 py-3 rounded-lg transition-all-fast hover:bg-dark-green">
+  Click me
+</button>
+
+// Card with normal transition
+<div className="bg-bg-white rounded-xl p-4 transition-all-normal hover:shadow-elevation-2">
+  Card content
+</div>
+
+// Using TypeScript
+import { transitions } from '@/lib/design-tokens';
+const buttonStyle = { transition: transitions.allFast };
+```
+
+---
+
+## Z-Index Layers
+
+Krawl uses a systematic z-index layer hierarchy to prevent stacking conflicts and ensure consistent layering across components.
+
+### Layer Hierarchy
+
+- `z-base` - 0 - Default stacking context
+- `z-dropdown` - 1000 - Dropdowns, select menus
+- `z-sticky` - 1100 - Sticky headers, navigation
+- `z-overlay` - 1200 - Backdrops, overlays
+- `z-modal` - 1300 - Modals, dialogs
+- `z-tooltip` - 1400 - Tooltips, popovers
+- `z-toast` - 1500 - Toast notifications (highest)
+
+### Usage Guidelines
+
+- **Base (0):** Default document flow
+- **Dropdown (1000):** Dropdown menus, select dropdowns
+- **Sticky (1100):** Sticky headers, fixed navigation
+- **Overlay (1200):** Backdrop overlays, dimmers
+- **Modal (1300):** Modal dialogs, confirmation dialogs
+- **Tooltip (1400):** Tooltips, popovers, hover cards
+- **Toast (1500):** Toast notifications (always on top)
+
+### Examples
+
+```tsx
+// Sticky header
+<header className="sticky top-0 z-sticky bg-bg-white border-b border-bg-medium">
+  Navigation
+</header>
+
+// Dropdown menu
+<div className="relative">
+  <button>Menu</button>
+  <div className="absolute top-full mt-2 z-dropdown bg-bg-white rounded-lg shadow-elevation-3">
+    Dropdown content
+  </div>
+</div>
+
+// Modal (future)
+<div className="fixed inset-0 z-overlay bg-black/50">
+  <div className="z-modal bg-bg-white rounded-xl p-6 shadow-elevation-4">
+    Modal content
+  </div>
+</div>
+
+// Using TypeScript
+import { zIndex } from '@/lib/design-tokens';
+const modalStyle = { zIndex: zIndex.modal };
+```
+
+---
+
+## Borders
+
+Krawl provides border width and style tokens to complement the existing border radius tokens.
+
+### Border Widths
+
+- `border-thin` - 1px - Default borders (cards, inputs)
+- `border-default` - 2px - Emphasized borders (outline buttons)
+- `border-thick` - 4px - Strong borders (focus states, dividers)
+
+### Border Styles
+
+- `border-solid` - Solid line
+- `border-dashed` - Dashed line
+- `border-dotted` - Dotted line
+- `border-none` - No border
+
+### Usage Guidelines
+
+- **Cards:** `border-thin` + `border-solid`
+- **Outline buttons:** `border-default` + `border-solid`
+- **File upload (dashed):** `border-default` + `border-dashed`
+- **Focus outlines:** `border-thick` + `border-solid`
+- **Dividers:** `border-thin` + `border-solid`
+
+### Examples
+
+```tsx
+// Card with thin border
+<div className="bg-bg-white border border-thin border-solid border-bg-medium rounded-xl p-4">
+  Card content
+</div>
+
+// Outline button
+<button className="bg-transparent border border-default border-solid border-primary-green text-primary-green px-6 py-3 rounded-lg">
+  Outline button
+</button>
+
+// File upload with dashed border
+<div className="border border-default border-dashed border-bg-medium rounded-lg p-8 text-center">
+  Drop files here
+</div>
+
+// Using TypeScript
+import { borders } from '@/lib/design-tokens';
+const cardStyle = {
+  borderWidth: borders.width.thin,
+  borderStyle: borders.style.solid,
+};
+```
+
+---
+
 ## Breakpoints
 
 ### Tailwind CSS Breakpoints

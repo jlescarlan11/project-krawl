@@ -87,6 +87,10 @@ const primaryColor = colors.primary.green; // '#2D7A3E'
 - **Typography:** Font families, sizes, weights, line heights, letter spacing
 - **Spacing:** 8px-based spacing scale
 - **Border Radius:** Consistent rounded corner values
+- **Shadows & Elevation:** Six-step elevation scale for depth states
+- **Transitions:** Duration and easing tokens (fast/normal/slow) plus common patterns
+- **Z-Index Layers:** Named stacking contexts for overlays, modals, tooltips, etc.
+- **Borders:** Width and style tokens for consistent outlines
 - **Breakpoints:** Responsive breakpoints for mobile-first design
 
 All design tokens follow WCAG 2.1 Level AA accessibility standards.
