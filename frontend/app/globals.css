@@ -8,6 +8,10 @@
  * - Typography (fonts, sizes, weights, line heights, letter spacing)
  * - Spacing scale (8px base)
  * - Border radius scale
+ * - Shadows / Elevation levels
+ * - Transitions (durations, easings)
+ * - Z-index layers
+ * - Border widths and styles
  * 
  * Reference: docs/design/BRAND_GUIDELINES.md
  * Last Updated: 2025-11-18
@@ -221,6 +225,89 @@
   --radius-lg: 0.75rem;        /* 12px - Large rounded corners */
   --radius-xl: 1rem;           /* 16px - Extra large rounded corners */
   --radius-full: 9999px;       /* Full circle/pill shape */
+  
+  /* ============================================
+   * SHADOWS / ELEVATION
+   * ============================================ */
+  
+  /* Elevation 0 - No shadow (flat elements) */
+  --shadow-elevation-0: none;
+  
+  /* Elevation 1 - Subtle elevation (cards, inputs) */
+  --shadow-elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  
+  /* Elevation 2 - Low elevation (hover states, dropdowns) */
+  --shadow-elevation-2: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  
+  /* Elevation 3 - Medium elevation (elevated cards, modals) */
+  --shadow-elevation-3: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
+  
+  /* Elevation 4 - High elevation (overlays, popovers) */
+  --shadow-elevation-4: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  
+  /* Elevation 5 - Highest elevation (tooltips, toasts) */
+  --shadow-elevation-5: 0 16px 32px 0 rgba(0, 0, 0, 0.25);
+  
+  /* ============================================
+   * TRANSITIONS
+   * ============================================ */
+  
+  /* Durations */
+  --transition-duration-fast: 150ms;      /* Quick interactions (buttons, inputs) */
+  --transition-duration-normal: 200ms;    /* Standard transitions (cards, hover) */
+  --transition-duration-slow: 300ms;      /* Deliberate transitions (modals, page transitions) */
+  
+  /* Easing Functions */
+  --transition-easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --transition-easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --transition-easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-easing-linear: linear;
+  
+  /* Common Transition Patterns */
+  --transition-all-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-all-normal: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-colors-fast: color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-transform-fast: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ============================================
+   * Z-INDEX LAYERS
+   * ============================================ */
+  
+  /* Base layer - Default stacking context */
+  --z-index-base: 0;
+  
+  /* Dropdown layer - Dropdowns, select menus */
+  --z-index-dropdown: 1000;
+  
+  /* Sticky layer - Sticky headers, navigation */
+  --z-index-sticky: 1100;
+  
+  /* Overlay layer - Backdrops, overlays */
+  --z-index-overlay: 1200;
+  
+  /* Modal layer - Modals, dialogs */
+  --z-index-modal: 1300;
+  
+  /* Tooltip layer - Tooltips, popovers */
+  --z-index-tooltip: 1400;
+  
+  /* Toast layer - Toast notifications (highest) */
+  --z-index-toast: 1500;
+  
+  /* ============================================
+   * BORDERS
+   * ============================================ */
+  
+  /* Border Widths */
+  --border-width-thin: 1px;        /* Default borders (cards, inputs) */
+  --border-width-default: 2px;     /* Emphasized borders (outline buttons) */
+  --border-width-thick: 4px;       /* Strong borders (focus states, dividers) */
+  
+  /* Border Styles */
+  --border-style-solid: solid;
+  --border-style-dashed: dashed;
+  --border-style-dotted: dotted;
+  --border-style-none: none;
   
   /* ============================================
    * GRAY SCALE (for borders, dividers)

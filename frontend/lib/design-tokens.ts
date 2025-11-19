@@ -122,3 +122,96 @@ export const borderRadius = {
   full: '9999px',      // Full circle
 } as const;
 
+export const shadows = {
+  /**
+   * Shadow/Elevation tokens for consistent depth and elevation
+   * Usage: box-shadow: var(--shadow-elevation-1);
+   * Tailwind: shadow-elevation-1
+   */
+  elevation0: 'none',
+  elevation1: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+  elevation2: '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+  elevation3: '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+  elevation4: '0 8px 16px 0 rgba(0, 0, 0, 0.2)',
+  elevation5: '0 16px 32px 0 rgba(0, 0, 0, 0.25)',
+} as const;
+
+export const transitions = {
+  /**
+   * Transition duration tokens
+   * Usage: transition-duration: var(--transition-duration-fast);
+   * Tailwind: duration-fast, duration-normal, duration-slow
+   */
+  duration: {
+    fast: '150ms',
+    normal: '200ms',
+    slow: '300ms',
+  },
+  /**
+   * Transition easing function tokens
+   * Usage: transition-timing-function: var(--transition-easing-ease-out);
+   * Tailwind: ease-in, ease-out, ease-in-out, linear
+   */
+  easing: {
+    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
+    easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
+    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    linear: 'linear',
+  },
+  /**
+   * Pre-composed transition patterns for convenience
+   * Usage: transition: var(--transition-all-fast);
+   */
+  allFast: 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+  allNormal: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+  colorsFast: 'color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+  transformFast: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+} as const;
+
+export const zIndex = {
+  /**
+   * Z-index layer tokens for consistent stacking
+   * Usage: z-index: var(--z-index-modal);
+   * Tailwind: z-base, z-dropdown, z-sticky, z-overlay, z-modal, z-tooltip, z-toast
+   */
+  base: 0,
+  dropdown: 1000,
+  sticky: 1100,
+  overlay: 1200,
+  modal: 1300,
+  tooltip: 1400,
+  toast: 1500,
+} as const;
+
+export const borders = {
+  /**
+   * Border width tokens
+   * Usage: border-width: var(--border-width-thin);
+   * Tailwind: border-thin, border-default, border-thick
+   */
+  width: {
+    thin: '1px',
+    default: '2px',
+    thick: '4px',
+  },
+  /**
+   * Border style tokens
+   * Usage: border-style: var(--border-style-solid);
+   * Tailwind: border-solid, border-dashed, border-dotted, border-none
+   */
+  style: {
+    solid: 'solid',
+    dashed: 'dashed',
+    dotted: 'dotted',
+    none: 'none',
+  },
+} as const;
+
+// Type exports for better TypeScript support
+export type ShadowKey = keyof typeof shadows;
+export type TransitionDurationKey = keyof typeof transitions.duration;
+export type TransitionEasingKey = keyof typeof transitions.easing;
+export type ZIndexKey = keyof typeof zIndex;
+export type BorderWidthKey = keyof typeof borders.width;
+export type BorderStyleKey = keyof typeof borders.style;
+

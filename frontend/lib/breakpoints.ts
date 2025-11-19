@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useCallback, useSyncExternalStore } from 'react';
 
 /**
  * Tailwind CSS breakpoint values (in pixels)
@@ -133,42 +133,69 @@ export const getDeviceCategory = (width: number): string => {
  * const isDesktop = useBreakpoint('lg', 'min');
  * ```
  */
+const getMediaQueryList = (query: string): MediaQueryList | null => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return null;
+  }
+  return window.matchMedia(query);
+};
+
+const subscribeToMediaQuery = (
+  query: string,
+  callback: () => void
+): () => void => {
+  const media = getMediaQueryList(query);
+  if (!media) {
+    return () => {};
+  }
+
+  const handleChange = () => {
+    callback();
+  };
+
+  if (media.addEventListener) {
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }
+
+  const legacyHandler = () => callback();
+  media.addListener(legacyHandler);
+  return () => media.removeListener(legacyHandler);
+};
+
+const getSnapshotForQuery = (query: string): boolean => {
+  const media = getMediaQueryList(query);
+  return media ? media.matches : false;
+};
+
+const useMediaQuery = (query: string): boolean => {
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => subscribeToMediaQuery(query, onStoreChange),
+    [query]
+  );
+
+  const getSnapshot = useCallback(
+    () => getSnapshotForQuery(query),
+    [query]
+  );
+
+  const getServerSnapshot = useCallback(() => false, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+};
+
+const createBreakpointQuery = (breakpoint: BreakpointKey, type: MediaQueryType) =>
+  `(${type}-width: ${breakpoints[breakpoint]}px)`;
+
 export const useBreakpoint = (
   breakpoint: BreakpointKey,
   type: MediaQueryType = 'min'
 ): boolean => {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = `(${type}-width: ${breakpoints[breakpoint]}px)`;
-    const media = window.matchMedia(mediaQuery);
-    
-    // Set initial value
-    setMatches(media.matches);
-
-    // Modern browsers: use addEventListener with proper event type
-    if (media.addEventListener) {
-      const handler = (event: MediaQueryListEvent) => {
-        setMatches(event.matches);
-      };
-      media.addEventListener('change', handler);
-      return () => media.removeEventListener('change', handler);
-    } else {
-      // Fallback for older browsers: use addListener (deprecated but supported)
-      // Note: Legacy addListener receives MediaQueryList, not MediaQueryListEvent
-      // TypeScript types are incorrect for this legacy API, so we use type assertion
-      const handler = ((mediaQueryList: MediaQueryList | MediaQueryListEvent) => {
-        setMatches(mediaQueryList.matches);
-      }) as (this: MediaQueryList, ev: MediaQueryListEvent) => any;
-      media.addListener(handler);
-      return () => media.removeListener(handler);
-    }
-  }, [breakpoint, type]);
-
-  return matches;
+  const mediaQuery = useMemo(
+    () => createBreakpointQuery(breakpoint, type),
+    [breakpoint, type]
+  );
+  return useMediaQuery(mediaQuery);
 };
 
 /**
@@ -184,41 +211,11 @@ export const useIsMobile = (): boolean => useBreakpoint('sm', 'max');
  * Optimized to use a single media query instead of two separate queries
  * for better performance (reduces from 2 listeners to 1).
  */
-export const useIsTablet = (): boolean => {
-  const [matches, setMatches] = useState(false);
+const tabletMediaQuery = `(min-width: ${breakpoints.sm}px) and (max-width: ${
+  breakpoints.lg - 1
+}px)`;
 
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-
-    // Single media query for tablet range: (min-width: 640px) and (max-width: 1023px)
-    const mediaQuery = `(min-width: ${breakpoints.sm}px) and (max-width: ${breakpoints.lg - 1}px)`;
-    const media = window.matchMedia(mediaQuery);
-    
-    // Set initial value
-    setMatches(media.matches);
-
-    // Modern browsers: use addEventListener with proper event type
-    if (media.addEventListener) {
-      const handler = (event: MediaQueryListEvent) => {
-        setMatches(event.matches);
-      };
-      media.addEventListener('change', handler);
-      return () => media.removeEventListener('change', handler);
-    } else {
-      // Fallback for older browsers: use addListener (deprecated but supported)
-      // Note: Legacy addListener receives MediaQueryList, not MediaQueryListEvent
-      // TypeScript types are incorrect for this legacy API, so we use type assertion
-      const handler = ((mediaQueryList: MediaQueryList | MediaQueryListEvent) => {
-        setMatches(mediaQueryList.matches);
-      }) as (this: MediaQueryList, ev: MediaQueryListEvent) => any;
-      media.addListener(handler);
-      return () => media.removeListener(handler);
-    }
-  }, []);
-
-  return matches;
-};
+export const useIsTablet = (): boolean => useMediaQuery(tabletMediaQuery);
 
 /**
  * Convenience hook: Check if current screen is desktop
