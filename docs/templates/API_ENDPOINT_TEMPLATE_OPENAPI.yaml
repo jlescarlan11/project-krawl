@@ -405,10 +405,18 @@ components:
             format: uri
         vouchesCount:
           type: integer
-        averageRating:
-          type: number
-          format: float
+        gemScore:
+          type: integer
+          description: "Calculated score: (vouchesCount × 1) + (krawlInclusionCount × 5)"
+        status:
+          type: string
+          enum: [pending, verified, flagged]
+          description: "Gem status: pending (default), verified (3+ vouches), flagged (3+ reports)"
+        lastVerifiedAt:
+          type: string
+          format: date-time
           nullable: true
+          description: "Last time Gem was verified via 'Vibe Check'"
         creator:
           $ref: '#/components/schemas/User'
         createdAt:

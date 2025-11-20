@@ -31,7 +31,7 @@ Build and launch a community-driven Progressive Web App (PWA) that maps authenti
 ### Secondary Stakeholders
 - **Domestic & International Travelers** - Secondary user base seeking authentic experiences
 - **Local Businesses** - Potential revenue partners via "Claim Your Gem" freemium model
-- **Community Contributors** - Users who create Gems, Krawls, and provide vouching/ratings
+- **Community Contributors** - Users who create Gems, Krawls, and provide vouching (Gems) and ratings (Krawls)
 
 For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./USER_PERSONA_PROFILES.md).
 
@@ -43,7 +43,7 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./USER_PERSON
 - **Active Users:** 100-500 active users in Cebu City (launch area)
 - **Content Creation:** 100+ Gems, 10+ Krawls in Cebu City districts
 - **Feature Adoption:** Significant usage of Krawl Mode (location-aware guided experience)
-- **Community Participation:** Active vouching, rating, and reporting engagement
+- **Community Participation:** Active vouching (Gems), rating (Krawls), and reporting engagement
 - **Geographic Coverage:** All content limited to Cebu City boundaries
 
 ### Product Metrics

@@ -262,7 +262,7 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
 **Tools Used:**
 - Google OAuth 2.0 (free, unlimited users)
 - Spring Security 6.3.x (open source, compatible with Spring Boot 3.5.7)
-- Next.js 14.x (open source)
+- Next.js 16.0.3 (open source)
 
 ---
 
@@ -462,30 +462,46 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
 **Start Date:** Week 8  
 **End Date:** Week 9
 
-#### Week 8: Vouching, Rating, and Comments
+#### Week 8: Vouching, Krawl Rating, Gem Score, and Comments
 
 **Objectives:**
-- Implement vouching system
-- Create rating system
+- Implement vouching system with status (pending/verified/flagged)
+- Create Krawl rating system (Krawls only, not Gems)
+- Implement Gem Score calculation and ranking
 - Build comments/reviews functionality
+- Add Creator Reputation Score system
 - Add user activity tracking
 
 **Tasks:**
-- [ ] **Day 1-2: Vouching System**
+- [ ] **Day 1-2: Vouching System with Status**
   - Create Vouch entity and repository
   - Implement vouch endpoints (create, list)
+  - Add Gem status system (pending/verified/flagged)
+  - Auto-update Gem status: 'verified' when vouches_count >= 3, 'flagged' when reports >= 3
   - Add vouch count display
   - Create vouch list UI
   - Implement one vouch per user per item
+  - Add "Vibe Check" functionality (last_verified_at timestamp)
 
-- [ ] **Day 3-4: Rating System**
-  - Create Rating entity and repository
-  - Implement rating endpoints (create, update)
-  - Add 1-5 star rating UI
-  - Display average rating and breakdown
+- [ ] **Day 3-4: Krawl Rating System**
+  - Create Rating entity and repository (Krawls only, remove Gem support)
+  - Implement rating endpoints (create, update) for Krawls
+  - Add 1-5 star rating UI for Krawls
+  - Display Krawl Health Score (average rating) and breakdown
   - Implement rating update functionality
+  - Add Community Warning badge for Krawls with Health Score < 2.5
+  - Implement algorithmic burial of low-scoring Krawls
 
-- [ ] **Day 5: Comments System**
+- [ ] **Day 5: Gem Score and Creator Reputation**
+  - Implement Gem Score calculation: `(vouches_count × 1) + (krawl_inclusion_count × 5)`
+  - Add Gem Score to search/sort functionality (default sort)
+  - Display Gem Score on Gem cards/listings
+  - Implement Creator Reputation Score calculation (average of all Krawl ratings created by user)
+  - Add reputation tiers to user profiles (Kanto Guide, Local Explorer, Trail Maker)
+  - Implement algorithmic boost for high-reputation creators
+  - Implement "sandbox" system for low-reputation creators
+
+- [ ] **Day 6: Comments System**
   - Create Comment entity and repository
   - Implement comment endpoints (CRUD)
   - Create comment display UI
@@ -493,8 +509,10 @@ This document provides a comprehensive timeline and milestone plan for the Krawl
   - Implement edit/delete own comments
 
 **Deliverables:**
-- Vouching system complete
-- Rating system complete
+- Vouching system with status complete
+- Krawl rating system complete (Gems use vouching only)
+- Gem Score calculation and ranking complete
+- Creator Reputation Score system complete
 - Comments/reviews system complete
 - User activity tracking
 

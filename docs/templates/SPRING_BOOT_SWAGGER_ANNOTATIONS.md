@@ -345,11 +345,24 @@ public class GemResponse {
     private Integer vouchesCount;
     
     @Schema(
-        description = "Average rating (1-5)",
-        example = "4.8",
+        description = "Gem Score: (vouchesCount × 1) + (krawlInclusionCount × 5)",
+        example = "45"
+    )
+    private Integer gemScore;
+    
+    @Schema(
+        description = "Gem status: pending (default), verified (3+ vouches), flagged (3+ reports)",
+        example = "verified",
+        allowableValues = {"pending", "verified", "flagged"}
+    )
+    private String status;
+    
+    @Schema(
+        description = "Last time Gem was verified via 'Vibe Check'",
+        example = "2025-11-14T10:00:00Z",
         nullable = true
     )
-    private BigDecimal averageRating;
+    private LocalDateTime lastVerifiedAt;
     
     @Schema(description = "Creator information")
     private UserInfo creator;

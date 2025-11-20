@@ -41,7 +41,10 @@ This project includes comprehensive documentation organized in the `docs/` direc
 ### Design System
 
 - **[UI_UX_DESIGN_SYSTEM.md](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Comprehensive UI/UX design system with component library, spacing, typography, color usage, and interaction patterns
-- **[WIREFRAMES.md](./docs/design/WIREFRAMES.md)** - Low-fidelity wireframes for all pages, including UI states, accessibility specifications, and micro-interaction patterns
+- **[WIREFRAMES.md](./docs/design/WIREFRAMES.md)** - Low-fidelity wireframes for all pages, including UI states, accessibility specifications, and micro-interaction patterns. Includes Figma wireframe integration guide.
+- **[FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md](./docs/design/FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md)** - Step-by-step guide for creating Figma wireframes with component library, page wireframes, and Dev Mode annotations
+- **[FIGMA_AI_PROMPT.md](./docs/design/FIGMA_AI_PROMPT.md)** - AI prompt for generating Figma wireframes using Figma Make or similar AI tools
+- **[DESIGN_DELIVERABLES.md](./docs/design/DESIGN_DELIVERABLES.md)** - Design evolution guide: wireframes → mockups → prototypes with tool recommendations
 - **[ACCESSIBILITY_GUIDELINES.md](./docs/design/ACCESSIBILITY_GUIDELINES.md)** - Comprehensive WCAG 2.1 Level AA accessibility guidelines with implementation examples, testing procedures, and common patterns
 - **[ACCESSIBILITY_CHECKLIST.md](./docs/design/ACCESSIBILITY_CHECKLIST.md)** - Developer and QA checklists for accessibility compliance during development and testing
 - **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
@@ -108,10 +111,12 @@ project-krawl/
     │
     ├── design/                        # Design system and branding
     │   ├── UI_UX_DESIGN_SYSTEM.md     # UI/UX design system
-    │   ├── WIREFRAMES.md              # Page wireframes
+    │   ├── WIREFRAMES.md              # Page wireframes (with Figma integration)
+    │   ├── FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md  # Figma wireframe creation guide
+    │   ├── FIGMA_AI_PROMPT.md        # AI prompt for Figma wireframe generation
     │   ├── BRAND_BRIEF.md             # Brand strategy
     │   ├── BRAND_GUIDELINES.md        # Visual identity
-    │   ├── DESIGN_DELIVERABLES.md     # Design deliverables
+    │   ├── DESIGN_DELIVERABLES.md     # Design deliverables (wireframes → mockups → prototypes)
     │   └── logo/                      # Logo assets
     │       ├── README.md
     │       ├── LOGO_GUIDELINES.md
@@ -139,7 +144,7 @@ project-krawl/
 
 ### Backend
 - **Language:** Java 25 LTS
-- **Framework:** Spring Boot 3.2.x
+- **Framework:** Spring Boot 3.5.7
 - **Build Tool:** Maven 3.9.x
 - **Database:** Aiven PostgreSQL (free tier)
 
@@ -173,7 +178,7 @@ project-krawl/
 
 1. **Foundation** (Weeks 1-2) - Architecture, Design System, Project Setup
 2. **Core Development** (Weeks 3-7) - Authentication, Maps, Gem/Krawl Creation, Search
-3. **Community Features** (Weeks 8-9) - Vouching, Rating, Comments, Reporting
+3. **Community Features** (Weeks 8-9) - Vouching, Krawl Rating, Gem Score, Creator Reputation, Comments, Reporting
 4. **Krawl Mode & Offline** (Weeks 10-12) - Location Tracking, Offline Downloads
 5. **Testing & Polish** (Weeks 13-14) - QA, Optimization, Accessibility
 6. **Launch Preparation** (Week 15) - Content Seeding, Deployment, Go-Live
@@ -284,7 +289,7 @@ UI_UX_DESIGN_SYSTEM.md (UI components & implementation)
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd hackaton
+   cd project-krawl
    ```
 
 2. **Verify project structure**
@@ -347,6 +352,7 @@ For complete glossary, see [GLOSSARY.md](./docs/GLOSSARY.md).
 - **Glossary:** See [GLOSSARY.md](./docs/GLOSSARY.md) for all project terminology
 - **Changelog:** See [CHANGELOG.md](./CHANGELOG.md) for project changes and version history
 - **Logo Assets:** See [logo/README.md](./docs/design/logo/README.md)
+- **Core Feature Specification:** CORE_FEATURE_SPECIFICATION.md [Internal] - Complete technical specifications for all 8 core features, including duplicate detection, Mapbox clustering, zoom-dependent visibility, Creator Notes/Lokal Secrets, and Stop Detail Card implementation
 - **API Documentation:** API_DOCUMENTATION.md [Internal]
 - **Database Schema:** DATABASE_SCHEMA.md [Internal]
 - **System Design:** SYSTEM_DESIGN.md [Internal]

@@ -202,7 +202,7 @@ frontend/components/
 ### Technology Stack
 
 **Frontend Framework:**
-- ✅ Next.js 14.x (App Router) - **Configured**
+- ✅ Next.js 16.0.3 (App Router) - **Configured**
 - ✅ React 19.2.0 - **Configured**
 - ✅ TypeScript 5.x - **Configured**
 
@@ -495,7 +495,7 @@ All dependencies are complete, and technical requirements are clear. The only mi
 **Next.js Integration:**
 - Components will use Next.js `Image` component for card images
 - Components will be client components (`'use client'`) if they use interactivity
-- Components will follow Next.js 14 App Router conventions
+- Components will follow Next.js 16 App Router conventions
 
 ### Future Integration Points
 

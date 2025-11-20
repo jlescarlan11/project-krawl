@@ -56,12 +56,29 @@ Key goals:
 - **Figma (Free plan)** – Current, actively maintained cloud design tool.  
   - Use simple frames, gray boxes, and basic text styles for wireframes.  
   - Free tier supports personal projects and collaboration, suitable for students.
+  - **Krawl PWA Wireframes:** [Figma File - To be created]
+    - File name: "Krawl PWA - Wireframes"
+    - Includes component library and all 13 pages with mobile/desktop layouts
+    - See [WIREFRAMES.md](./WIREFRAMES.md#figma-wireframes) for access instructions
+    - **📝 Update Instructions:** Once created, replace `[Figma File - To be created]` with the actual Figma shareable link (Share → Copy link)
 - **Penpot (Free & open source)** – Browser‑based design and prototyping platform.  
   - 100% free, good for long‑term, cost‑neutral projects.
+  - Alternative to Figma if needed
 - **Excalidraw (Free, open source)** – Sketchy‑style whiteboard, ideal for very rough flows.  
   - Great for quick ideation and storyboarding user journeys.
 
 *(All three tools are current and well‑maintained as of 2025‑11‑15, each with a free tier or fully free offering.)*
+
+**Krawl PWA Wireframe Component Library:**
+The Figma wireframe file includes a reusable component library organized as follows:
+- **Navigation:** Mobile Bottom Nav, Desktop Top Nav, Breadcrumbs
+- **Buttons:** Primary, Secondary, Icon (with all states: Default, Hover, Active, Disabled)
+- **Cards:** Gem Card, Krawl Card, User Card (Mobile and Desktop variants)
+- **Forms:** Text Input, Textarea, Select Dropdown, File Upload, Checkbox, Radio Button
+- **Feedback:** Loading Skeleton, Empty State, Error State, Success State
+- **Map Components:** Map Container, Markers (Default, Selected, Custom)
+
+All components follow the 8px base spacing system and are designed for mobile-first responsive layouts.
 
 #### 1.3 Screen Inventory (Wireframe Level)
 
