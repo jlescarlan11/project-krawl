@@ -3463,6 +3463,8 @@ This section provides detailed specifications for all components used throughout
 - "Skip Tutorial" button (left, more prominent)
 - Clearer skip option throughout
 
+> Detailed interaction specs, edge-case handling, and component contracts now live in `docs/design/TASK-029_SOLUTION_DESIGN.md`. Reference that document alongside these wireframes for implementation (TASK-029 → TASK-046). The quick-start path sends users to `/auth/sign-in`, which currently displays a “coming soon” message until the full auth flow ships.
+
 **Content (Each Step):**
 - Illustration/icon (top, centered)
 - Heading (H1, centered)

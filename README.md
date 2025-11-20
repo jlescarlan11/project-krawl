@@ -18,6 +18,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - 🧭 **Krawl Mode** - Interactive, location-aware guided experience
 - 📴 **Offline-First** - Downloadable Krawls for areas with inconsistent connectivity
 - 👥 **Community-Curated** - User-driven content with quality control mechanisms
+- 🎓 **Guided Onboarding** - Optional 5-step intro that explains value props, permissions, and quick-start paths
 - 🇵🇭 **Hyperlocal Focus** - Authentic, non-commercial Filipino cultural experiences
 
 ### Launch Area
@@ -49,6 +50,7 @@ This project includes comprehensive documentation organized in the `docs/` direc
 - **[ACCESSIBILITY_CHECKLIST.md](./docs/design/ACCESSIBILITY_CHECKLIST.md)** - Developer and QA checklists for accessibility compliance during development and testing
 - **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
 - **[Component Library](./frontend/components/README.md)** - Reusable UI component library (buttons, cards, forms) with TypeScript support and accessibility features
+- **[TASK-029_SOLUTION_DESIGN.md](./docs/design/TASK-029_SOLUTION_DESIGN.md)** - Full onboarding flow specs, edge cases, and testing strategy
 - **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
 - **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints
 - **[FEATURE_LIST_AND_USER_STORIES.md](./docs/user-research/FEATURE_LIST_AND_USER_STORIES.md)** - Comprehensive feature list with corresponding user stories
@@ -80,7 +82,9 @@ project-krawl/
 │   ├── app/                           # Next.js app directory
 │   │   ├── globals.css                # Design tokens (Tailwind CSS v4 @theme)
 │   │   ├── layout.tsx                 # Root layout with font configuration
-│   │   └── page.tsx                   # Home page
+│   │   ├── page.tsx                   # Home page placeholder
+│   │   ├── onboarding/page.tsx        # Five-step onboarding flow
+│   │   └── auth/sign-in/page.tsx      # Temporary sign-in landing screen
 │   ├── components/                   # Component library
 │   │   ├── ui/                        # Base UI components
 │   │   │   ├── button.tsx            # Button component
@@ -376,7 +380,7 @@ For complete glossary, see [GLOSSARY.md](./docs/GLOSSARY.md).
 ## 📞 Contact
 
 **Project Team:** Solo Developer – contact `hello@krawl.app` (update with full roster before Week 3)  
-**Last Updated:** November 19, 2025  
+**Last Updated:** November 20, 2025  
 **Status:** Development Phase - Week 2
 
 ---
