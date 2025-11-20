@@ -314,20 +314,57 @@ For detailed persona profiles, see [USER_PERSONA_PROFILES.md](./USER_PERSONA_PRO
 
 ---
 
-#### Feature: Rating System
+#### Feature: Krawl Rating System
 
 **User Stories:**
-- As a **Cultural Explorer (Maria)**, I want to rate Gems and Krawls so that I can share my experience with the community.
-- As a **Domestic Traveler (Carlos)**, I want to see ratings on Gems and Krawls so that I can choose the best cultural experiences.
-- As a **Student Researcher (Ana)**, I want to see average ratings so that I can identify high-quality content for my research.
+- As a **Cultural Explorer (Maria)**, I want to rate Krawls so that I can share my experience with the community.
+- As a **Domestic Traveler (Carlos)**, I want to see Krawl Health Scores so that I can choose the best cultural experiences.
+- As a **Student Researcher (Ana)**, I want to see average ratings so that I can identify high-quality Krawls for my research.
 - As a **user**, I want to update my rating if my opinion changes so that my feedback remains accurate.
+- As a **user**, I want to see community warnings on low-rated Krawls so that I can avoid poor experiences.
 
 **Acceptance Criteria:**
-- 1-5 star rating system
-- Average rating display
+- 1-5 star rating system (Krawls only)
+- Krawl Health Score (average rating) display
 - Rating breakdown (distribution)
 - Ability to rate and update rating
-- One rating per user per Gem/Krawl
+- One rating per user per Krawl
+- Community Warning badge for Krawls with Health Score < 2.5
+
+---
+
+#### Feature: Gem Score System
+
+**User Stories:**
+- As a **Cultural Explorer (Maria)**, I want to see Gems ranked by Gem Score so that I can find the most community-validated spots.
+- As a **Domestic Traveler (Carlos)**, I want to see Gem Scores on search results so that I can identify the best Gems quickly.
+- As a **Community Contributor (Jose)**, I want my Gem to appear higher in search results when it's included in many Krawls so that quality content is rewarded.
+
+**Acceptance Criteria:**
+- Gem Score calculation: `(vouches_count × 1) + (krawl_inclusion_count × 5)`
+- Gem Score displayed on Gem cards/listings
+- Default sort by Gem Score in search results
+- Higher weight for Krawl inclusions (×5) vs vouches (×1)
+
+---
+
+#### Feature: Creator Reputation System
+
+**User Stories:**
+- As a **Community Contributor (Jose)**, I want to see my Creator Reputation Score so that I can track my standing in the community.
+- As a **Cultural Explorer (Maria)**, I want to see creator reputation badges so that I can trust high-quality Krawl creators.
+- As a **content creator**, I want my high reputation to boost my new Krawls so that quality creators are rewarded.
+- As a **user**, I want low-reputation creators' Krawls to be filtered so that I avoid poor content.
+
+**Acceptance Criteria:**
+- Creator Reputation Score calculated as average of all Krawl ratings created by user
+- Reputation tiers displayed on profiles:
+  - 4.5+ Stars: 🥇 "Kanto Guide" (Trusted Creator)
+  - 3.5-4.4 Stars: 🥈 "Local Explorer"
+  - 2.5-3.4 Stars: 🥉 "Trail Maker"
+  - Below 2.5 Stars: No badge
+- Algorithmic boost for high-reputation creators' new Krawls
+- "Sandbox" system for low-reputation creators (new Krawls hidden from most users)
 
 ---
 

@@ -756,3 +756,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 - **Week 2 Tasks:** `docs/private-docs/tasks/WEEK_02_TASKS.md`
 - **Task Descriptions:** `docs/private-docs/tasks/TASK_DESCRIPTIONS.md`
 
+

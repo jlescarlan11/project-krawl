@@ -52,11 +52,45 @@ This document provides a centralized glossary of all terms, concepts, and techni
 ### Krawl
 **Definition:** A guided trail connecting multiple Gems in a specific sequence, created by users.
 
-**Usage:** Users can create Krawls by selecting and ordering Gems, then follow them using Krawl Mode. Krawls provide structured cultural exploration experiences.
+**Usage:** Users can create Krawls by selecting and ordering Gems, then follow them using Krawl Mode. Krawls provide structured cultural exploration experiences. Each Gem in a Krawl includes Creator Note and Lokal Secret for context.
 
-**Related Terms:** Gem, Krawl Mode, Trail, Route
+**Related Terms:** Gem, Krawl Mode, Trail, Route, Creator Note, Lokal Secret
 
 **Example:** "Historic Cebu City Walk" is a Krawl connecting 8 historical Gems in chronological order.
+
+---
+
+### Creator Note
+**Definition:** Practical logistics information provided by the Krawl creator for each Gem step, explaining how to reach or access the location.
+
+**Usage:** Creator Notes are required fields (10-500 characters) that must be provided when adding each Gem to a Krawl. They appear in Krawl Mode's Stop Detail Card when users arrive at each Gem location.
+
+**Related Terms:** Krawl, Lokal Secret, Stop Detail Card, Krawl Mode
+
+**Example:** "Walk through the yellow gate to enter" or "Take the stairs on the left side"
+
+**Technical Details:**
+- Stored in `krawl_gems.creator_note` field (TEXT, NOT NULL)
+- Required when creating or updating a Krawl
+- Displayed in "How to Get There" section of Stop Detail Card
+- See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for implementation details
+
+---
+
+### Lokal Secret
+**Definition:** Insider tip or value-add information provided by the Krawl creator for each Gem step, revealing hidden knowledge or special experiences.
+
+**Usage:** Lokal Secrets are required fields (10-500 characters) that must be provided when adding each Gem to a Krawl. They appear in Krawl Mode's Stop Detail Card when users arrive at each Gem location, gamifying the experience and encouraging physical visits.
+
+**Related Terms:** Krawl, Creator Note, Stop Detail Card, Krawl Mode
+
+**Example:** "Ask for the off-menu spicy vinegar" or "Best time to visit is early morning for fewer crowds"
+
+**Technical Details:**
+- Stored in `krawl_gems.lokal_secret` field (TEXT, NOT NULL)
+- Required when creating or updating a Krawl
+- Displayed in "Lokal Secret" section of Stop Detail Card (styled with special badge/icon)
+- See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for implementation details
 
 ---
 
@@ -65,12 +99,13 @@ This document provides a centralized glossary of all terms, concepts, and techni
 
 **Usage:** Krawl Mode is an interactive feature that provides navigation guidance, geofencing-based arrival detection, and real-time progress updates as users follow a Krawl.
 
-**Related Terms:** Krawl, Geofencing, Location Tracking, Offline Mode
+**Related Terms:** Krawl, Geofencing, Location Tracking, Offline Mode, Stop Detail Card, Creator Note, Lokal Secret
 
 **Features:**
 - Real-time location tracking
 - Turn-by-turn directions
 - Geofencing for arrival detection (50m radius)
+- **Stop Detail Card:** Automatically slides up when user arrives at Gem, revealing Creator Note and Lokal Secret
 - Progress tracking
 - Offline support for downloaded Krawls
 
@@ -79,30 +114,86 @@ This document provides a centralized glossary of all terms, concepts, and techni
 ### Vouching
 **Definition:** Community quality control mechanism where users can vouch for the authenticity and quality of Gems or Krawls.
 
-**Usage:** Users can vouch for content they have personally verified or experienced. Each user can vouch for a specific Gem or Krawl only once. Vouching helps establish content credibility.
+**Usage:** Users can vouch for content they have personally verified or experienced. Each user can vouch for a specific Gem or Krawl only once. Vouching helps establish content credibility and determines Gem status (pending/verified/flagged).
 
-**Related Terms:** Gem, Krawl, Community Quality Control, Rating
+**Related Terms:** Gem, Krawl, Community Quality Control, Gem Status, Gem Score
 
 **Mechanics:**
 - One vouch per user per item (Gem or Krawl)
 - Vouch count displayed on content
 - Voucher list visible to other users
 - Helps identify authentic, community-verified content
+- **Gem Status System:** Gems start as `pending`, become `verified` with 3+ vouches, or `flagged` with 3+ reports
 
 ---
 
 ### Rating
-**Definition:** User-provided rating (1-5 stars) for Gems or Krawls, contributing to average rating calculations.
+**Definition:** User-provided rating (1-5 stars) for Krawls only, contributing to Krawl Health Score calculations.
 
-**Usage:** Users can rate Gems and Krawls based on their experience. Ratings contribute to average rating displays and help other users assess content quality.
+**Usage:** Users can rate Krawls based on their experience. Ratings contribute to Krawl Health Score (average rating) and Creator Reputation Score. Gems do not have ratings; they use the vouching system instead.
 
-**Related Terms:** Gem, Krawl, Vouching, Average Rating
+**Related Terms:** Krawl, Krawl Health Score, Creator Reputation Score, Vouching
 
 **Mechanics:**
-- 1-5 star rating system
+- 1-5 star rating system (Krawls only)
 - Users can update their ratings
-- Average rating calculated from all user ratings
+- Average rating calculated from all user ratings (Krawl Health Score)
 - Rating breakdown displayed (e.g., 5 stars: 10, 4 stars: 5, etc.)
+- Creator Reputation Score calculated as average of all Krawl ratings created by a user
+
+---
+
+### Gem Score
+**Definition:** Calculated score used for ranking and sorting Gems, combining vouches and Krawl inclusions.
+
+**Usage:** Gem Score determines the prominence of Gems in search results and map displays. Higher scores indicate more community validation and inclusion in multiple Krawls.
+
+**Related Terms:** Gem, Vouching, Krawl
+
+**Calculation Formula:**
+- `Gem Score = (vouches_count × 1) + (krawl_inclusion_count × 5)`
+- `krawl_inclusion_count` is the number of Krawls that include this Gem
+
+**Mechanics:**
+- Used as primary ranking factor for Gem search results
+- Higher weight given to Krawl inclusions (×5) vs vouches (×1)
+- Dynamically calculated (not stored in database)
+- Helps surface the most community-validated and frequently-used Gems
+
+---
+
+### Krawl Health Score
+**Definition:** Average rating (1-5 stars) of a Krawl, calculated from all user ratings.
+
+**Usage:** Krawl Health Score indicates the overall quality and user satisfaction with a Krawl. Low scores (< 2.5) trigger community warnings and algorithmic burial.
+
+**Related Terms:** Krawl, Rating, Creator Reputation Score
+
+**Mechanics:**
+- Calculated as average of all user ratings for a Krawl
+- Displayed prominently on Krawl detail pages
+- Used for filtering and sorting Krawls
+- Krawls with scores below 2.5 get "Community Warning" badge
+- Low-scoring Krawls are algorithmically buried in search results
+
+---
+
+### Creator Reputation Score
+**Definition:** Average rating of all Krawls created by a user, representing their reputation as a content creator.
+
+**Usage:** Creator Reputation Score determines user privileges and social status. High-reputation creators get algorithmic boosts, while low-reputation creators have their content placed in a "sandbox."
+
+**Related Terms:** User, Krawl, Rating, Krawl Health Score
+
+**Mechanics:**
+- Calculated as average of all Krawl ratings created by a user
+- Displayed on user profiles as reputation tier:
+  - 4.5+ Stars: 🥇 "Kanto Guide" (Trusted Creator)
+  - 3.5-4.4 Stars: 🥈 "Local Explorer"
+  - 2.5-3.4 Stars: 🥉 "Trail Maker"
+  - Below 2.5 Stars: No badge (low reputation)
+- High-reputation creators get algorithmic boost for new Krawls
+- Low-reputation creators have new Krawls placed in "sandbox" (hidden from most users)
 
 ---
 
@@ -144,14 +235,17 @@ This document provides a centralized glossary of all terms, concepts, and techni
 ### Geofencing
 **Definition:** Technology that uses GPS or RFID to define geographic boundaries and trigger actions when users enter or exit those boundaries.
 
-**Usage:** Krawl Mode uses geofencing to detect when users arrive at Gem locations (50-meter radius). When a user enters the geofence, the app detects arrival and provides feedback.
+**Usage:** Krawl Mode uses geofencing to detect when users arrive at Gem locations (50-meter radius). When a user enters the geofence, the app detects arrival and automatically slides up the Stop Detail Card with Creator Note and Lokal Secret.
 
-**Related Terms:** Krawl Mode, Location Tracking, GPS, Arrival Detection
+**Related Terms:** Krawl Mode, Location Tracking, GPS, Arrival Detection, Stop Detail Card
 
 **Technical Details:**
 - 50-meter radius geofence around each Gem
 - Real-time location tracking during Krawl Mode
 - Haptic feedback on arrival detection
+- **Auto-Slide Behavior:** Stop Detail Card automatically slides up from bottom when user enters 50m radius
+- Content pre-fetched/cached for instant display (no loading delay)
+- See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete proximity trigger implementation
 
 ---
 
@@ -236,6 +330,37 @@ This document provides a centralized glossary of all terms, concepts, and techni
 
 ---
 
+### Duplicate Detection
+**Definition:** System that prevents creation of duplicate Gems by checking for existing Gems within 50 meters using spatial queries and name similarity algorithms.
+
+**Usage:** When creating a Gem, the system automatically checks for duplicates using PostGIS `ST_DWithin` spatial query (50m radius) combined with Levenshtein distance calculation for name similarity (80% threshold). If a duplicate is found, a Duplicate Warning Component is displayed, requiring explicit user confirmation to proceed.
+
+**Related Terms:** Gem, PostGIS, Levenshtein Distance, Spatial Query
+
+**Technical Details:**
+- **Spatial Query:** PostGIS `ST_DWithin` finds Gems within 50 meters
+- **String Similarity:** Levenshtein distance calculates name similarity (80% threshold)
+- **User Override:** User must explicitly click "This is Different" to proceed if duplicate found
+- **Backend Endpoint:** `POST /api/v1/gems/check-duplicate`
+- See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete algorithm
+
+---
+
+### Zoom-Dependent Visibility
+**Definition:** Map display strategy that shows different Gem markers based on zoom level to reduce visual clutter and show appropriate detail.
+
+**Usage:** At low zoom levels (city view, zoom < 12), only clusters and Verified Gems are shown. At high zoom levels (street view, zoom >= 12), all Gems are displayed including Pending, Verified, and Stale Gems with appropriate visual indicators.
+
+**Related Terms:** Map View, Clustering, Gem Status, Visual Indicators
+
+**Implementation:**
+- **City View (zoom < 12):** Clusters + Verified Gems only (Forest Green pins)
+- **Street View (zoom >= 12):** All Gems (Pending Gray dots, Verified Green pins, Stale Orange warnings)
+- Implemented via Mapbox style layer filter expressions
+- See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for zoom breakpoints and filter logic
+
+---
+
 ### WCAG (Web Content Accessibility Guidelines)
 **Definition:** International standards for web accessibility, ensuring web content is accessible to people with disabilities.
 
@@ -279,6 +404,26 @@ This document provides a centralized glossary of all terms, concepts, and techni
 ---
 
 ## Design and UX Terms
+
+### Stop Detail Card
+**Definition:** UI component that automatically slides up from the bottom of the screen when users arrive within 50 meters of a Gem during Krawl Mode, displaying Creator Note and Lokal Secret for that specific stop.
+
+**Usage:** The Stop Detail Card provides contextual information at the moment users arrive at each Gem location, gamifying the experience and encouraging physical visits. Content is pre-fetched and cached for instant display without loading delays.
+
+**Related Terms:** Krawl Mode, Geofencing, Creator Note, Lokal Secret, Proximity Trigger
+
+**Content Structure:**
+1. **Gem Header:** Name, category, thumbnail image
+2. **Creator Note Section:** "How to Get There" - Practical logistics
+3. **Lokal Secret Section:** Insider tip (styled with special badge/icon)
+4. **Actions:** "Check Off", "View Full Details", "Skip"
+
+**Technical Details:**
+- **Auto-Slide Trigger:** 50-meter proximity detection via geofencing
+- **Animation:** 300ms ease-out slide-up transition
+- **Pre-fetching:** Creator Note and Lokal Secret cached when Krawl Mode starts
+- **Dismissal:** Swipe down or "Close" button
+- See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete implementation
 
 ### Design System
 **Definition:** Comprehensive collection of reusable components, design tokens, and guidelines that ensure visual and functional consistency across an application.

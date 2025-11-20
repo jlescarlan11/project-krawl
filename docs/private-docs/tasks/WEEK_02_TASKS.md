@@ -575,7 +575,7 @@ Design empty states, loading states, and error states for all pages and componen
 
 ---
 
-### TASK-031: Set up Next.js 14.x project with TypeScript
+### TASK-031: Set up Next.js 16.0.3 project with TypeScript
 
 **Epic:** epic:design-system  
 **Priority:** Critical  
@@ -583,10 +583,10 @@ Design empty states, loading states, and error states for all pages and componen
 **Dependencies:** TASK-003
 
 **Description:**  
-Set up the Next.js 14.x project with TypeScript configuration, ensuring it's ready for development with proper folder structure and configuration.
+Set up the Next.js 16.0.3 project with TypeScript configuration, ensuring it's ready for development with proper folder structure and configuration.
 
 **Acceptance Criteria:**
-- Next.js 14.x project initialized (if not done in Week 1)
+- Next.js 16.0.3 project initialized (if not done in Week 1)
 - TypeScript configured:
   - `tsconfig.json` configured
   - Strict mode enabled
@@ -610,7 +610,7 @@ Set up the Next.js 14.x project with TypeScript configuration, ensuring it's rea
 - Hot reload issues - ensure hot reload works
 
 **Technical Notes:**
-- Use Next.js 14.x with App Router
+- Use Next.js 16.0.3 with App Router
 - Configure TypeScript strict mode
 - Set up path aliases (`@/components`, `@/lib`, etc.)
 - Configure ESLint and Prettier

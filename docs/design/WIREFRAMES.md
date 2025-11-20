@@ -19,6 +19,53 @@ This document provides comprehensive low-fidelity wireframes for all pages in th
 - For styling and component specifications, see [UI_UX_DESIGN_SYSTEM.md](./UI_UX_DESIGN_SYSTEM.md)
 - For detailed page specifications and features, see [SCOPE_OF_WORK.md](./SCOPE_OF_WORK.md)
 - For navigation structure and routing, see [SITEMAP.md](./SITEMAP.md)
+- For quick reference of component specifications, see [WIREFRAMES_COMPONENT_SPECIFICATIONS.md](./WIREFRAMES_COMPONENT_SPECIFICATIONS.md)
+
+---
+
+## Figma Wireframes
+
+**Primary Wireframe Source:** [Figma File - To be created]
+
+> **📝 Update Instructions:** Once the Figma wireframes are created, replace `[Figma File - To be created]` above with the actual Figma shareable link. To get the link: In Figma, click "Share" → Copy link → Paste here. The link should be in format: `https://www.figma.com/file/...`
+
+> **Note:** Interactive, annotated wireframes are available in Figma for all 13 pages. The Figma file includes reusable component library, mobile and desktop layouts, UI states (loading, empty, error), and Dev Mode annotations for development handoff.
+
+**Figma File Structure:**
+- `00_Design System` - Grid system, spacing scale, typography reference
+- `01_Components` - Reusable wireframe components (Navigation, Buttons, Cards, Forms, Feedback, Map)
+- `02_Public Pages` - Landing, Map View, Search & Discovery
+- `03_Content Detail Pages` - Gem Detail, Krawl Detail, Krawl Mode
+- `04_Creation Pages` - Gem Creation (multi-step), Krawl Creation
+- `05_User Management Pages` - User Profile, Profile Settings, Offline Downloads
+- `06_Authentication & Onboarding` - Sign In, Onboarding Flow
+- `07_Error Pages` - 404, 500, Offline Error
+
+**Access Instructions:**
+1. Open the Figma file using the link above
+2. Navigate to the appropriate page section
+3. Use Dev Mode to view annotations and specifications
+4. Export wireframes as needed for documentation
+
+**Component Library:**
+The Figma file includes a comprehensive component library with:
+- Navigation components (Mobile Bottom Nav, Desktop Top Nav, Breadcrumbs)
+- Button components (Primary, Secondary, Icon - all states)
+- Card components (Gem Card, Krawl Card, User Card)
+- Form components (Input, Textarea, Select, File Upload, Checkbox, Radio)
+- Feedback components (Loading Skeleton, Empty State, Error State)
+- Map components (Map Container, Markers)
+
+**Wireframe Specifications:**
+- **Mobile Frames:** 375px × 812px (iPhone 13 standard)
+- **Tablet Frames:** 768px × 1024px (iPad standard)
+- **Desktop Frames:** 1280px × 720px (standard desktop viewport)
+- **Grid System:** 8px base spacing, responsive columns (Mobile: 4, Tablet: 8, Desktop: 12)
+- **Component Style:** Low-fidelity, grayscale only (no brand colors)
+
+**Note:** The ASCII wireframes below serve as a reference and backup. For the most up-to-date wireframes with annotations, component specifications, and interactive elements, refer to the Figma file. Once the Figma file is created, this section will be updated with the actual shareable link.
+
+**Future Enhancement:** Consider adding a wireframe gallery with exported PNG thumbnails for quick visual reference. See [Implementation Guide](./FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md#future-enhancements) for details.
 
 ---
 
@@ -28,52 +75,55 @@ This document provides comprehensive low-fidelity wireframes for all pages in th
 |---------|------|--------|---------|
 | 1.0.0 | 2025-11-14 | Development Team | Initial wireframes version |
 | 2.0.0 | 2025-11-14 | Development Team | Enhanced with user-first UX improvements: Added loading/empty/error/success states, accessibility features, form validation, micro-interactions, and optimized user flows |
+| 2.1.0 | 2025-11-18 | Development Team | Added Figma wireframes section and integration guide for TASK-026 implementation |
+| 3.0.0 | 2025-11-19 | Development Team | Enhanced with comprehensive detailed specifications: dimensions, behaviors, states, animations, and edge cases. Added Component Specifications section, Form Validation Messages Reference, Animation Timing Reference, Spacing System Reference, Navigation Button Rules, and Component Specifications Quick Reference table. All components now include exact measurements, colors, spacing, and interaction specifications. Created companion document WIREFRAMES_COMPONENT_SPECIFICATIONS.md for quick reference. |
 
-**Current Version:** 2.0.0  
-**Last Updated:** 2025-11-15  
-**Status:** Enhanced - User-First UX Improvements
+**Current Version:** 3.0.0  
+**Last Updated:** 2025-11-19  
+**Status:** Enhanced - Comprehensive Detailed Specifications
 
 ---
 
 ## Table of Contents
 
 1. [Summary / Overview](#summary--overview)
-2. [Version History](#version-history)
-3. [Table of Contents](#table-of-contents)
-4. [Wireframe Legend](#wireframe-legend)
-5. [Public Pages](#public-pages)
+2. [Figma Wireframes](#figma-wireframes)
+3. [Version History](#version-history)
+4. [Table of Contents](#table-of-contents)
+5. [Wireframe Legend](#wireframe-legend)
+6. [Public Pages](#public-pages)
    - [Landing Page](#1-landing-page)
    - [Map View Page](#2-map-view-page)
    - [Search & Discovery Page](#3-search--discovery-page)
-6. [Content Detail Pages](#content-detail-pages)
+7. [Content Detail Pages](#content-detail-pages)
    - [Gem Detail Page](#4-gem-detail-page)
    - [Krawl Detail Page](#5-krawl-detail-page)
    - [Krawl Mode Page](#6-krawl-mode-page)
-7. [Creation Pages](#creation-pages)
+8. [Creation Pages](#creation-pages)
    - [Gem Creation Page](#7-gem-creation-page)
    - [Krawl Creation Page](#8-krawl-creation-page)
-8. [User Management Pages](#user-management-pages)
+9. [User Management Pages](#user-management-pages)
    - [User Profile Page](#9-user-profile-page)
    - [Profile Settings Page](#10-profile-settings-page)
    - [Offline Downloads Page](#11-offline-downloads-page)
-9. [Authentication & Onboarding](#authentication--onboarding)
+10. [Authentication & Onboarding](#authentication--onboarding)
    - [Sign In Page](#12-sign-in-page)
    - [Onboarding Flow](#13-onboarding-flow)
-10. [UI States Reference](#ui-states-reference)
+11. [UI States Reference](#ui-states-reference)
     - [Loading States](#loading-states)
     - [Empty States](#empty-states)
     - [Error States](#error-states)
     - [Success States](#success-states)
-11. [Accessibility Specifications](#accessibility-specifications)
+12. [Accessibility Specifications](#accessibility-specifications)
     - [Focus States](#focus-states)
     - [ARIA Labels](#aria-labels)
     - [Screen Reader Considerations](#screen-reader-considerations)
-12. [Micro-Interactions](#micro-interactions)
+13. [Micro-Interactions](#micro-interactions)
     - [Button Interactions](#button-interactions)
     - [Card Interactions](#card-interactions)
     - [Feedback Indicators](#feedback-indicators)
-13. [UX Best Practices](#ux-best-practices)
-14. [Appendices](#appendices)
+14. [UX Best Practices](#ux-best-practices)
+15. [Appendices](#appendices)
     - [Wireframe Legend](#wireframe-legend)
     - [User Flow Diagrams](#user-flow-diagrams)
     - [Navigation Patterns](#navigation-patterns)
@@ -113,6 +163,301 @@ Each wireframe includes:
 - **Mobile Considerations:** Mobile-specific layout notes
 - **Desktop Considerations:** Desktop-specific layout notes
 - **User Flow:** Navigation paths from this page
+
+---
+
+## Component Specifications
+
+This section provides detailed specifications for all components used throughout the wireframes. For quick reference tables and comprehensive component details, see [WIREFRAMES_COMPONENT_SPECIFICATIONS.md](./WIREFRAMES_COMPONENT_SPECIFICATIONS.md).
+
+### Button Specifications
+
+#### Primary Button (Large)
+- **Height:** 52px
+- **Padding:** 16px 32px
+- **Font Size:** 18px
+- **Font Weight:** Medium (500) or SemiBold (600)
+- **Background:** Primary Green (#2D7A3E)
+- **Text Color:** White (#FFFFFF)
+- **Border Radius:** 8px
+- **Icon Size:** 20px × 20px (if applicable)
+- **Icon Spacing:** 8px between icon and text
+- **Usage:** Hero CTAs, prominent actions
+- **Min Touch Target:** 52px × 44px
+
+#### Primary Button (Medium - Default)
+- **Height:** 44px
+- **Padding:** 12px 24px
+- **Font Size:** 16px
+- **Font Weight:** Medium (500) or SemiBold (600)
+- **Background:** Primary Green (#2D7A3E)
+- **Text Color:** White (#FFFFFF)
+- **Border Radius:** 8px
+- **Icon Size:** 20px × 20px (if applicable)
+- **Icon Spacing:** 8px between icon and text
+- **Usage:** Standard actions, forms
+- **Min Touch Target:** 44px × 44px
+
+#### Primary Button (Small)
+- **Height:** 36px
+- **Padding:** 8px 16px
+- **Font Size:** 14px
+- **Font Weight:** Medium (500)
+- **Background:** Primary Green (#2D7A3E)
+- **Text Color:** White (#FFFFFF)
+- **Border Radius:** 6px
+- **Icon Size:** 16px × 16px (if applicable)
+- **Icon Spacing:** 6px between icon and text
+- **Usage:** Compact spaces, inline actions
+- **Min Touch Target:** 36px × 36px
+
+#### Secondary Button
+- **Height:** 44px
+- **Padding:** 12px 24px
+- **Font Size:** 16px
+- **Font Weight:** Medium (500)
+- **Background:** Transparent or White (#FFFFFF)
+- **Text Color:** Primary Green (#2D7A3E)
+- **Border:** 2px solid Primary Green (#2D7A3E)
+- **Border Radius:** 8px
+- **Usage:** Alternative actions, cancel buttons
+- **Min Touch Target:** 44px × 44px
+
+#### Accent Button
+- **Height:** 44px
+- **Padding:** 12px 24px
+- **Font Size:** 16px
+- **Font Weight:** Medium (500) or SemiBold (600)
+- **Background:** Accent Orange (#FF6B35)
+- **Text Color:** White (#FFFFFF)
+- **Border Radius:** 8px
+- **Usage:** Important secondary actions, highlights
+- **Min Touch Target:** 44px × 44px
+
+#### Text Button / Link Button
+- **Height:** 36px
+- **Padding:** 8px 16px
+- **Font Size:** 16px
+- **Font Weight:** Medium (500)
+- **Background:** Transparent
+- **Text Color:** Primary Green (#2D7A3E)
+- **Border Radius:** 6px
+- **Text Decoration:** Underline on hover
+- **Usage:** Tertiary actions, less prominent actions
+- **Min Touch Target:** 36px × 36px
+
+### Card Specifications
+
+#### Standard Card
+- **Background:** White (#FFFFFF) or Light Gray (#F5F5F5)
+- **Border:** 1px solid Medium Gray (#E5E5E5)
+- **Border Radius:** 12px
+- **Padding:** 16px
+- **Box Shadow:** 0 1px 3px rgba(0, 0, 0, 0.1)
+- **Min Height:** None (content-driven)
+
+#### Gem Card (List View)
+- **Height:** Auto (minimum 120px)
+- **Padding:** 16px
+- **Border Radius:** 12px
+- **Image:** 120px × 120px (aspect ratio 1:1)
+- **Gap between elements:** 12px
+- **Border:** 1px solid Medium Gray (#E5E5E5)
+- **Hover:** Shadow elevation, subtle scale (1.01x)
+
+#### Krawl Card (Grid View)
+- **Width:** 100% (responsive)
+- **Aspect Ratio:** 16:9 (cover image)
+- **Padding:** 16px
+- **Border Radius:** 12px
+- **Border:** 1px solid Medium Gray (#E5E5E5)
+- **Hover:** Shadow elevation, subtle scale (1.01x)
+
+#### Compact Card
+- **Padding:** 12px
+- **Border Radius:** 12px
+- **Usage:** Lists, grids with many items
+
+#### Spacious Card
+- **Padding:** 24px
+- **Border Radius:** 12px
+- **Usage:** Featured content, detailed information
+
+### Form Element Specifications
+
+#### Text Input
+- **Height:** 44px (minimum touch target)
+- **Padding:** 12px 16px
+- **Border:** 1px solid Medium Gray (#E5E5E5)
+- **Border Radius:** 8px
+- **Background:** White (#FFFFFF)
+- **Font:** Inter Regular (400)
+- **Font Size:** 16px
+- **Color:** Primary Text (#1A1A1A)
+- **Placeholder:** Secondary Text (#4A4A4A) at 60% opacity
+
+**States:**
+- **Focus:** Border: 2px solid Primary Green (#2D7A3E), outline: none
+- **Error:** Border: 2px solid Error Red (#DC2626), background: Error Red at 5% opacity
+- **Disabled:** Background: Light Gray (#F5F5F5), border: Medium Gray, text: Tertiary Text, cursor: not-allowed
+
+#### Textarea
+- **Min Height:** 120px
+- **Padding:** 12px 16px
+- **Resize:** Vertical only (or none)
+- **Line Height:** 1.6
+- **All other specs:** Same as Text Input
+
+#### Select Dropdown
+- **Height:** 44px
+- **Padding:** 12px 16px
+- **Appearance:** Custom styled dropdown arrow
+- **All other specs:** Same as Text Input
+
+#### Checkbox
+- **Size:** 20px × 20px
+- **Border:** 2px solid Medium Gray (#E5E5E5)
+- **Border Radius:** 4px
+- **Background:** White when unchecked, Primary Green (#2D7A3E) when checked
+- **Checkmark:** White, 14px × 14px
+- **Spacing:** 8px between checkbox and label
+
+#### Radio Button
+- **Size:** 20px × 20px
+- **Border:** 2px solid Medium Gray (#E5E5E5)
+- **Border Radius:** 50% (circle)
+- **Background:** White when unchecked, Primary Green (#2D7A3E) when checked
+- **Inner Circle:** White, 8px × 8px when checked
+- **Spacing:** 8px between radio and label
+
+### Map Marker Specifications
+
+#### Pending Gem Marker
+- **Size:** 8px × 8px
+- **Shape:** Circle
+- **Color:** Gray (#808080)
+- **Opacity:** 0.7
+- **Visibility:** Only at zoom >= 12 (street view)
+
+#### Verified Gem Marker
+- **Size:** 24px × 32px
+- **Shape:** Pin
+- **Color:** Primary Green (#2D7A3E)
+- **Opacity:** 1.0
+- **Visibility:** All zoom levels
+
+#### Stale Gem Marker
+- **Size:** 24px × 32px (pin) + 16px × 16px (badge overlay)
+- **Shape:** Pin with badge overlay
+- **Pin Color:** Primary Green (#2D7A3E)
+- **Badge Color:** Accent Orange (#FF6B35)
+- **Badge Position:** Top-right corner of pin
+- **Badge Text:** "Stale" (white, 10px font)
+- **Visibility:** All zoom levels (with warning indicator)
+
+#### User Location Marker
+- **Size:** 20px × 20px
+- **Shape:** Circle
+- **Color:** Blue (#3B82F6)
+- **Animation:** Pulsing (2s infinite)
+- **Usage:** Shows user's current GPS location
+
+#### Next Gem Marker (Krawl Mode)
+- **Size:** 32px × 40px
+- **Shape:** Pin
+- **Color:** Mango Yellow (#F7B801)
+- **Animation:** Pulsing (2s infinite)
+- **Usage:** Shows next destination in Krawl Mode
+
+#### Completed Gem Marker (Krawl Mode)
+- **Size:** 24px × 32px
+- **Shape:** Pin
+- **Color:** Light Green (#4A9D5E)
+- **Overlay:** Checkmark icon (12px × 12px, white)
+- **Usage:** Shows completed Gems in Krawl Mode
+
+### Navigation Component Specifications
+
+#### Bottom Navigation Bar (Mobile)
+- **Height:** 56px
+- **Background:** White (#FFFFFF)
+- **Border:** 1px solid Medium Gray (#E5E5E5) top border
+- **Position:** Fixed bottom
+- **Items:** 4 items (Map, Search, Create, Profile)
+- **Item Size:** 44px × 44px (touch target)
+- **Icon Size:** 24px × 24px
+- **Active Indicator:** Primary Green (#2D7A3E) underline or background
+
+**Visibility Rules:**
+- **Visible on:** Landing, Map View, Search, Gem Detail, Krawl Detail, User Profile, Profile Settings, Offline Downloads
+- **Hidden on:** Sign In, Onboarding, Krawl Mode (full-screen), Gem Creation, Krawl Creation
+- **Hidden during:** Full-screen modals, error overlays, permission request dialogs
+- **Reappears:** After modal/dialog closes, on navigation to visible pages
+
+#### Top Navigation Bar (Desktop)
+- **Height:** 64px
+- **Background:** White (#FFFFFF) or transparent
+- **Border:** 1px solid Medium Gray (#E5E5E5) bottom border
+- **Position:** Sticky or fixed top
+- **Padding:** 16px horizontal
+- **Logo Height:** 40px
+- **Nav Links:** Center or right side
+- **User Menu:** Right side (Avatar dropdown)
+
+#### Hamburger Menu (Mobile)
+- **Size:** 24px × 24px
+- **Color:** Primary Text (#1A1A1A)
+- **Position:** Left side of header
+- **Menu:** Full-screen overlay or slide-in panel
+- **Background:** White (#FFFFFF) with backdrop blur
+- **Animation:** Slide in from left or right, 300ms transition
+
+### Filter Component Specifications
+
+#### Filter Indicator Button
+- **Size:** 44px × 44px (minimum touch target)
+- **Icon:** Filter icon (20px × 20px)
+- **Text:** "Filter" (when no filters active)
+- **Badge:** 20px × 20px circle (when 1+ filters active)
+- **Badge Color:** Primary Green (#2D7A3E) background, white text
+- **Badge Text:** Filter count (e.g., "2")
+- **Position:** Right side of search bar or toolbar
+- **Behavior:** Always visible, shows count badge when filters active
+- **Click Action:** Opens filter panel/overlay
+
+#### Filter Panel (Mobile)
+- **Width:** 80% of screen (max 320px)
+- **Position:** Right side, slides in from right
+- **Animation:** Slide in, 300ms ease-out
+- **Backdrop:** Black 50% opacity
+- **Background:** White (#FFFFFF)
+- **Padding:** 24px
+- **Border Radius:** 16px (left corners only)
+
+#### Filter Panel (Desktop)
+- **Width:** 280px
+- **Position:** Left side (or right side if map on left)
+- **Behavior:** Always visible or collapsible sidebar
+- **Background:** White (#FFFFFF)
+- **Border:** 1px solid Medium Gray (#E5E5E5) right border
+- **Padding:** 16px
+
+#### Filter Chip
+- **Height:** 32px
+- **Padding:** 8px 12px
+- **Border Radius:** 16px (pill shape)
+- **Background:** Light Gray (#F5F5F5)
+- **Active Background:** Primary Green (#2D7A3E)
+- **Text:** 14px, Medium weight
+- **Text Color:** Primary Text (#1A1A1A) or White (#FFFFFF) when active
+- **Remove Button:** 16px × 16px, 4px margin left
+- **Gap:** 8px between chips
+
+#### Active Filters Display
+- **Text:** "Active Filters (X)" or "Active: [Filter Names]"
+- **Clear All Button:** Text button, 14px font
+- **Position:** Below filter indicator or above results
+- **Visibility:** Only when filters are active
 
 ---
 
@@ -267,7 +612,29 @@ Each wireframe includes:
 **Hero Section (Guest/Public):**
 - Centered tagline: "The Living Map of Filipino Culture"
 - Primary CTA: "Explore Map" (large, prominent, action-oriented)
+  - **Button Specifications:**
+    - Size: Large (52px height)
+    - Width: Full width (mobile), Auto with padding (desktop)
+    - Padding: 16px 32px
+    - Font Size: 18px
+    - Font Weight: SemiBold (600)
+    - Background: Primary Green (#2D7A3E)
+    - Text Color: White (#FFFFFF)
+    - Border Radius: 8px
+    - Icon: MapPin icon (20px × 20px) before text
+    - Icon Spacing: 8px between icon and text
+    - Min Touch Target: 52px × 44px
 - Secondary CTA: "Sign In" (smaller, less prominent)
+  - **Button Specifications:**
+    - Size: Medium (44px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 12px 24px
+    - Font Size: 16px
+    - Font Weight: Medium (500)
+    - Background: Transparent
+    - Text Color: Primary Green (#2D7A3E)
+    - Border: 2px solid Primary Green (#2D7A3E)
+    - Border Radius: 8px
 - Full-width background (no image in wireframe)
 - Value proposition: "Discover authentic Filipino culture through community-curated experiences"
 - Clear visual hierarchy guides users to primary action first
@@ -283,14 +650,41 @@ Each wireframe includes:
 **Featured Krawls:**
 - Section heading: "Featured Krawls"
 - Horizontal carousel (mobile: 1 visible, desktop: 4 visible)
+- **Carousel Specifications:**
+  - Card Width: 100% (mobile, 1 card visible), 25% (desktop, 4 cards visible)
+  - Card Gap: 16px between cards
+  - Card Height: Auto (aspect ratio 16:9 for cover image)
+  - Padding: 16px per card
+  - Border Radius: 12px
+  - Swipeable: Yes (mobile, touch gestures)
+  - Navigation: Arrow buttons (desktop, 44px × 44px touch targets)
+  - Scroll Behavior: Smooth scrolling, snap to cards
 - Each card shows: Krawl name, thumbnail, brief description
 - Swipeable on mobile, clickable arrows on desktop
 
 **Popular Gems:**
 - Section heading: "Popular Gems"
 - Grid layout: Mobile (2 columns), Desktop (4 columns)
+- **Grid Specifications:**
+  - Mobile: 2 columns, 8px gap between cards
+  - Desktop: 4 columns, 16px gap between cards
+  - Card Aspect Ratio: 1:1 (square images)
+  - Card Padding: 16px
+  - Card Border Radius: 12px
+  - Image Size: 100% width, auto height (maintains aspect ratio)
+  - Thumbnail: 100% width, 120px height (cropped to fit)
 - Each card shows: Gem name, category, thumbnail, location
 - "View All Gems" button at bottom
+  - **Button Specifications:**
+    - Size: Medium (44px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 12px 24px
+    - Font Size: 16px
+    - Font Weight: Medium (500)
+    - Background: Transparent
+    - Text Color: Primary Green (#2D7A3E)
+    - Border: 2px solid Primary Green (#2D7A3E)
+    - Border Radius: 8px
 
 **How It Works Section:**
 - Three-step process explanation
@@ -307,6 +701,19 @@ Each wireframe includes:
 
 **Statistics:**
 - Four stat boxes: Gems count, Krawls count, Users count, Visits count
+- **Statistics Card Specifications:**
+  - Layout: 4 equal-width cards, horizontal layout
+  - Card Padding: 16px
+  - Card Border: 1px solid Medium Gray (#E5E5E5)
+  - Card Border Radius: 8px
+  - Card Background: White (#FFFFFF)
+  - Gap: 16px between cards
+  - Number Typography: H2 size (32px), Bold (700), Primary Green (#2D7A3E)
+  - Label Typography: Body text (14px), Secondary Text (#4A4A4A)
+  - Icon Size: 24px × 24px, Primary Green (#2D7A3E)
+  - Icon Position: Above number or left side
+  - Mobile: Stack vertically (2 columns, 2 rows)
+  - Desktop: Horizontal row (4 columns)
 - Icons + numbers + labels
 - Horizontal layout
 - Social proof element
@@ -633,16 +1040,54 @@ Each wireframe includes:
 
 **Top Bar (Mobile):**
 - Hamburger menu (left) - Opens side menu
+  - **Specifications:** 24px × 24px icon, Primary Text (#1A1A1A), 44px × 44px touch target
 - Search bar (center) - Quick search
+  - **Search Bar Specifications:**
+    - Height: 44px (touch target)
+    - Border Radius: 22px (fully rounded)
+    - Background: White (#FFFFFF)
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Padding: 12px 16px
+    - Icon: Search icon (20px × 20px) on left
+    - Placeholder: "Search Gems and Krawls..."
+    - Font Size: 16px
 - **Persistent Filter Indicator** [🔍 Filter (2)] (right) - Shows filter count badge, always visible even when no filters active (shows "Filter" with no count)
+  - **Filter Indicator Specifications:**
+    - Size: 44px × 44px (minimum touch target)
+    - Icon: Filter icon (20px × 20px)
+    - Text: "Filter" (when no filters active)
+    - Badge: 20px × 20px circle (when 1+ filters active)
+    - Badge Color: Primary Green (#2D7A3E) background, white text
+    - Badge Text: Filter count (e.g., "2")
+    - Behavior: Always visible, shows count badge when filters active
+    - Click Action: Opens filter panel overlay
 - Clicking filter indicator opens filter panel
 
 **Map Area:**
 - Full-screen interactive map (Mapbox)
 - Gem markers (📍) with clustering
+  - **Map Marker Specifications:**
+    - **Pending Gem:** 8px × 8px circle, Gray (#808080), opacity 0.7, visible only at zoom >= 12
+    - **Verified Gem:** 24px × 32px pin, Primary Green (#2D7A3E), visible at all zoom levels
+    - **Stale Gem:** 24px × 32px pin with 16px × 16px orange badge overlay (#FF6B35), "Stale" text (white, 10px font)
+    - **User Location:** 20px × 20px circle, Blue (#3B82F6), pulsing animation (2s infinite)
+    - **Next Gem (Krawl Mode):** 32px × 40px pin, Mango Yellow (#F7B801), pulsing animation
+    - **Completed Gem (Krawl Mode):** 24px × 32px pin, Light Green (#4A9D5E), checkmark overlay (12px × 12px, white)
 - Krawl trails (───) connecting Gems
+  - **Trail Line Specifications:**
+    - Color: Mango Yellow (#F7B801)
+    - Width: 4px
+    - Style: Solid line connecting Gems in sequence
 - Zoom controls (mapbox default)
 - Location button (if permission granted)
+  - **Location Button Specifications:**
+    - Size: 44px × 44px (touch target)
+    - Position: Bottom-right corner of map
+    - Background: White (#FFFFFF)
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Border Radius: 8px
+    - Icon: Location icon (20px × 20px), Primary Green (#2D7A3E)
+    - Box Shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
 
 **Create FAB (Mobile, Authenticated):**
 - Floating Action Button (bottom right)
@@ -656,13 +1101,44 @@ Each wireframe includes:
 
 **Toolbar (Desktop):**
 - Search bar
+  - **Search Bar Specifications:** Same as mobile (44px height, 22px border radius, etc.)
 - **Persistent Filter Indicator** [🔍 Filter (2)] - Shows filter count badge, always visible
+  - **Filter Indicator Specifications:** Same as mobile (44px × 44px, badge behavior, etc.)
 - Category filters
+  - **Category Filter Specifications:**
+    - Type: Horizontal scrollable chips (mobile) or horizontal row (desktop)
+    - Chip Specifications: Same as Filter Chip (32px height, 16px border radius, etc.)
+    - Active filter: Primary Green (#2D7A3E) background, white text
+    - Inactive filter: Light Gray (#F5F5F5) background, Primary Text (#1A1A1A)
 - View toggle (Map/List)
+  - **View Toggle Specifications:**
+    - Size: 44px × 44px (touch target)
+    - Background: White (#FFFFFF)
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Border Radius: 8px
+    - Icons: Map icon and List icon (20px × 20px each)
+    - Active state: Primary Green (#2D7A3E) background, white icon
+    - Inactive state: White background, Secondary Text (#4A4A4A) icon
 
 **Filter Chips:**
 - Show active filters as removable chips
+  - **Filter Chip Specifications:**
+    - Height: 32px
+    - Padding: 8px 12px
+    - Border Radius: 16px (pill shape)
+    - Background: Light Gray (#F5F5F5)
+    - Active Background: Primary Green (#2D7A3E)
+    - Text: 14px, Medium weight
+    - Text Color: Primary Text (#1A1A1A) or White (#FFFFFF) when active
+    - Remove Button: 16px × 16px, 4px margin left
+    - Gap: 8px between chips
 - Display count: "Active Filters (2)"
+  - **Active Filters Display Specifications:**
+    - Text: "Active Filters (X)" or "Active: [Filter Names]"
+    - Font Size: 14px
+    - Color: Secondary Text (#4A4A4A)
+    - Clear All Button: Text button, 14px font, Primary Green (#2D7A3E)
+    - Position: Below filter indicator or above results
 - Individual remove buttons (×) on each chip
 - "Clear All" button to remove all filters
 - Only visible when filters are active
@@ -861,12 +1337,47 @@ Each wireframe includes:
 
 **Search Input:**
 - Full-width search bar
+  - **Search Bar Specifications:**
+    - Height: 44px (touch target)
+    - Border Radius: 22px (fully rounded)
+    - Background: White (#FFFFFF)
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Padding: 12px 16px
+    - Icon: Search icon (20px × 20px) on left
+    - Placeholder: "Search Gems and Krawls..."
+    - Font Size: 16px
 - Autocomplete dropdown (shows suggestions as user types)
+  - **Autocomplete Dropdown Specifications:**
+    - Max Height: 300px (scrollable)
+    - Background: White (#FFFFFF)
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Border Radius: 8px
+    - Shadow: 0 4px 6px rgba(0, 0, 0, 0.1)
+    - Item Height: 48px
+    - Item Padding: 12px 16px
+    - Hover: Light Gray (#F5F5F5) background
+    - Font Size: 16px
+    - Position: Below search input, full width
 - Search icon on left
 - **Persistent Filter Indicator** - Shows filter count badge (e.g., "Filters (2)") even when no filters active (shows "Filters" with no count)
+  - **Filter Indicator Specifications:** Same as Map View Page (44px × 44px, badge behavior, etc.)
 - Clicking filter indicator opens filter panel/overlay
 - Recent searches shown below input (when focused/empty)
+  - **Recent Searches Specifications:**
+    - Chip Height: 32px
+    - Chip Padding: 8px 12px
+    - Chip Border Radius: 16px (pill shape)
+    - Chip Background: Light Gray (#F5F5F5)
+    - Chip Text: 14px, Medium weight
+    - Remove Button: 16px × 16px, 4px margin left
+    - Gap: 8px between chips
+    - Max Display: 3-5 recent searches
 - Trending searches/hashtags displayed
+  - **Trending Searches Specifications:**
+    - Display: Horizontal scrollable tags
+    - Tag Style: Same as Recent Searches chips
+    - Tag Color: Primary Green (#2D7A3E) text, Light Gray (#F5F5F5) background
+    - Click Action: Executes search with that term
 - Saved searches (authenticated users only)
 
 **Recent Searches:**
@@ -902,13 +1413,38 @@ Each wireframe includes:
 
 **Results Section:**
 - Results count display
+  - **Results Count Specifications:**
+    - Font Size: 14px
+    - Color: Secondary Text (#4A4A4A)
+    - Position: Above results list
+    - Format: "Results (X found)" or "X results"
 - List view (mobile: single column, desktop: grid)
 - Each result card shows:
+  - **Search Result Card Specifications:**
+    - Height: Auto (minimum 100px)
+    - Padding: 16px
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Border Radius: 12px
+    - Background: White (#FFFFFF)
+    - Thumbnail: 80px × 80px (square, left side)
+    - Content: Right side, flex column
+    - Gap: 12px between elements
+    - Hover: Shadow elevation, scale 1.01x (desktop)
+    - Mobile: Full width, single column
+    - Desktop: Grid layout (3-4 columns), responsive
   - Thumbnail image
   - Name/title
+    - **Typography:** H3 size (20px), SemiBold (600), Primary Text (#1A1A1A)
   - Category/type
+    - **Typography:** Body text (14px), Secondary Text (#4A4A4A)
+    - **Badge:** Category badge (pill shape, 8px padding)
   - Rating stars
+    - **Star Size:** 16px × 16px
+    - **Color:** Warm Yellow (#F7B801) for filled stars, Medium Gray (#E5E5E5) for empty
+    - **Text:** Rating number (14px, Medium weight)
   - Distance/location
+    - **Typography:** Body text (14px), Secondary Text (#4A4A4A)
+    - **Icon:** Location icon (16px × 16px)
   - Additional metadata
 
 **Map View Toggle (Desktop):**
@@ -1109,9 +1645,30 @@ Each wireframe includes:
 
 **Image Gallery:**
 - Main large image (top)
+  - **Image Gallery Specifications:**
+    - Height: 300px (mobile), 400px (desktop)
+    - Aspect Ratio: 16:9
+    - Object Fit: Cover
+    - Border Radius: 12px (top corners only, mobile), 12px (all corners, desktop)
+    - Swipeable: Yes (mobile, touch gestures)
+    - Clickable: Yes (desktop, opens lightbox)
 - Swipeable on mobile, clickable thumbnails on desktop
 - Image dots indicator (mobile)
+  - **Dot Indicator Specifications:**
+    - Size: 8px × 8px
+    - Gap: 4px between dots
+    - Active Dot: Primary Green (#2D7A3E), 8px × 8px
+    - Inactive Dot: Medium Gray (#E5E5E5), 8px × 8px
+    - Position: Bottom center of image, 16px from bottom
 - Thumbnail strip (desktop)
+  - **Thumbnail Strip Specifications:**
+    - Height: 60px
+    - Thumbnail Size: 60px × 60px (square)
+    - Gap: 8px between thumbnails
+    - Border Radius: 8px
+    - Active Thumbnail: Border 2px solid Primary Green (#2D7A3E)
+    - Inactive Thumbnail: Border 1px solid Medium Gray (#E5E5E5)
+    - Position: Below main image
 
 **Gem Information:**
 - Gem name (H1)
@@ -1119,6 +1676,22 @@ Each wireframe includes:
 - Star rating with review count
 - Location name and distance
 - **"Get Directions" button** - Primary action button (large, prominent, placed immediately after location info, before description)
+  - **Get Directions Button Specifications:**
+    - Size: Large (52px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 16px 32px
+    - Font Size: 18px (mobile), 16px (desktop)
+    - Font Weight: SemiBold (600)
+    - Background: Primary Green (#2D7A3E)
+    - Text Color: White (#FFFFFF)
+    - Border Radius: 8px
+    - Icon: Navigation icon (20px × 20px) before text
+    - Icon Spacing: 8px between icon and text
+    - Position: Immediately after location info, before description
+    - Sticky: Yes (mobile, remains visible on scroll)
+    - Sticky Position: Bottom of viewport, 16px from bottom
+    - Sticky Background: White (#FFFFFF) with shadow elevation
+    - Min Touch Target: 52px × 44px
   - Opens external maps app
   - Sticky on mobile scroll (remains visible while scrolling)
   - Clear visual hierarchy prioritizes navigation action
@@ -1278,7 +1851,32 @@ Each wireframe includes:
 
 **Primary Actions:**
 - "Start Krawl Mode" button (primary, large)
+  - **Start Krawl Mode Button Specifications:**
+    - Size: Large (52px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 16px 32px
+    - Font Size: 18px (mobile), 16px (desktop)
+    - Font Weight: SemiBold (600)
+    - Background: Primary Green (#2D7A3E)
+    - Text Color: White (#FFFFFF)
+    - Border Radius: 8px
+    - Icon: Navigation icon (20px × 20px) before text
+    - Icon Spacing: 8px between icon and text
+    - Min Touch Target: 52px × 44px
 - "Download for Offline" button (secondary)
+  - **Download Button Specifications:**
+    - Size: Medium (44px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 12px 24px
+    - Font Size: 16px
+    - Font Weight: Medium (500)
+    - Background: Transparent
+    - Text Color: Primary Green (#2D7A3E)
+    - Border: 2px solid Primary Green (#2D7A3E)
+    - Border Radius: 8px
+    - Icon: Download icon (20px × 20px) before text
+    - Icon Spacing: 8px between icon and text
+    - Min Touch Target: 44px × 44px
 - Both buttons prominent
 
 **Description:**
@@ -1287,6 +1885,15 @@ Each wireframe includes:
 
 **Trail Map:**
 - Mini map preview (mobile) or full map (desktop)
+  - **Trail Map Preview Specifications:**
+    - Height: 200px (mobile), 300px (desktop)
+    - Border Radius: 12px
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Background: Light Gray (#F5F5F5) (loading state)
+    - Interactive: Yes (click to expand)
+    - Gem Markers: 16px × 16px pins, Primary Green (#2D7A3E)
+    - Trail Line: Mango Yellow (#F7B801), 4px width
+    - Click Action: Expands to full-screen map view
 - Shows Gem locations and connecting trail
 - Clickable to expand/full screen
 
@@ -1436,9 +2043,34 @@ Each wireframe includes:
 
 **Header:**
 - Exit button [🚪 Exit] (left, larger, more visible) - Returns to Krawl Detail
+  - **Exit Button Specifications:**
+    - Size: 44px × 44px (minimum touch target)
+    - Position: Top-left, 16px from edges
+    - Visual: Primary Green (#2D7A3E) or high contrast color
+    - Icon: Exit/door icon (🚪) 20px × 20px
+    - Text Label: "Exit" (14px, Medium weight)
+    - Background: White (#FFFFFF) with shadow (optional)
+    - Border Radius: 8px
+    - Hover: Dark Green (#1A5A2A) background or darker shade
 - Krawl name/title (center)
+  - **Title Specifications:**
+    - Font Size: 18px (mobile), 20px (desktop)
+    - Font Weight: SemiBold (600)
+    - Color: Primary Text (#1A1A1A)
+    - Truncate: Yes (with ellipsis if too long)
 - Pause button [⏸ Pause] (right)
+  - **Pause Button Specifications:**
+    - Size: 44px × 44px (minimum touch target)
+    - Icon: Pause icon (20px × 20px)
+    - Background: Transparent or White (#FFFFFF)
+    - Color: Primary Text (#1A1A1A)
 - More options button [⋯] (right) - Options, help, exit
+  - **More Options Button Specifications:**
+    - Size: 44px × 44px (minimum touch target)
+    - Icon: More options icon (⋯) 20px × 20px
+    - Background: Transparent
+    - Color: Primary Text (#1A1A1A)
+    - Menu: Dropdown menu with options (Exit, Help, Report Issue)
 
 **Map Area:**
 - Full-screen interactive map
@@ -1474,6 +2106,54 @@ Each wireframe includes:
 - Card expands to show Gem details
 - "Mark as Visited" button
 - Celebration animation
+
+**Stop Detail Card (Auto-Slide on Arrival):**
+- Automatically slides up from bottom when user enters 50m radius
+  - **Stop Detail Card Specifications:**
+    - Height: Auto (max 80% viewport)
+    - Background: White (#FFFFFF)
+    - Border Radius: 16px (top corners only)
+    - Padding: 24px
+    - Animation: Slide up from bottom (300ms ease-out)
+    - Backdrop: Black 50% opacity
+    - Dismiss: Swipe down gesture or Close button
+    - Pre-fetched: Yes (no loading delay)
+- Animation: 300ms ease-out slide-up transition
+- Content structure:
+  1. **Gem Header:**
+     - Gem name (large, bold)
+       - **Typography:** H2 size (24px mobile, 28px desktop), SemiBold (600)
+     - Category badge
+       - **Badge Specifications:** Pill shape, 8px padding, Primary Green (#2D7A3E) background
+     - Thumbnail image
+       - **Image Specifications:** 80px × 80px, border radius 8px
+  2. **"How to Get There" Section:**
+     - Heading: "How to Get There"
+       - **Typography:** H3 size (18px), SemiBold (600), Primary Text (#1A1A1A)
+     - Content: Creator Note (from `krawl_gems.creator_note`)
+       - **Typography:** Body text (16px), Primary Text (#1A1A1A)
+     - Practical logistics information
+     - **Section Gap:** 16px between sections
+  3. **"Lokal Secret" Section:**
+     - Heading: "Lokal Secret" (with special badge/icon)
+       - **Typography:** H3 size (18px), SemiBold (600), Accent Orange (#FF6B35)
+       - **Icon:** Special badge icon (20px × 20px), Accent Orange (#FF6B35)
+     - Content: Lokal Secret (from `krawl_gems.lokal_secret`)
+       - **Typography:** Body text (16px), Primary Text (#1A1A1A)
+       - **Background:** Accent Orange (#FF6B35) at 5% opacity (optional highlight)
+     - Insider tip (styled distinctively)
+  4. **Actions:**
+     - "Check Off" button (Primary Green #2D7A3E, marks Gem as visited)
+       - **Button Specifications:** Primary Button Medium (44px height, Primary Green)
+     - "View Full Details" link
+       - **Link Specifications:** Text button, 16px, Primary Green (#2D7A3E)
+     - "Skip" button (with confirmation)
+       - **Button Specifications:** Text button, 16px, Secondary Text (#4A4A4A)
+     - "Close" button or swipe down to dismiss
+       - **Close Button:** 44px × 44px, X icon (20px × 20px), top-right corner
+- Dismissal: Swipe down gesture or "Close" button
+- Pre-fetched content (no loading delay)
+- See [CORE_FEATURE_SPECIFICATION.md](../private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete implementation details
 
 **Completion Screen:**
 - When all Gems visited
@@ -1557,6 +2237,21 @@ Each wireframe includes:
 │  [← Previous]  [Next →]         │
 └─────────────────────────────────┘
 ```
+
+**Duplicate Warning Component (Modal):**
+- Appears when duplicate detected (similarity >= 80%, distance < 50m)
+- Modal overlay with existing Gem preview:
+  - Existing Gem name (highlighted)
+  - Existing Gem description (truncated)
+  - Existing Gem photos (thumbnail gallery)
+  - Distance display: "X meters away"
+  - Similarity display: "XX% similar name"
+- Action buttons:
+  - "This is Different" button (Primary Green #2D7A3E)
+  - "Cancel" button (secondary, closes modal)
+- User must explicitly click "This is Different" to proceed
+- Prevents accidental duplicate creation
+- See [CORE_FEATURE_SPECIFICATION.md](../private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete duplicate detection algorithm
 
 #### Step 3: Media
 
@@ -1648,33 +2343,93 @@ Each wireframe includes:
 **Progress Indicator:**
 - Step indicator (X of 4) with step name
 - **Enhanced progress bar** - Larger, more visible progress bar showing completion percentage
+  - **Progress Bar Specifications:**
+    - Height: 8px (mobile), 10px (desktop)
+    - Border Radius: 4px (fully rounded)
+    - Background: Light Gray (#E5E5E5)
+    - Fill: Primary Green (#2D7A3E)
+    - Animation: Smooth width transition (300ms ease-out)
+    - Width: Percentage based on current step (25%, 50%, 75%, 100%)
 - **Step names displayed** - Shows all step names (Location, Info, Media, Details) with visual indicators (● for completed, ○ for upcoming)
+  - **Step Indicator Specifications:**
+    - Step Circles: 20px × 20px circles
+    - Active Step: Primary Green (#2D7A3E) fill, white number/text
+    - Completed Step: Primary Green (#2D7A3E) fill with checkmark (12px × 12px, white)
+    - Upcoming Step: Light Gray (#E5E5E5) fill, Secondary Text (#4A4A4A) number/text
+    - Step Names: 14px font, Medium weight, below or beside circles
+    - Gap: 16px between step indicators
 - **Clickable steps (desktop)** - Users can click on step names to navigate between completed steps
+  - **Clickable Behavior:**
+    - Completed steps: Clickable, navigate directly
+    - Current step: Highlighted, not clickable
+    - Upcoming steps: Disabled, not clickable
+    - Hover: Primary Green (#2D7A3E) background on clickable steps
 - **Mobile step names** - Step names shown below progress bar for better visibility
 - Clear visual feedback on progress and current step
 
 **Step 1: Location**
 - Interactive map with draggable pin
+  - **Map Specifications:**
+    - Height: 300px (mobile), 400px (desktop)
+    - Border Radius: 12px
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Pin: 32px × 40px, Primary Green (#2D7A3E), draggable
+    - Pin Position: Centered on map, updates on drag
 - Address input field (autocomplete)
+  - **Input Specifications:** Text Input (44px height, autocomplete enabled)
+  - **Autocomplete Dropdown:** Same as Search & Discovery page (300px max height, 48px item height)
 - "Use Current Location" button
+  - **Button Specifications:** Secondary Button (44px height, transparent with border)
+  - **Icon:** Location icon (20px × 20px) before text
 - Validation message (Cebu City boundary)
+  - **Validation Error Messages:**
+    - Outside Cebu City: "Location must be within Cebu City boundaries" (red text #DC2626, 14px, below map/input)
+    - Invalid Coordinates: "Please select a valid location on the map" (red text #DC2626, 14px, below map/input)
+    - No Location Selected: "Please select a location for your Gem" (red text #DC2626, 14px, below map/input)
+  - **Success Indicator:** CheckCircle icon (16px × 16px, Primary Green #2D7A3E) with "Location is valid" message
 - Pin can be dragged to adjust location
 
 **Step 2: Basic Info**
 - Gem Name (required, text input)
+  - **Input Specifications:** Text Input (44px height, 12px 16px padding, 8px border radius)
   - Real-time validation
   - Success checkmark (✓) when valid
+    - **Success Indicator:** CheckCircle icon (16px × 16px, Primary Green #2D7A3E), positioned right side of input
   - Error message if empty/invalid
+    - **Validation Error Messages:**
+      - Empty: "Gem name is required" (red text #DC2626, 14px, below input)
+      - Too Short (< 3 chars): "Gem name must be at least 3 characters" (red text #DC2626, 14px, below input)
+      - Too Long (> 100 chars): "Gem name must be less than 100 characters" (red text #DC2626, 14px, below input)
+      - Invalid Characters: "Gem name contains invalid characters" (red text #DC2626, 14px, below input)
+    - **Error Icon:** XCircle icon (16px × 16px, Error Red #DC2626) before message
 - Category (required, dropdown)
+  - **Input Specifications:** Select Dropdown (44px height, same as Text Input)
   - Success indicator when selected
+    - **Success Indicator:** CheckCircle icon (16px × 16px, Primary Green #2D7A3E)
+  - **Validation Error Messages:**
+    - Not Selected: "Please select a category" (red text #DC2626, 14px, below dropdown)
 - Description (required, textarea, character counter)
+  - **Input Specifications:** Textarea (min 120px height, 12px 16px padding, 8px border radius)
   - Character counter: "X / 500 characters"
+    - **Character Counter Specifications:**
+      - Position: Bottom-right of textarea
+      - Font Size: 12px
+      - Color: Secondary Text (#4A4A4A) when under limit, Error Red (#DC2626) when over limit
+      - Format: "X / 500 characters"
   - Real-time validation
   - Success checkmark when valid
   - Warning at 450+ characters
+    - **Warning Display:** Character counter turns orange (Accent Orange #FF6B35) at 450+ characters
+  - **Validation Error Messages:**
+    - Empty: "Description is required" (red text #DC2626, 14px, below textarea)
+    - Too Short (< 10 chars): "Description must be at least 10 characters" (red text #DC2626, 14px, below textarea)
+    - Too Long (> 500 chars): "Description must be less than 500 characters" (red text #DC2626, 14px, below textarea)
 - Cultural Significance (optional, textarea)
+  - **Input Specifications:** Textarea (min 120px height, same as Description)
   - Character counter: "X / 1000 characters"
+    - **Character Counter Specifications:** Same as Description counter (12px, Secondary Text #4A4A4A)
   - Optional field indicator
+    - **Optional Indicator:** "(optional)" text in label, Secondary Text (#4A4A4A), 14px, italic
 
 **Save Progress:**
 - Auto-save indicator in header
@@ -1684,9 +2439,39 @@ Each wireframe includes:
 
 **Step 3: Media**
 - Photo upload area (up to 5 images)
+  - **Photo Upload Specifications:**
+    - Max Images: 5
+    - Image Size: 120px × 120px (square preview)
+    - Border Radius: 8px
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Gap: 12px between images
+    - Grid: 2 columns (mobile), 3-4 columns (desktop)
 - Add button (+ icon)
+  - **Add Button Specifications:**
+    - Size: 120px × 120px (matches image preview)
+    - Background: Light Gray (#F5F5F5)
+    - Border: 2px dashed Medium Gray (#E5E5E5)
+    - Border Radius: 8px
+    - Icon: Plus icon (24px × 24px), Secondary Text (#4A4A4A)
+    - Text: "Add Photo" (14px, Secondary Text #4A4A4A)
 - Image previews with remove option
+  - **Remove Button Specifications:**
+    - Size: 24px × 24px
+    - Position: Top-right corner of image preview
+    - Background: Error Red (#DC2626) with 80% opacity
+    - Icon: X icon (16px × 16px, white)
+    - Border Radius: 50% (circle)
 - Drag to reorder (desktop)
+  - **Drag and Drop Specifications:**
+    - Dragged Item: 50% opacity, scale 1.05x
+    - Drop Zone: Highlighted border (Primary Green #2D7A3E, 2px)
+    - Ghost Image: Follows cursor/finger
+    - Reorder Animation: 200ms ease-out
+    - Visual Feedback: Haptic feedback on drop (mobile, if supported)
+- **Validation Error Messages:**
+  - Too Many (> 5 images): "Maximum 5 photos allowed" (red text #DC2626, 14px, below upload area)
+  - Invalid Format: "Invalid file format. Please upload JPG, PNG, or WebP images" (red text #DC2626, 14px, below upload area)
+  - File Too Large: "File size exceeds 5MB limit. Please compress the image" (red text #DC2626, 14px, below upload area)
 
 **Step 4: Additional Details**
 - Tags input (autocomplete, optional)
@@ -1875,19 +2660,70 @@ Each wireframe includes:
 
 **Gem Selection:**
 - Search bar to find Gems
+  - **Gem Selection Search Specifications:**
+    - Search Bar: Same as Search & Discovery page (44px height, 22px border radius)
+    - Results: Scrollable list, max height 400px
+    - Result Item: 80px height, clickable
+    - Checkbox: 20px × 20px, right side (when selecting)
+    - Selected State: Primary Green (#2D7A3E) background
 - Selected Gems list (drag to reorder on desktop)
+  - **Selected Gem Card Specifications:**
+    - Height: 80px
+    - Padding: 12px
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Border Radius: 8px
+    - Thumbnail: 60px × 60px (square, left side)
+    - Content: Right side of thumbnail, 12px gap
+    - Remove Button: 24px × 24px, top-right corner, Error Red (#DC2626) background
+    - Drag Handle: 20px × 20px icon, left side (desktop only)
 - Each Gem card shows: Name, category, thumbnail
 - Remove button on each Gem
 - "Add Gem" button opens search modal
+  - **Add Gem Button Specifications:**
+    - Size: Medium (44px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 12px 24px
+    - Background: Primary Green (#2D7A3E)
+    - Text Color: White (#FFFFFF)
+    - Icon: Plus icon (20px × 20px) before text
 
 **Map Preview:**
 - Shows selected Gems on map
+  - **Map Preview Specifications:**
+    - Height: 300px (mobile), 400px (desktop)
+    - Border Radius: 12px
+    - Border: 1px solid Medium Gray (#E5E5E5)
+    - Background: Light Gray (#F5F5F5) (loading state)
+    - Interactive: Yes (pan, zoom)
+    - Gem Markers: 16px × 16px pins, Primary Green (#2D7A3E)
+    - Numbered Labels: White circle with number (12px font, Primary Green background)
 - Trail line connecting Gems in order
+  - **Trail Line Specifications:**
+    - Color: Mango Yellow (#F7B801)
+    - Width: 4px
+    - Style: Solid line connecting Gems in sequence
+    - Animation: Updates smoothly when Gems reordered (200ms transition)
 - Updates as Gems are added/reordered
 
 **Route Optimization:**
 - "Optimize Route" button
+  - **Optimize Route Button Specifications:**
+    - Size: Medium (44px height)
+    - Width: Full width (mobile), Auto (desktop)
+    - Padding: 12px 24px
+    - Background: Accent Orange (#FF6B35)
+    - Text Color: White (#FFFFFF)
+    - Border Radius: 8px
+    - Icon: Navigation icon (20px × 20px) before text
+    - Loading State: Spinner replaces icon during optimization
 - Suggests optimal order based on distance
+  - **Optimization Suggestion Specifications:**
+    - Display: Modal or inline panel
+    - Shows: Original order vs. optimized order comparison
+    - Distance Savings: Displayed prominently (e.g., "Save 0.5 km")
+    - Animation: Smooth transition showing new route on map
+    - Accept Button: Primary Button Medium (44px height, Primary Green)
+    - Reject Button: Secondary Button (44px height, transparent with border)
 - Can accept or reject suggestion
 
 **Actions:**
@@ -2693,6 +3529,26 @@ Loading states inform users that content is being fetched or processed. They pre
 
 **Purpose:** Show content structure while loading
 
+**Skeleton Loader Specifications:**
+- **Background:** Light Gray (#F5F5F5)
+- **Shimmer Animation:** Linear gradient animation (2s infinite)
+  - Gradient: Light Gray (#F5F5F5) → Medium Gray (#E5E5E5) → Light Gray (#F5F5F5)
+  - Direction: Left to right
+  - Easing: Linear
+- **Card Skeleton:**
+  - Height: 120px
+  - Border Radius: 12px (matches card border radius)
+  - Width: 100% (responsive)
+- **Text Skeleton:**
+  - Height: 16px
+  - Border Radius: 8px
+  - Width: Variable (60-90% of container)
+  - Multiple lines: 12px gap between lines
+- **Image Skeleton:**
+  - Aspect Ratio: Maintained (16:9 or 1:1)
+  - Border Radius: 12px (matches image border radius)
+- **Spacing:** 12px between skeleton elements
+
 **Usage:**
 - Landing page cards
 - Search results
@@ -2747,6 +3603,23 @@ Uploading image...
 Empty states appear when there's no content to display. They should be helpful, encouraging, and provide clear next steps.
 
 #### Common Empty States
+
+**Empty State Illustration Specifications:**
+- **Size:** 120px × 120px (mobile), 160px × 160px (desktop)
+- **Style:** Line art, minimal, cultural theme
+- **Color:** Secondary Text (#4A4A4A) at 40% opacity
+- **Position:** Centered, 32px margin top
+- **Animation:** Optional subtle fade-in (300ms ease-out)
+
+**Empty State Container Specifications:**
+- **Padding:** 32px (mobile), 48px (desktop)
+- **Background:** White (#FFFFFF) or Light Gray (#F5F5F5)
+- **Border Radius:** 12px
+- **Text Alignment:** Center
+- **Heading:** H2 size (24px mobile, 28px desktop), SemiBold (600), Primary Text (#1A1A1A)
+- **Description:** Body text (16px), Secondary Text (#4A4A4A)
+- **CTA Button:** Primary Button Medium (44px height, Primary Green)
+- **Gap:** 16px between illustration and heading, 8px between heading and description, 24px between description and CTA
 
 **No Search Results:**
 - Icon: 🔍
@@ -2877,6 +3750,20 @@ Success states confirm completed actions and provide next steps.
 ### Partial Data States
 
 #### Offline Mode Indicator
+
+**Offline Indicator Specifications:**
+- **Position:** Top-right corner, below header
+- **Size:** 40px × 32px (mobile), 48px × 36px (desktop)
+- **Background:** Warm Yellow (#F7B801) with 10% opacity
+- **Border:** 1px solid Warm Yellow (#F7B801)
+- **Border Radius:** 8px
+- **Padding:** 8px 12px
+- **Icon:** Cloud with slash (16px × 16px), Warm Yellow (#F7B801)
+- **Text:** "Offline" (12px, SemiBold 600, Warm Yellow #F7B801)
+- **Animation:** Subtle pulse (2s infinite, ease-in-out)
+- **Dismissible:** Yes (X button, 16px × 16px, positioned top-right of indicator)
+- **Z-Index:** High (above content, below modals)
+- **Visibility:** Only when offline or connection lost
 
 **Pattern:**
 ```
@@ -3346,6 +4233,238 @@ This section outlines key UX principles and best practices applied throughout th
 
 ---
 
+## Component Specifications Quick Reference
+
+### Quick Reference Table
+
+| Component | Mobile Size | Desktop Size | Color | Notes |
+|-----------|-------------|--------------|-------|-------|
+| Primary Button (Large) | 52px × Auto | 52px × Auto | #2D7A3E | Full width mobile |
+| Primary Button (Medium) | 44px × Auto | 44px × Auto | #2D7A3E | Standard actions |
+| Secondary Button | 44px × Auto | 44px × Auto | Transparent | Border 2px |
+| Standard Card | Auto × Auto | Auto × Auto | White | 12px radius, 16px padding |
+| Gem Card (List) | Auto × Min 120px | Auto × Min 120px | White | Image: 120px × 120px |
+| Text Input | 44px × Auto | 44px × Auto | White | 8px radius, 12px 16px padding |
+| Search Bar | 44px × Auto | 44px × Auto | White | 22px radius (fully rounded) |
+| Filter Chip | 32px × Auto | 32px × Auto | #F5F5F5 | 16px radius (pill) |
+| Map Marker (Verified) | 24px × 32px | 24px × 32px | #2D7A3E | Pin shape |
+| Bottom Nav | 56px height | N/A | White | Fixed bottom |
+
+For complete component specifications, see [Component Specifications](#component-specifications) section above or [WIREFRAMES_COMPONENT_SPECIFICATIONS.md](./WIREFRAMES_COMPONENT_SPECIFICATIONS.md).
+
+## Animation Timing Reference
+
+### Timing Categories
+
+**Fast (100-150ms):**
+- Button presses
+- Hovers
+- Toggles
+- Focus states
+- Scale animations
+
+**Medium (200-300ms):**
+- Modals (fade in + scale)
+- Page transitions
+- Slides (menus, panels)
+- Card hover effects
+- Backdrop fades
+
+**Slow (400-500ms):**
+- Complex animations
+- Page loads
+- Large transitions
+
+### Easing Functions
+
+**Standard (ease-in-out):**
+- Most transitions
+- Default for most animations
+
+**Entrances (ease-out):**
+- Modal appearances
+- Slide-in animations
+- Fade-in effects
+
+**Exits (ease-in):**
+- Modal dismissals
+- Slide-out animations
+- Fade-out effects
+
+### Common Animation Patterns
+
+**Fade:**
+- Duration: 200ms
+- Easing: ease-in-out
+- Usage: Modal appearance, content transitions
+
+**Slide:**
+- Duration: 300ms
+- Easing: ease-in-out
+- Usage: Mobile menu, drawer, content slides
+
+**Scale:**
+- Duration: 150ms
+- Easing: ease-in-out
+- Usage: Button interactions, card hover
+
+**Rotate (Spinner):**
+- Duration: 1s (infinite)
+- Easing: linear
+- Usage: Loading spinners
+
+**Pulse:**
+- Duration: 2s (infinite)
+- Easing: ease-in-out
+- Usage: Map markers, offline indicator
+
+## Spacing System Reference
+
+Krawl uses an **8px base spacing scale** for consistency.
+
+| Size | Value | Pixels | Usage |
+|------|-------|--------|-------|
+| XS | 0.25rem | 4px | Tight spacing, icon padding |
+| SM | 0.5rem | 8px | Small spacing, compact elements |
+| MD | 0.75rem | 12px | Medium-small spacing |
+| Base | 1rem | 16px | Base spacing unit |
+| LG | 1.25rem | 20px | Medium spacing |
+| XL | 1.5rem | 24px | Large spacing |
+| 2XL | 2rem | 32px | Extra large spacing |
+| 3XL | 2.5rem | 40px | Section spacing |
+| 4XL | 3rem | 48px | Major section spacing |
+| 5XL | 4rem | 64px | Hero spacing |
+| 6XL | 5rem | 80px | Page-level spacing |
+
+### Common Spacing Patterns
+- **Button Padding:** 12px 24px (medium buttons)
+- **Card Padding:** 16px (standard cards)
+- **Card Gap:** 16px (space between cards)
+- **Form Field Gap:** 16px (space between form fields)
+- **Input Padding:** 12px 16px (text inputs)
+- **Container Padding:** 16px (mobile), 32px (desktop)
+- **Section Margin:** 48px (mobile), 64px (desktop)
+- **Grid Gap:** 16px (mobile), 24px (desktop)
+
+## Form Validation Messages Reference
+
+### Gem Name Validation
+
+**Empty:**
+- Message: "Gem name is required"
+- Display: Below input field, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Too Short (< 3 characters):**
+- Message: "Gem name must be at least 3 characters"
+- Display: Below input field, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Too Long (> 100 characters):**
+- Message: "Gem name must be less than 100 characters"
+- Display: Below input field, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Invalid Characters:**
+- Message: "Gem name contains invalid characters"
+- Display: Below input field, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+### Location Validation
+
+**Outside Cebu City:**
+- Message: "Location must be within Cebu City boundaries"
+- Display: Below map/input, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Invalid Coordinates:**
+- Message: "Please select a valid location on the map"
+- Display: Below map/input, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**No Location Selected:**
+- Message: "Please select a location for your Gem"
+- Display: Below map/input, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+### Description Validation
+
+**Empty:**
+- Message: "Description is required"
+- Display: Below textarea, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Too Short (< 10 characters):**
+- Message: "Description must be at least 10 characters"
+- Display: Below textarea, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Too Long (> 500 characters):**
+- Message: "Description must be less than 500 characters"
+- Display: Below textarea, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+### Category Validation
+
+**Not Selected:**
+- Message: "Please select a category"
+- Display: Below dropdown, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+### Photo Validation
+
+**Too Many (> 5 images):**
+- Message: "Maximum 5 photos allowed"
+- Display: Below photo upload area, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**Invalid Format:**
+- Message: "Invalid file format. Please upload JPG, PNG, or WebP images"
+- Display: Below photo upload area, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+**File Too Large:**
+- Message: "File size exceeds 5MB limit. Please compress the image"
+- Display: Below photo upload area, red text (#DC2626), 14px
+- Icon: XCircle icon (16px × 16px) before message
+
+### Success States
+
+**Valid Input:**
+- Border: 2px solid Primary Green (#2D7A3E)
+- Background: Primary Green at 5% opacity
+- Icon: CheckCircle icon (16px × 16px, Primary Green #2D7A3E) before field (optional)
+- Message: None (or success message if applicable)
+
+## Navigation Button Rules
+
+### Back Button [← Back]
+- **Usage:** Navigation between pages (no unsaved changes)
+- **Position:** Left side of header
+- **Size:** 44px × 44px (minimum touch target)
+- **Icon:** Arrow left (20px × 20px)
+- **Color:** Primary Text (#1A1A1A)
+- **Behavior:** Returns to previous page in navigation history
+
+### Cancel Button [← Cancel]
+- **Usage:** Forms/creation flows (may have unsaved changes)
+- **Position:** Left side of header
+- **Size:** 44px × 44px (minimum touch target)
+- **Text:** "Cancel" or X icon
+- **Color:** Primary Text (#1A1A1A) or Secondary Text (#4A4A4A)
+- **Behavior:** 
+  - If unsaved changes: Shows confirmation dialog
+  - If no changes: Returns to previous page
+  - Options: [Save Draft], [Discard], [Cancel]
+
+### Close Button [← Close] or [×]
+- **Usage:** Modals and overlays
+- **Position:** Top-right of modal/overlay
+- **Size:** 44px × 44px (minimum touch target)
+- **Icon:** X (20px × 20px)
+- **Color:** Secondary Text (#4A4A4A)
+- **Behavior:** Closes modal/overlay, returns focus to trigger element
+
 ## Appendices
 
 ### Wireframe Legend
@@ -3519,6 +4638,7 @@ Krawl Detail Page
 - UI_UX_DESIGN_SYSTEM.md - Design system and components
 - SCOPE_OF_WORK.md - Detailed page specifications
 - PROJECT_BRIEF.md - Project overview
+- WIREFRAMES_COMPONENT_SPECIFICATIONS.md - Quick reference for component specifications
 
 **Contact:** [To be filled in by project team]
 
@@ -3542,11 +4662,13 @@ Krawl Detail Page
 
 7. **Accessibility:** All interactive elements should meet minimum 44px × 44px touch target size. Focus states and keyboard navigation should be implemented per UI_UX_DESIGN_SYSTEM.md.
 
-8. **Current as of 2025-11-14:** All wireframes reflect the sitemap and specifications as of November 14, 2025.
+8. **Current as of 2025-11-19:** All wireframes reflect the sitemap and specifications as of November 19, 2025.
 
 9. **User-First UX Enhancements (v2.0.0):** This document now includes comprehensive UI states (loading, empty, error, success), accessibility specifications, micro-interaction patterns, form validation improvements, and optimized user flows following Google UX principles.
 
-10. **State Documentation:** Every page should implement all relevant UI states documented in the "UI States Reference" section. States are not optional - they are essential for a complete user experience.
+10. **Comprehensive Detailed Specifications (v3.0.0):** All components now include exact dimensions, colors, spacing, animations, and interaction specifications. Form validation messages, animation timing, spacing system, and navigation button rules are fully documented. Companion reference document WIREFRAMES_COMPONENT_SPECIFICATIONS.md provides quick lookup tables.
+
+11. **State Documentation:** Every page should implement all relevant UI states documented in the "UI States Reference" section. States are not optional - they are essential for a complete user experience.
 
 11. **Accessibility Requirements:** All interactive elements must meet the accessibility specifications outlined in the "Accessibility Specifications" section. WCAG 2.1 AA compliance is mandatory.
 

@@ -93,7 +93,7 @@ Progressive Web App (PWA) - Community-driven cultural mapping platform
 #### Secondary Stakeholders
 - **Domestic & International Travelers** - Secondary user base seeking authentic experiences
 - **Local Businesses** - Potential revenue partners via "Claim Your Gem" freemium model
-- **Community Contributors** - Users who create Gems, Krawls, and provide vouching/ratings
+- **Community Contributors** - Users who create Gems, Krawls, and provide vouching (Gems) and ratings (Krawls)
 
 For detailed stakeholder information, see [PROJECT_BRIEF.md](./PROJECT_BRIEF.md#-identified-stakeholders).
 
@@ -520,7 +520,20 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 - **Interactive Mapbox Map:**
   - Centered on Cebu City with smooth animations
   - Boundary restriction (Cebu City limits only) with visual boundary indicator
-  - Gem markers with smart clustering (adjusts based on zoom level)
+  - **Mapbox GL JS Clustering:** Uses GeoJSON source clustering with built-in Mapbox clustering capabilities
+    - Cluster radius: 50 pixels
+    - Cluster max zoom: 14 (clusters break apart at zoom 14)
+    - Cluster min points: 2
+    - Cluster styling: Primary Green circles (#2D7A3E) with white count numbers
+    - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete clustering configuration
+  - **Zoom-Dependent Visibility:**
+    - **City View (zoom < 12):** Displays clusters and Verified Gems only (Forest Green pins #2D7A3E)
+    - **Street View (zoom >= 12):** Displays all Gems including:
+      - Pending: Gray dots (8px, #808080, opacity 0.7)
+      - Verified: Forest Green pins (24px × 32px, #2D7A3E)
+      - Stale: Orange warning badge overlay (16px × 16px, #FF6B35)
+    - Implemented via Mapbox style layer filter expressions based on zoom level
+    - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for zoom breakpoints and filter logic
   - Krawl trail visualization (polylines with distinct colors per Krawl)
   - Smooth zoom and pan with momentum scrolling
   - Double-tap to zoom, pinch to zoom gestures
@@ -531,15 +544,20 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - Map style toggle (standard/satellite, if available)
   - Compass indicator (shows map rotation)
 - **Search and Filter Panel:**
-  - **Search Bar:**
+  - **Search Bar (Universal Search):**
     - Prominent, always accessible (sticky header on mobile)
+    - **Unified Search:** Queries both Gems (by name, tag) and Krawls (by title, theme)
+    - **Mixed Results:** Returns single unified list with visual differentiation:
+      - Gems: Pin icon (📍)
+      - Krawls: Path icon (🛤️)
     - Autocomplete with recent searches
     - Voice input option (if supported)
     - Clear button (X icon) when text entered
     - Search suggestions dropdown
+    - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for search implementation details
   - **Filter Panel (Collapsible):**
     - Category filter (multi-select chips)
-    - Rating filter (slider: 1-5 stars)
+    - Rating filter (slider: 1-5 stars) - Krawls only
     - Distance filter (radius slider with visual indicator)
     - Content type toggle (Gems only / Krawls only / Both)
     - Active filter count badge
@@ -660,6 +678,15 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
     - Error message if outside boundaries
   - **Step 2: Basic Info (Required)**
     - Gem name input (with character counter, max 100 chars)
+    - **Duplicate Detection:** Automatic check when name and location are entered
+      - Backend uses PostGIS `ST_DWithin` to find Gems within 50 meters
+      - Levenshtein distance algorithm calculates name similarity (80% threshold)
+      - If duplicate found, displays **Duplicate Warning Component**:
+        - Shows existing Gem details (name, description, photos)
+        - Displays distance and similarity percentage
+        - User must explicitly click "This is Different" to override
+        - Prevents accidental duplicate creation
+      - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete duplicate detection algorithm
     - Category selection (visual chips/icons, single select)
     - Description textarea (with character counter, min 50, max 500 chars)
     - Character count with visual feedback (warns at 80% limit)
@@ -788,6 +815,11 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - Description (required)
   - Category/theme selection
   - Gem selection interface (add Gems to trail in order)
+    - **Context Injection (Per Step):** When adding each Gem to the Krawl, user must provide:
+      - **Creator Note (Required, 10-500 chars):** Practical logistics information (e.g., "Walk through the yellow gate")
+      - **Lokal Secret (Required, 10-500 chars):** Insider tip (e.g., "Ask for the off-menu spicy vinegar")
+    - These fields are displayed in Krawl Mode's Stop Detail Card when users arrive at each Gem
+    - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for context injection workflow
   - Reorder Gems (drag and drop)
   - Estimated duration input
   - Difficulty level selection
@@ -858,9 +890,20 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 - **Arrival Detection:**
   - Geofencing trigger (50m radius, adjustable)
   - Haptic feedback (vibration) when arriving
-  - Visual notification (card slides up)
+  - **Stop Detail Card Auto-Slide:** Automatically slides up from bottom when user enters 50m radius
+    - Content pre-fetched/cached for instant display (no loading delay)
+    - Reveals Creator Note and Lokal Secret for that specific stop
+    - Animation: 300ms ease-out slide-up transition
+    - Can be dismissed by swiping down or clicking "Close"
+    - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for proximity trigger and animation specifications
   - Audio cue (optional, user preference)
   - Auto-mark as visited (with option to disable)
+- **Stop Detail Card Content:**
+  - Gem header (name, category, thumbnail)
+  - **Creator Note Section:** "How to Get There" - Practical logistics from `creator_note` field
+  - **Lokal Secret Section:** "Lokal Secret" - Insider tip from `lokal_secret` field (styled with special badge/icon)
+  - Actions: "Check Off", "View Full Details", "Skip"
+  - See [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) for complete card structure
 - **Gem Detail Cards (Swipeable):**
   - Swipe up to view current Gem details
   - Swipe left/right to browse other Gems in Krawl
@@ -1029,10 +1072,10 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
     - Category chips (scrollable horizontal list)
     - Active filter count badge
   - **Advanced Filters (Collapsible Panel):**
-    - Rating slider (1-5 stars with visual stars)
+    - Rating slider (1-5 stars with visual stars) - Krawls only
     - Distance slider (with radius visualization on map)
     - Date range picker (created date)
-    - Sort dropdown (Relevance / Rating / Distance / Date)
+    - Sort dropdown (Relevance / Rating / Distance / Date) - Rating for Krawls only, Gem Score for Gems
     - "Clear all" button
 - **Search Suggestions:**
   - Autocomplete dropdown with:
@@ -1050,7 +1093,7 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
     - Card layout with:
       - Thumbnail image (lazy loaded)
       - Title and category
-      - Rating (stars) and distance
+      - For Gems: Gem Score and vouches count; For Krawls: Rating (stars) and distance
       - Quick actions (Vouch, Share)
       - Tap to view details
     - Infinite scroll or "Load More" button
@@ -1310,7 +1353,8 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - View Gem details
   - Browse Gems on map
   - Search Gems
-  - Filter Gems by category, rating, distance
+  - Filter Gems by category, distance, status (pending/verified/flagged)
+  - Sort Gems by Gem Score (default), vouches, freshness, or distance
   - View Gem photos
   - Get directions to Gem
 
@@ -1323,14 +1367,16 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 #### Gem Quality Control
 - **In-Scope:**
   - Vouching system (users can vouch for Gems)
-  - Rating system (1-5 stars)
+  - Gem status system (pending/verified/flagged based on vouches and reports)
+  - Gem Score calculation for ranking (vouches × 1 + Krawl inclusions × 5)
+  - "Vibe Check" system for freshness tracking (last_verified_at)
   - Reporting system (flag inappropriate content)
   - Basic moderation queue (if implemented)
 
 - **Out-of-Scope:**
   - Automated content moderation (AI-based)
   - Advanced reputation system
-  - Gem verification badges
+  - Gem verification badges (except for "Claim Your Gem" feature)
   - Professional curator program
 
 ---
@@ -1358,7 +1404,8 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - View Krawl details
   - Browse Krawls on map
   - Search Krawls
-  - Filter Krawls by category, difficulty, duration
+  - Filter Krawls by category, difficulty, duration, rating (Krawl Health Score)
+  - Sort Krawls by rating (Krawl Health Score), vouches, date, distance
   - View Krawl route and Gems
   - Download Krawl for offline use
 
@@ -1452,8 +1499,12 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 - **In-Scope:**
   - Full-text search for Gems and Krawls
   - Search by name, description, category
-  - Search filters (category, rating, distance)
-  - Search results sorting
+  - Search filters:
+    - Gems: category, distance, status (pending/verified/flagged)
+    - Krawls: category, difficulty, duration, rating (Krawl Health Score)
+  - Search results sorting:
+    - Gems: Gem Score (default), vouches, freshness, distance
+    - Krawls: rating (Krawl Health Score), vouches, date, distance
   - Search suggestions/autocomplete
 
 - **Out-of-Scope:**
@@ -1493,19 +1544,50 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
   - Vouch history
   - Vouch-based ranking algorithm
 
-#### Rating System
+#### Krawl Rating System
 - **In-Scope:**
-  - 1-5 star rating for Gems and Krawls
-  - Average rating display
+  - 1-5 star rating for Krawls only (Gems use vouching system)
+  - Krawl Health Score (average rating) display
   - Rating breakdown (distribution)
-  - One rating per user per item
+  - One rating per user per Krawl
   - Rating update (user can change rating)
+  - Community Warning badge for Krawls with Health Score < 2.5
+  - Algorithmic burial of low-scoring Krawls
 
 - **Out-of-Scope:**
   - Detailed rating categories (separate ratings for different aspects)
   - Rating comments/reviews (separate from general comments)
   - Rating moderation
   - Rating analytics
+
+#### Gem Score System
+- **In-Scope:**
+  - Gem Score calculation: `(vouches_count × 1) + (krawl_inclusion_count × 5)`
+  - Dynamic calculation (not stored in database)
+  - Used as primary ranking factor for Gem search results
+  - Display Gem Score on Gem cards/listings
+  - Sort Gems by Gem Score (default sort)
+
+- **Out-of-Scope:**
+  - Storing Gem Score in database (calculated on-the-fly)
+  - Historical Gem Score tracking
+  - Gem Score analytics
+
+#### Creator Reputation System
+- **In-Scope:**
+  - Creator Reputation Score (average of all Krawl ratings created by user)
+  - Reputation tiers displayed on user profiles:
+    - 4.5+ Stars: 🥇 "Kanto Guide" (Trusted Creator)
+    - 3.5-4.4 Stars: 🥈 "Local Explorer"
+    - 2.5-3.4 Stars: 🥉 "Trail Maker"
+    - Below 2.5 Stars: No badge (low reputation)
+  - Algorithmic boost for high-reputation creators' new Krawls
+  - "Sandbox" system for low-reputation creators (new Krawls hidden from most users)
+
+- **Out-of-Scope:**
+  - Reputation decay over time
+  - Reputation transfer between users
+  - Advanced reputation analytics
 
 #### Comments and Reviews
 - **In-Scope:**
@@ -2102,7 +2184,7 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
    - Spring Boot Actuator endpoints for monitoring
 
 2. **Frontend Code**
-   - Complete Next.js 14.x PWA application with TypeScript
+   - Complete Next.js 16.0.3 PWA application with TypeScript
    - All pages and components (using Next.js App Router)
    - Zustand state management implementation
    - PWA configuration (next-pwa plugin)
@@ -2319,22 +2401,48 @@ For detailed user persona profiles, see [USER_PERSONA_PROFILES.md](./user-resear
 "Claim Your Gem" is a freemium business model feature that allows local businesses to claim ownership of Gems representing their establishments. This feature enables business verification, enhanced Gem profiles, and potential revenue opportunities.
 
 **Business Model:**
-- **Free Tier:** Basic Gem creation and listing (available to all users)
-- **Claimed Gems:** Businesses can claim Gems representing their establishments
-- **Verification Process:** Businesses provide proof of ownership (business registration, location verification)
-- **Enhanced Features (Future):** Verified badges, business hours, contact information, special promotions
+- **Free Tier:** Basic Gem creation and listing (available to all users). Community can create, vouch for, rate (via Krawls), and comment on any Gem for free.
+- **Claimed Gems:** Businesses pay 500 PHP/month to "claim" their Gem and unlock business management features
+- **Verification Process:** Businesses provide proof of ownership (business registration, location verification). Manual review in MVP phase.
+- **Important:** Claiming a Gem does NOT remove or override community vouches, ratings (from Krawls), or comments. Community content remains separate and prominent.
+
+**Premium Features (500 PHP/month subscription):**
+1. **Verified Badge:** Blue checkmark indicating official business verification. Helps users identify official information.
+2. **Official Info Management:** Business owners can update their own:
+   - Official opening hours
+   - Phone number
+   - Website URL
+   - Business description (separate from community description)
+3. **"Lokal Updates" Tab:** Special section on Gem page for real-time business updates:
+   - "Today's Special: Kare-Kareng Bagnet!"
+   - "We're closed for a private event tonight."
+   - "Live acoustic set from 8-10 PM!"
+   - Promotions and announcements
+4. **Official Menu Upload:** Upload official menu with prices
+5. **Analytics Dashboard:** View:
+   - How many people viewed your Gem this week
+   - How many times your Gem was added to Krawls
+   - Vouch count and trends
+   - Popular times/days
 
 **Implementation Approach:**
 1. **MVP Phase:** Validation only (5-10 businesses for pilot testing)
-2. **Post-MVP:** Full implementation with business dashboard and premium features
-3. **Revenue Model:** Potential freemium model with premium features for businesses
+2. **Post-MVP:** Full implementation with business dashboard and all premium features
+3. **Revenue Model:** 500 PHP/month subscription per claimed Gem
 
 **User Flow:**
 1. Business owner identifies Gem representing their establishment
 2. Business owner initiates claim request
 3. System validates business ownership (manual review in MVP)
-4. Upon approval, Gem is marked as "Claimed" with verified badge
-5. Business gains access to enhanced Gem profile (future feature)
+4. Upon approval, business owner pays 500 PHP/month subscription
+5. Gem is marked as "Claimed" with verified badge
+6. Business gains access to business dashboard with premium features
+7. Community vouches, ratings (via Krawls), and comments remain visible and separate
+
+**Note on Map Provider:**
+- Current documentation specifies Mapbox as the map provider
+- Initial plan conversation mentioned Google Maps
+- Team decision needed: Mapbox (current) vs Google Maps (mentioned in initial plan)
 
 **Admin Interface Requirements:**
 - Claim request review dashboard
@@ -2597,6 +2705,7 @@ Content lifecycle management ensures that Gems and Krawls remain accurate, up-to
 - `GET /api/gems` - List Gems (with filters)
 - `GET /api/gems/{id}` - Get Gem details
 - `POST /api/gems` - Create new Gem
+- `POST /api/gems/check-duplicate` - Check for duplicate Gems within 50m (PostGIS + Levenshtein distance)
 - `PUT /api/gems/{id}` - Update Gem (own content)
 - `DELETE /api/gems/{id}` - Delete Gem (own content)
 - `POST /api/gems/{id}/vouch` - Vouch for Gem
@@ -2635,7 +2744,7 @@ Content lifecycle management ensures that Gems and Krawls remain accurate, up-to
 - `krawls` - Krawl (trail) data
 - `krawl_gems` - Junction table for Krawl-Gem relationships
 - `vouches` - User vouches for Gems/Krawls
-- `ratings` - User ratings for Gems/Krawls
+- `ratings` - User ratings for Krawls only (Gems use vouching system)
 - `comments` - Comments on Gems/Krawls
 - `reports` - Content reports
 - `offline_downloads` - User offline download records
@@ -2708,7 +2817,8 @@ Content lifecycle management ensures that Gems and Krawls remain accurate, up-to
 
 **Document Type:** Scope of Work (SOW) / Project Specification  
 **Target Audience:** Development Team, Project Stakeholders, Clients  
-**Related Documents:** 
+**Related Documents:**
+- [CORE_FEATURE_SPECIFICATION.md](./private-docs/technical/CORE_FEATURE_SPECIFICATION.md) - Complete technical specifications for all 8 core features, including duplicate detection, Mapbox clustering, zoom-dependent visibility, Creator Notes/Lokal Secrets, and Stop Detail Card implementation 
 - [README.md](../README.md) - Project overview
 - [GLOSSARY.md](./GLOSSARY.md) - Project terminology and definitions
 - [PROJECT_BRIEF.md](./PROJECT_BRIEF.md) - High-level project overview and objectives
