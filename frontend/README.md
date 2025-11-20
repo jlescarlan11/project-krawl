@@ -32,6 +32,18 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Both fonts support English, Tagalog, and Cebuano languages. For complete typography specifications, see `docs/design/BRAND_GUIDELINES.md`.
 
+## Current Routes
+
+- `/` – placeholder landing experience (will later become the marketing/hero page)
+- `/onboarding` – new 5-step onboarding flow implemented for TASK-029
+- `/auth/sign-in` – temporary screen users reach when selecting “Sign In to Create” inside onboarding
+
+Update onboarding copy, illustrations, or CTA targets by editing:
+
+- `components/onboarding/*` for UI building blocks
+- `lib/onboarding/steps.ts` for step-by-step metadata
+- `lib/onboarding/storage.ts` for localStorage persistence
+
 ## Component Library
 
 Krawl includes a comprehensive component library with reusable UI components built with TypeScript, accessibility, and the design system in mind.
