@@ -84,17 +84,91 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Both fonts support English, Tagalog, and Cebuano languages. For complete typography specifications, see `docs/design/BRAND_GUIDELINES.md`.
 
-## Current Routes
+## Routing Structure
 
-- `/` – placeholder landing experience (will later become the marketing/hero page)
-- `/onboarding` – new 5-step onboarding flow implemented for TASK-029
-- `/auth/sign-in` – temporary screen users reach when selecting “Sign In to Create” inside onboarding
+Krawl uses Next.js 16 App Router with a comprehensive routing structure. All routes are defined in `lib/routes.ts` for type safety and maintainability.
 
-Update onboarding copy, illustrations, or CTA targets by editing:
+### Public Routes
 
-- `components/onboarding/*` for UI building blocks
-- `lib/onboarding/steps.ts` for step-by-step metadata
-- `lib/onboarding/storage.ts` for localStorage persistence
+- `/` – Landing page (placeholder, will become marketing/hero page)
+- `/map` – Map view page
+- `/search` – Search & discovery page
+- `/gems/[id]` – Gem detail page (dynamic route)
+- `/krawls/[id]` – Krawl detail page (dynamic route)
+- `/krawls/[id]/mode` – Krawl mode page (dynamic route)
+- `/users/[id]` – User profile page (dynamic route)
+- `/onboarding` – 5-step onboarding flow (TASK-029)
+- `/auth/sign-in` – Sign in page
+- `/auth/signout` – Sign out page
+- `/auth/callback` – OAuth callback handler
+
+### Protected Routes
+
+These routes require authentication and redirect to sign-in if the user is not authenticated:
+
+- `/gems/create` – Create new Gem
+- `/krawls/create` – Create new Krawl
+- `/users/settings` – User profile settings
+- `/offline` – Offline downloads management
+
+### Legal Pages
+
+- `/terms` – Terms of Service
+- `/privacy` – Privacy Policy
+
+### Route Protection
+
+Routes are protected at two levels:
+1. **Server-side:** Next.js middleware (`middleware.ts`) intercepts requests
+2. **Client-side:** `ProtectedRoute` component wraps protected page content
+
+### Navigation Components
+
+Navigation is handled by components in `components/navigation/`:
+- `Header` – Desktop top navigation
+- `Footer` – Site footer
+- `MobileMenu` – Mobile slide-in menu
+- `BottomNav` – Mobile bottom navigation
+- `Breadcrumbs` – Dynamic breadcrumb navigation
+- `NavLink` – Reusable navigation link with active state
+- `ProtectedRoute` – Client-side route protection wrapper
+
+For complete navigation documentation, see [`components/navigation/README.md`](./components/navigation/README.md).
+
+### Route Constants
+
+Use centralized route constants for type safety:
+
+```tsx
+import { ROUTES } from "@/lib/routes";
+
+// Static routes
+<Link href={ROUTES.MAP}>Map</Link>
+<Link href={ROUTES.SEARCH}>Search</Link>
+
+// Dynamic routes
+<Link href={ROUTES.GEM_DETAIL(gemId)}>View Gem</Link>
+<Link href={ROUTES.KRAWL_DETAIL(krawlId)}>View Krawl</Link>
+```
+
+### Route Utilities
+
+Utility functions for route-related logic:
+
+```tsx
+import { isProtectedRoute, isActiveRoute, getReturnUrl } from "@/lib/route-utils";
+
+// Check if route requires authentication
+if (isProtectedRoute(pathname)) {
+  // Handle protected route
+}
+
+// Check if route is active
+const isActive = isActiveRoute(currentPath, targetPath, exact);
+
+// Get return URL from query params
+const returnUrl = getReturnUrl(searchParams);
+```
 
 ## Project Structure
 

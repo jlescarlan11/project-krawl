@@ -81,11 +81,32 @@ project-krawl/
 ├── frontend/                          # Frontend application
 │   ├── app/                           # Next.js app directory
 │   │   ├── globals.css                # Design tokens (Tailwind CSS v4 @theme)
-│   │   ├── layout.tsx                 # Root layout with font configuration
+│   │   ├── layout.tsx                 # Root layout with navigation components
 │   │   ├── page.tsx                   # Home page placeholder
-│   │   ├── onboarding/page.tsx        # Five-step onboarding flow
-│   │   └── auth/sign-in/page.tsx      # Temporary sign-in landing screen
+│   │   ├── map/page.tsx               # Map view page
+│   │   ├── search/page.tsx            # Search & discovery page
+│   │   ├── gems/[id]/page.tsx         # Gem detail page (dynamic)
+│   │   ├── gems/create/page.tsx       # Gem creation page (protected)
+│   │   ├── krawls/[id]/page.tsx       # Krawl detail page (dynamic)
+│   │   ├── krawls/[id]/mode/page.tsx  # Krawl mode page (dynamic)
+│   │   ├── krawls/create/page.tsx     # Krawl creation page (protected)
+│   │   ├── users/[id]/page.tsx        # User profile page (dynamic)
+│   │   ├── users/settings/page.tsx    # Profile settings page (protected)
+│   │   ├── offline/page.tsx            # Offline downloads page (protected)
+│   │   ├── onboarding/page.tsx         # Five-step onboarding flow
+│   │   ├── auth/sign-in/page.tsx      # Sign in page
+│   │   ├── auth/signout/page.tsx      # Sign out page
+│   │   └── auth/callback/page.tsx     # OAuth callback handler
 │   ├── components/                   # Component library
+│   │   ├── navigation/                # Navigation components (TASK-034)
+│   │   │   ├── Header.tsx             # Desktop top navigation
+│   │   │   ├── Footer.tsx              # Site footer
+│   │   │   ├── MobileMenu.tsx          # Mobile slide-in menu
+│   │   │   ├── BottomNav.tsx          # Mobile bottom navigation
+│   │   │   ├── Breadcrumbs.tsx        # Dynamic breadcrumbs
+│   │   │   ├── NavLink.tsx            # Reusable navigation link
+│   │   │   ├── ProtectedRoute.tsx     # Client-side route protection
+│   │   │   └── README.md              # Navigation documentation
 │   │   ├── ui/                        # Base UI components
 │   │   │   ├── button.tsx            # Button component
 │   │   │   ├── card.tsx              # Card component
@@ -106,7 +127,10 @@ project-krawl/
 │   ├── lib/                           # Utility libraries
 │   │   ├── breakpoints.ts             # Responsive breakpoints and React hooks
 │   │   ├── design-tokens.ts           # TypeScript design token exports
+│   │   ├── routes.ts                  # Route constants and metadata (TASK-034)
+│   │   ├── route-utils.ts             # Route utility functions (TASK-034)
 │   │   └── utils.ts                   # Utility functions (cn helper)
+│   ├── middleware.ts                  # Next.js middleware for route protection (TASK-034)
 │   ├── hooks/                         # Custom React hooks
 │   │   └── index.ts                   # Barrel export for hooks
 │   ├── types/                         # Shared TypeScript types
