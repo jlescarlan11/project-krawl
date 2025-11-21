@@ -122,6 +122,15 @@ Routes are protected at two levels:
 1. **Server-side:** Next.js middleware (`middleware.ts`) intercepts requests
 2. **Client-side:** `ProtectedRoute` component wraps protected page content
 
+### Layout Components
+
+Layout components provide consistent page structure and spacing:
+- `Container` – Max-width container with responsive padding
+- `Section` – Section with vertical spacing and background variants
+- `PageLayout` – Page wrapper with optional breadcrumbs, title, and description
+
+For complete layout documentation, see [`components/layout/README.md`](./components/layout/README.md).
+
 ### Navigation Components
 
 Navigation is handled by components in `components/navigation/`:
@@ -280,6 +289,8 @@ Krawl includes a comprehensive component library with reusable UI components bui
 
 ### Available Components
 
+- **Layout Components:** Container, Section, PageLayout for consistent page structure
+- **Navigation Components:** Header, Footer, MobileMenu, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
 - **Buttons:** Primary, secondary, outline, text, and accent variants with loading states
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload with validation states
@@ -288,9 +299,19 @@ Krawl includes a comprehensive component library with reusable UI components bui
 
 ```tsx
 // Import components from the barrel export
-import { Button, Card, Input } from '@/components'
+import { Container, Section, PageLayout, Button, Card, Input } from '@/components'
 
-// Use components with TypeScript support
+// Layout components
+<PageLayout title="Page Title" breadcrumbs>
+  <Section spacing="md" background="light">
+    <Container>
+      <h2>Section Title</h2>
+      <p>Content here...</p>
+    </Container>
+  </Section>
+</PageLayout>
+
+// UI components
 <Button variant="primary" size="md">Create Gem</Button>
 <Card variant="standard" padding="default">Content</Card>
 <Input label="Email" type="email" required />
