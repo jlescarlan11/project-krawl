@@ -6,6 +6,8 @@ This directory contains the reusable UI component library for the Krawl applicat
 
 The component library includes:
 
+- **Layout Components:** Container, Section, and PageLayout for consistent page structure
+- **Navigation Components:** Header, Footer, MobileMenu, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
 - **Buttons:** Primary, secondary, outline, text, and accent variants
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
@@ -754,24 +756,45 @@ export function CreateGemForm() {
 
 ```
 components/
-├── ui/                    # Base UI components
-│   ├── button.tsx        # Button component
-│   ├── card.tsx          # Card component
-│   ├── input.tsx         # Input component
-│   ├── textarea.tsx      # Textarea component
-│   ├── select.tsx        # Select component
-│   ├── checkbox.tsx      # Checkbox component
+├── layout/               # Layout components (TASK-035)
+│   ├── Container.tsx    # Max-width container component
+│   ├── Section.tsx      # Section with spacing and backgrounds
+│   ├── PageLayout.tsx   # Page wrapper with breadcrumbs, title, description
+│   ├── index.ts         # Barrel exports
+│   └── README.md        # Layout components documentation
+├── navigation/          # Navigation components (TASK-034)
+│   ├── Header.tsx       # Desktop top navigation
+│   ├── Footer.tsx       # Site footer
+│   ├── MobileMenu.tsx   # Mobile slide-in menu
+│   ├── BottomNav.tsx    # Mobile bottom navigation
+│   ├── Breadcrumbs.tsx  # Dynamic breadcrumbs
+│   ├── NavLink.tsx      # Reusable navigation link
+│   ├── ProtectedRoute.tsx # Client-side route protection
+│   ├── index.ts         # Barrel exports
+│   └── README.md        # Navigation documentation
+├── ui/                  # Base UI components
+│   ├── button.tsx       # Button component
+│   ├── card.tsx         # Card component
+│   ├── input.tsx        # Input component
+│   ├── textarea.tsx     # Textarea component
+│   ├── select.tsx       # Select component
+│   ├── checkbox.tsx     # Checkbox component
 │   ├── radio.tsx         # Radio component
-│   ├── file-upload.tsx   # FileUpload component
+│   ├── file-upload.tsx  # FileUpload component
 │   ├── spinner.tsx       # Spinner component
 │   ├── loading-skeleton.tsx  # LoadingSkeleton component
-│   ├── progress-bar.tsx  # ProgressBar component
-│   ├── empty-state.tsx   # EmptyState component
+│   ├── progress-bar.tsx # ProgressBar component
+│   ├── empty-state.tsx  # EmptyState component
 │   ├── error-display.tsx # ErrorDisplay component
-│   └── toast.tsx         # Toast system (ToastProvider, useToast)
-├── index.ts              # Barrel exports
-└── README.md            # This file
+│   └── toast.tsx        # Toast system (ToastProvider, useToast)
+├── index.ts             # Barrel exports
+└── README.md           # This file
 ```
+
+## Related Component Documentation
+
+- **Layout Components:** [`layout/README.md`](./layout/README.md) - Container, Section, PageLayout
+- **Navigation Components:** [`navigation/README.md`](./navigation/README.md) - Header, Footer, Breadcrumbs, etc.
 
 ## References
 
@@ -782,5 +805,5 @@ components/
 
 ---
 
-**Last Updated:** 2025-11-20  
-**Version:** 1.1.0
+**Last Updated:** 2025-11-22  
+**Version:** 1.2.0

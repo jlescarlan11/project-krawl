@@ -40,3 +40,13 @@ export { ProgressBar, type ProgressBarProps } from "./ui/progress-bar";
 export { EmptyState, type EmptyStateProps } from "./ui/empty-state";
 export { ErrorDisplay, type ErrorDisplayProps } from "./ui/error-display";
 export { ToastProvider, useToast, type Toast } from "./ui/toast";
+
+// Layout components
+export {
+  Container,
+  Section,
+  PageLayout,
+  type ContainerProps,
+  type SectionProps,
+  type PageLayoutProps,
+} from "./layout";

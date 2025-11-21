@@ -107,6 +107,12 @@ project-krawl/
 │   │   │   ├── NavLink.tsx            # Reusable navigation link
 │   │   │   ├── ProtectedRoute.tsx     # Client-side route protection
 │   │   │   └── README.md              # Navigation documentation
+│   │   ├── layout/                    # Layout components (TASK-035)
+│   │   │   ├── Container.tsx          # Max-width container with responsive padding
+│   │   │   ├── Section.tsx            # Section with spacing and background variants
+│   │   │   ├── PageLayout.tsx         # Page wrapper with breadcrumbs, title, description
+│   │   │   ├── index.ts               # Barrel exports
+│   │   │   └── README.md              # Layout components documentation
 │   │   ├── ui/                        # Base UI components
 │   │   │   ├── button.tsx            # Button component
 │   │   │   ├── card.tsx              # Card component
