@@ -39,4 +39,3 @@ export function ServiceWorkerUpdateToast() {
 
   return null;
 }
-

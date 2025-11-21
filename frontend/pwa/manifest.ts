@@ -10,4 +10,3 @@ export const manifestDefaults = {
   categories: ["culture", "travel", "community"],
   lang: "en",
 };
-

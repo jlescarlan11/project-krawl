@@ -595,3 +595,4 @@ export const isDesktop = (width: number) => width >= 1024;
 **Status:** ✅ **APPROVED FOR IMPLEMENTATION**
 
 
+
