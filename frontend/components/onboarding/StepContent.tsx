@@ -23,12 +23,7 @@ const illustrationMap: Record<
   },
 };
 
-export function StepContent({
-  step,
-  index,
-  total,
-  onNext,
-}: StepContentProps) {
+export function StepContent({ step, index, total, onNext }: StepContentProps) {
   const illustration = illustrationMap[step.illustration];
 
   return (
@@ -67,4 +62,3 @@ export function StepContent({
     </article>
   );
 }
-

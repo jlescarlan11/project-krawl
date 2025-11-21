@@ -26,171 +26,172 @@
   /* ============================================
    * PRIMARY COLORS
    * ============================================ */
-  
+
   /* Primary Green - Main brand color
    * HEX: #2D7A3E | RGB: 45, 122, 62
    * Usage: Primary CTAs, brand elements, navigation
    * Contrast: 4.5:1 on white (WCAG AA compliant)
    */
-  --color-primary-green: #2D7A3E;
-  
+  --color-primary-green: #2d7a3e;
+
   /* Accent Orange - Highlights and energy
    * HEX: #FF6B35 | RGB: 255, 107, 53
    * Usage: Highlights, important secondary actions
    * Contrast: 3.5:1 on white (WCAG AA compliant)
    */
-  --color-accent-orange: #FF6B35;
-  
+  --color-accent-orange: #ff6b35;
+
   /* Warm Yellow - Discovery and positivity
    * HEX: #F7B801 | RGB: 247, 184, 1
    * Usage: Discovery indicators, positive feedback
    * Note: Use with dark text for WCAG AA compliance
    */
-  --color-warm-yellow: #F7B801;
-  
+  --color-warm-yellow: #f7b801;
+
   /* Dark Green - Depth and hover states
    * HEX: #1A5A2A | RGB: 26, 90, 42
    * Usage: Hover states, dark mode backgrounds
    * Contrast: WCAG AAA compliant for text on light
    */
-  --color-dark-green: #1A5A2A;
-  
+  --color-dark-green: #1a5a2a;
+
   /* Light Green - Accents and disabled states
    * HEX: #4A9D5E | RGB: 74, 157, 94
    * Usage: Highlights, accents, disabled states
    * Contrast: WCAG AA compliant on white
    */
-  --color-light-green: #4A9D5E;
-  
+  --color-light-green: #4a9d5e;
+
   /* ============================================
    * TEXT COLORS
    * ============================================ */
-  
+
   /* Primary Text - Main content text
    * HEX: #1A1A1A | RGB: 26, 26, 26
    * Usage: Body text, headings on light backgrounds
    */
-  --color-text-primary: #1A1A1A;
-  
+  --color-text-primary: #1a1a1a;
+
   /* Secondary Text - Supporting text
    * HEX: #4A4A4A | RGB: 74, 74, 74
    * Usage: Supporting text, descriptions
    */
-  --color-text-secondary: #4A4A4A;
-  
+  --color-text-secondary: #4a4a4a;
+
   /* Tertiary Text - Captions and labels
    * HEX: #6B6B6B | RGB: 107, 107, 107
    * Usage: Captions, labels, metadata
    */
-  --color-text-tertiary: #6B6B6B;
-  
+  --color-text-tertiary: #6b6b6b;
+
   /* Text on Dark - Text for dark backgrounds
    * HEX: #FFFFFF | RGB: 255, 255, 255
    * Usage: Text on dark backgrounds, buttons
    */
-  --color-text-on-dark: #FFFFFF;
-  
+  --color-text-on-dark: #ffffff;
+
   /* Text Disabled - Disabled text state
    * HEX: #6B6B6B at 60% opacity
    * Usage: Disabled form fields, inactive text
    */
   --color-text-disabled: rgba(107, 107, 107, 0.6);
-  
+
   /* ============================================
    * BACKGROUND COLORS
    * ============================================ */
-  
+
   /* White - Primary background
    * HEX: #FFFFFF | RGB: 255, 255, 255
    * Usage: Main background, cards, modals
    */
-  --color-bg-white: #FFFFFF;
-  
+  --color-bg-white: #ffffff;
+
   /* Light Gray - Secondary background
    * HEX: #F5F5F5 | RGB: 245, 245, 245
    * Usage: Secondary backgrounds, subtle sections
    */
-  --color-bg-light: #F5F5F5;
-  
+  --color-bg-light: #f5f5f5;
+
   /* Medium Gray - Borders and dividers
    * HEX: #E5E5E5 | RGB: 229, 229, 229
    * Usage: Borders, dividers, input borders
    */
-  --color-bg-medium: #E5E5E5;
-  
+  --color-bg-medium: #e5e5e5;
+
   /* Dark Background - Dark mode primary
    * HEX: #1A1A1A | RGB: 26, 26, 26
    * Usage: Dark mode backgrounds (future)
    */
-  --color-bg-dark: #1A1A1A;
-  
+  --color-bg-dark: #1a1a1a;
+
   /* Dark Surface - Dark mode surfaces
    * HEX: #2A2A2A | RGB: 42, 42, 42
    * Usage: Dark mode cards, surfaces (future)
    */
-  --color-bg-dark-surface: #2A2A2A;
-  
+  --color-bg-dark-surface: #2a2a2a;
+
   /* ============================================
    * SEMANTIC COLORS
    * ============================================ */
-  
+
   /* Success - Positive actions and feedback
    * HEX: #2D7A3E (Primary Green)
    * Usage: Success messages, completed actions
    */
-  --color-success: #2D7A3E;
-  
+  --color-success: #2d7a3e;
+
   /* Error - Errors and destructive actions
    * HEX: #DC2626 | RGB: 220, 38, 38
    * Usage: Error messages, validation errors
    */
-  --color-error: #DC2626;
-  
+  --color-error: #dc2626;
+
   /* Warning - Warnings and attention needed
    * HEX: #F7B801 (Warm Yellow)
    * Usage: Warning messages, caution states
    */
-  --color-warning: #F7B801;
-  
+  --color-warning: #f7b801;
+
   /* Info - Informational messages
    * HEX: #3B82F6 | RGB: 59, 130, 246
    * Usage: Informational messages, tips
    */
-  --color-info: #3B82F6;
-  
+  --color-info: #3b82f6;
+
   /* ============================================
    * TYPOGRAPHY
    * ============================================ */
-  
+
   /* Font Families
    * Note: --font-inter and --font-heading are created by next/font/google
    */
-  --font-family-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-sans:
+    var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-family-heading: var(--font-heading), var(--font-inter), sans-serif;
-  
+
   /* Font Sizes (Type Scale)
    * Mobile-first responsive sizes
    */
-  --text-xs: 0.75rem;      /* 12px - Extra small text */
-  --text-sm: 0.875rem;     /* 14px - Small text, captions */
-  --text-base: 1rem;       /* 16px - Body text (desktop) */
-  --text-lg: 1.125rem;     /* 18px - Large body text */
-  --text-xl: 1.25rem;      /* 20px - H4 (desktop) */
-  --text-2xl: 1.5rem;      /* 24px - H3 (desktop) */
-  --text-3xl: 2rem;        /* 32px - H2 (desktop), H1 (mobile) */
-  --text-4xl: 2.5rem;      /* 40px - H1 (desktop) */
-  
+  --text-xs: 0.75rem; /* 12px - Extra small text */
+  --text-sm: 0.875rem; /* 14px - Small text, captions */
+  --text-base: 1rem; /* 16px - Body text (desktop) */
+  --text-lg: 1.125rem; /* 18px - Large body text */
+  --text-xl: 1.25rem; /* 20px - H4 (desktop) */
+  --text-2xl: 1.5rem; /* 24px - H3 (desktop) */
+  --text-3xl: 2rem; /* 32px - H2 (desktop), H1 (mobile) */
+  --text-4xl: 2.5rem; /* 40px - H1 (desktop) */
+
   /* Line Heights */
-  --leading-tight: 1.2;    /* Headings */
-  --leading-snug: 1.3;     /* Section headings */
-  --leading-normal: 1.5;   /* Body text, buttons */
-  --leading-relaxed: 1.6;  /* Paragraphs */
-  
+  --leading-tight: 1.2; /* Headings */
+  --leading-snug: 1.3; /* Section headings */
+  --leading-normal: 1.5; /* Body text, buttons */
+  --leading-relaxed: 1.6; /* Paragraphs */
+
   /* Letter Spacing */
-  --tracking-tight: -0.02em;  /* H1 */
-  --tracking-normal: 0;       /* Body text */
-  --tracking-wide: 0.01em;    /* Captions, buttons */
-  
+  --tracking-tight: -0.02em; /* H1 */
+  --tracking-normal: 0; /* Body text */
+  --tracking-wide: 0.01em; /* Captions, buttons */
+
   /* Font Weights
    * Available through Inter font family
    * Usage: font-normal (400), font-medium (500), font-semibold (600), font-bold (700)
@@ -199,140 +200,142 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   /* ============================================
    * SPACING SCALE (8px base)
    * ============================================ */
-  
+
   --spacing-0: 0;
-  --spacing-1: 0.25rem;    /* 4px - Tight spacing */
-  --spacing-2: 0.5rem;     /* 8px - Small spacing */
-  --spacing-3: 0.75rem;    /* 12px - Medium-small */
-  --spacing-4: 1rem;       /* 16px - Base spacing */
-  --spacing-5: 1.25rem;    /* 20px - Medium spacing */
-  --spacing-6: 1.5rem;     /* 24px - Large spacing */
-  --spacing-8: 2rem;       /* 32px - Extra large */
-  --spacing-10: 2.5rem;    /* 40px - Section spacing */
-  --spacing-12: 3rem;      /* 48px - Major sections */
-  --spacing-16: 4rem;      /* 64px - Hero spacing */
-  --spacing-20: 5rem;      /* 80px - Page-level */
-  
+  --spacing-1: 0.25rem; /* 4px - Tight spacing */
+  --spacing-2: 0.5rem; /* 8px - Small spacing */
+  --spacing-3: 0.75rem; /* 12px - Medium-small */
+  --spacing-4: 1rem; /* 16px - Base spacing */
+  --spacing-5: 1.25rem; /* 20px - Medium spacing */
+  --spacing-6: 1.5rem; /* 24px - Large spacing */
+  --spacing-8: 2rem; /* 32px - Extra large */
+  --spacing-10: 2.5rem; /* 40px - Section spacing */
+  --spacing-12: 3rem; /* 48px - Major sections */
+  --spacing-16: 4rem; /* 64px - Hero spacing */
+  --spacing-20: 5rem; /* 80px - Page-level */
+
   /* ============================================
    * BORDER RADIUS
    * ============================================ */
-  
-  --radius-default: 0.5rem;   /* 8px - Default rounded corners */
-  --radius-lg: 0.75rem;        /* 12px - Large rounded corners */
-  --radius-xl: 1rem;           /* 16px - Extra large rounded corners */
-  --radius-full: 9999px;       /* Full circle/pill shape */
-  
+
+  --radius-default: 0.5rem; /* 8px - Default rounded corners */
+  --radius-lg: 0.75rem; /* 12px - Large rounded corners */
+  --radius-xl: 1rem; /* 16px - Extra large rounded corners */
+  --radius-full: 9999px; /* Full circle/pill shape */
+
   /* ============================================
    * SHADOWS / ELEVATION
    * ============================================ */
-  
+
   /* Elevation 0 - No shadow (flat elements) */
   --shadow-elevation-0: none;
-  
+
   /* Elevation 1 - Subtle elevation (cards, inputs) */
   --shadow-elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  
+
   /* Elevation 2 - Low elevation (hover states, dropdowns) */
   --shadow-elevation-2: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-  
+
   /* Elevation 3 - Medium elevation (elevated cards, modals) */
   --shadow-elevation-3: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
-  
+
   /* Elevation 4 - High elevation (overlays, popovers) */
   --shadow-elevation-4: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-  
+
   /* Elevation 5 - Highest elevation (tooltips, toasts) */
   --shadow-elevation-5: 0 16px 32px 0 rgba(0, 0, 0, 0.25);
-  
+
   /* ============================================
    * TRANSITIONS
    * ============================================ */
-  
+
   /* Durations */
-  --transition-duration-fast: 150ms;      /* Quick interactions (buttons, inputs) */
-  --transition-duration-normal: 200ms;    /* Standard transitions (cards, hover) */
-  --transition-duration-slow: 300ms;      /* Deliberate transitions (modals, page transitions) */
-  
+  --transition-duration-fast: 150ms; /* Quick interactions (buttons, inputs) */
+  --transition-duration-normal: 200ms; /* Standard transitions (cards, hover) */
+  --transition-duration-slow: 300ms; /* Deliberate transitions (modals, page transitions) */
+
   /* Easing Functions */
   --transition-easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
   --transition-easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
   --transition-easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --transition-easing-linear: linear;
-  
+
   /* Common Transition Patterns */
   --transition-all-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-all-normal: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-colors-fast: color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-colors-fast:
+    color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-transform-fast: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* ============================================
    * Z-INDEX LAYERS
    * ============================================ */
-  
+
   /* Base layer - Default stacking context */
   --z-index-base: 0;
-  
+
   /* Dropdown layer - Dropdowns, select menus */
   --z-index-dropdown: 1000;
-  
+
   /* Sticky layer - Sticky headers, navigation */
   --z-index-sticky: 1100;
-  
+
   /* Overlay layer - Backdrops, overlays */
   --z-index-overlay: 1200;
-  
+
   /* Modal layer - Modals, dialogs */
   --z-index-modal: 1300;
-  
+
   /* Tooltip layer - Tooltips, popovers */
   --z-index-tooltip: 1400;
-  
+
   /* Toast layer - Toast notifications (highest) */
   --z-index-toast: 1500;
-  
+
   /* ============================================
    * BORDERS
    * ============================================ */
-  
+
   /* Border Widths */
-  --border-width-thin: 1px;        /* Default borders (cards, inputs) */
-  --border-width-default: 2px;     /* Emphasized borders (outline buttons) */
-  --border-width-thick: 4px;       /* Strong borders (focus states, dividers) */
-  
+  --border-width-thin: 1px; /* Default borders (cards, inputs) */
+  --border-width-default: 2px; /* Emphasized borders (outline buttons) */
+  --border-width-thick: 4px; /* Strong borders (focus states, dividers) */
+
   /* Border Styles */
   --border-style-solid: solid;
   --border-style-dashed: dashed;
   --border-style-dotted: dotted;
   --border-style-none: none;
-  
+
   /* ============================================
    * GRAY SCALE (for borders, dividers)
    * ============================================ */
-  
-  --color-gray-200: #E5E5E5;   /* Borders, dividers */
-  --color-gray-300: #D1D5DB;   /* Light borders */
-  --color-gray-600: #4B5563;   /* Medium gray text */
-  --color-gray-700: #374151;   /* Dark gray text */
-  
+
+  --color-gray-200: #e5e5e5; /* Borders, dividers */
+  --color-gray-300: #d1d5db; /* Light borders */
+  --color-gray-600: #4b5563; /* Medium gray text */
+  --color-gray-700: #374151; /* Dark gray text */
+
   /* ============================================
    * RESPONSIVE BREAKPOINTS
    * ============================================ */
-  
+
   /* Breakpoint values (for reference)
    * Tailwind CSS uses these values by default.
    * Use Tailwind responsive classes (sm:, md:, lg:, xl:, 2xl:) instead of these variables.
    * These variables are provided for documentation and programmatic access.
    */
-  --breakpoint-sm: 640px;   /* Tablet and up */
-  --breakpoint-md: 768px;   /* Medium screens */
-  --breakpoint-lg: 1024px;  /* Desktop and up */
-  --breakpoint-xl: 1280px;  /* Large desktop and up */
+  --breakpoint-sm: 640px; /* Tablet and up */
+  --breakpoint-md: 768px; /* Medium screens */
+  --breakpoint-lg: 1024px; /* Desktop and up */
+  --breakpoint-xl: 1280px; /* Large desktop and up */
   --breakpoint-2xl: 1536px; /* Extra large screens */
-  
+
   /* Device category ranges (for reference) */
   --device-mobile-max: 639px;
   --device-tablet-min: 640px;
@@ -370,7 +373,12 @@ body {
 
 /* Shimmer animation class for LoadingSkeleton component */
 .skeleton-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(107, 107, 107, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(107, 107, 107, 0.1),
+    transparent
+  );
   background-size: 1000px 100%;
   animation: shimmer 1.5s linear infinite;
 }

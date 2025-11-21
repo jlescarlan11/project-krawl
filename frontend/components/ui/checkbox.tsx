@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { Check, XCircle } from 'lucide-react'
-import { forwardRef, useId } from 'react'
-import { cn } from '@/lib/utils'
+import { Check, XCircle } from "lucide-react";
+import { forwardRef, useId } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Checkbox component with custom styling and validation states.
- * 
+ *
  * Custom styled checkbox (20px × 20px) with Primary Green checked state.
  * Supports error state and proper accessibility attributes.
- * 
+ *
  * @example
  * ```tsx
  * <Checkbox
@@ -20,12 +20,16 @@ import { cn } from '@/lib/utils'
  * <Checkbox label="Subscribe" error="You must agree" />
  * ```
  */
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
-  label?: string
-  error?: string
-  helperText?: string
-  checked?: boolean
-  onCheckedChange?: (checked: boolean) => void
+export interface CheckboxProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "type" | "onChange"
+  > {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
@@ -44,15 +48,15 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     },
     ref
   ) => {
-    const generatedId = useId()
-    const checkboxId = id || `checkbox-${generatedId}`
-    const hasError = !!error
+    const generatedId = useId();
+    const checkboxId = id || `checkbox-${generatedId}`;
+    const hasError = !!error;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (onCheckedChange) {
-        onCheckedChange(e.target.checked)
+        onCheckedChange(e.target.checked);
       }
-    }
+    };
 
     return (
       <div className="space-y-2">
@@ -68,9 +72,11 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               required={required}
               aria-invalid={hasError}
               aria-describedby={
-                error ? `${checkboxId}-error` :
-                helperText ? `${checkboxId}-helper` :
-                undefined
+                error
+                  ? `${checkboxId}-error`
+                  : helperText
+                    ? `${checkboxId}-helper`
+                    : undefined
               }
               className="sr-only"
               {...props}
@@ -78,14 +84,14 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             <label
               htmlFor={checkboxId}
               className={cn(
-                'flex items-center justify-center w-5 h-5 rounded border-2 cursor-pointer',
-                'transition-all duration-150',
-                'focus-within:outline-2 focus-within:outline-accent-orange focus-within:outline-offset-2',
+                "flex items-center justify-center w-5 h-5 rounded border-2 cursor-pointer",
+                "transition-all duration-150",
+                "focus-within:outline-2 focus-within:outline-accent-orange focus-within:outline-offset-2",
                 checked
-                  ? 'bg-primary-green border-primary-green'
-                  : 'bg-bg-white border-bg-medium',
-                disabled && 'opacity-60 cursor-not-allowed',
-                hasError && 'border-error',
+                  ? "bg-primary-green border-primary-green"
+                  : "bg-bg-white border-bg-medium",
+                disabled && "opacity-60 cursor-not-allowed",
+                hasError && "border-error",
                 className
               )}
             >
@@ -98,10 +104,10 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             <label
               htmlFor={checkboxId}
               className={cn(
-                'text-sm font-medium text-text-primary cursor-pointer',
-                'flex-1',
-                disabled && 'opacity-60 cursor-not-allowed',
-                hasError && 'text-error'
+                "text-sm font-medium text-text-primary cursor-pointer",
+                "flex-1",
+                disabled && "opacity-60 cursor-not-allowed",
+                hasError && "text-error"
               )}
             >
               {label}
@@ -128,11 +134,10 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           </p>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-Checkbox.displayName = 'Checkbox'
+Checkbox.displayName = "Checkbox";
 
-export { Checkbox }
-
+export { Checkbox };

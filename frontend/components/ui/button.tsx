@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { Loader2 } from 'lucide-react'
-import { forwardRef } from 'react'
-import { cn } from '@/lib/utils'
+import { Loader2 } from "lucide-react";
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Button component with multiple variants, sizes, and states.
- * 
+ *
  * Supports primary, secondary, outline, text, and accent variants.
  * Includes loading state with spinner, icon support, and full accessibility.
- * 
+ *
  * @example
  * ```tsx
  * <Button variant="primary" size="md">Click me</Button>
@@ -19,23 +19,24 @@ import { cn } from '@/lib/utils'
  * </Button>
  * ```
  */
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'accent'
-  size?: 'sm' | 'md' | 'lg'
-  loading?: boolean
-  icon?: React.ReactNode
-  iconPosition?: 'left' | 'right'
-  fullWidth?: boolean
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "outline" | "text" | "accent";
+  size?: "sm" | "md" | "lg";
+  loading?: boolean;
+  icon?: React.ReactNode;
+  iconPosition?: "left" | "right";
+  fullWidth?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      variant = 'primary',
-      size = 'md',
+      variant = "primary",
+      size = "md",
       loading = false,
       icon,
-      iconPosition = 'left',
+      iconPosition = "left",
       fullWidth = false,
       disabled,
       className,
@@ -44,70 +45,73 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const isIconOnly = !children && icon
+    const isIconOnly = !children && icon;
 
     const variantClasses = {
-      primary: 'bg-primary-green text-white hover:bg-dark-green active:scale-[0.98]',
-      secondary: 'bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10',
-      outline: 'bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10',
-      text: 'bg-transparent text-primary-green hover:bg-light-green/10 hover:underline',
-      accent: 'bg-accent-orange text-white hover:bg-[#E55A2B] active:scale-[0.98]',
-    }
+      primary:
+        "bg-primary-green text-white hover:bg-dark-green active:scale-[0.98]",
+      secondary:
+        "bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10",
+      outline:
+        "bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10",
+      text: "bg-transparent text-primary-green hover:bg-light-green/10 hover:underline",
+      accent:
+        "bg-accent-orange text-white hover:bg-[#E55A2B] active:scale-[0.98]",
+    };
 
     const sizeClasses = {
-      sm: 'px-4 py-2 text-sm min-h-[36px]',
-      md: 'px-6 py-3 text-base min-h-[44px]',
-      lg: 'px-8 py-4 text-lg min-h-[52px]',
-    }
+      sm: "px-4 py-2 text-sm min-h-[36px]",
+      md: "px-6 py-3 text-base min-h-[44px]",
+      lg: "px-8 py-4 text-lg min-h-[52px]",
+    };
 
     const iconSizeClasses = {
-      sm: 'w-4 h-4',
-      md: 'w-5 h-5',
-      lg: 'w-6 h-6',
-    }
+      sm: "w-4 h-4",
+      md: "w-5 h-5",
+      lg: "w-6 h-6",
+    };
 
     return (
       <button
         ref={ref}
-        type={props.type ?? 'button'}
+        type={props.type ?? "button"}
         disabled={disabled || loading}
         aria-busy={loading}
         aria-disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
-          'transition-all duration-150',
-          'focus:outline-2 focus:outline-accent-orange focus:outline-offset-2',
-          'disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none',
+          "inline-flex items-center justify-center gap-2 rounded-lg font-medium",
+          "transition-all duration-150",
+          "focus:outline-2 focus:outline-accent-orange focus:outline-offset-2",
+          "disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none",
           variantClasses[variant],
           sizeClasses[size],
-          fullWidth && 'w-full',
-          isIconOnly && 'min-w-[44px] min-h-[44px]',
+          fullWidth && "w-full",
+          isIconOnly && "min-w-[44px] min-h-[44px]",
           className
         )}
         {...props}
       >
         {loading ? (
           <>
-            <Loader2 className={cn('animate-spin', iconSizeClasses[size])} />
+            <Loader2 className={cn("animate-spin", iconSizeClasses[size])} />
             {children && <span>Loading...</span>}
           </>
         ) : (
           <>
-            {icon && iconPosition === 'left' && (
+            {icon && iconPosition === "left" && (
               <span className={iconSizeClasses[size]}>{icon}</span>
             )}
             {children && <span>{children}</span>}
-            {icon && iconPosition === 'right' && (
+            {icon && iconPosition === "right" && (
               <span className={iconSizeClasses[size]}>{icon}</span>
             )}
           </>
         )}
       </button>
-    )
+    );
   }
-)
+);
 
-Button.displayName = 'Button'
+Button.displayName = "Button";
 
-export { Button }
-
+export { Button };

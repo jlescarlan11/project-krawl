@@ -7,6 +7,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **TypeScript:** 5.x
 - **Tailwind CSS:** v4 (CSS-based configuration with @tailwindcss/postcss)
 - **ESLint:** 9.x (with eslint-config-next)
+- **Prettier:** 3.x (code formatter)
 
 ## Getting Started
 
@@ -24,9 +25,42 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file (hot module replacement enabled).
+
+## Code Formatting
+
+This project uses [Prettier](https://prettier.io/) for consistent code formatting.
+
+### Formatting Commands
+
+```bash
+# Format all files
+npm run format
+
+# Check if files are formatted (for CI/CD)
+npm run format:check
+```
+
+### IDE Integration
+
+For the best experience, configure your IDE to format on save:
+
+- **VS Code:** Install the "Prettier - Code formatter" extension
+- **WebStorm/IntelliJ:** Enable Prettier in Settings > Languages & Frameworks > JavaScript > Prettier
+
+### Prettier Configuration
+
+Prettier is configured via `.prettierrc.json`. The configuration follows project conventions:
+
+- Double quotes for strings
+- Semicolons required
+- 2-space indentation
+- 80 character line width
+
+**ESLint Integration:** ESLint and Prettier are integrated using `eslint-config-prettier` to prevent formatting conflicts. ESLint handles code quality while Prettier handles formatting.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load fonts from Google Fonts:
+
 - **[Inter](https://fonts.google.com/specimen/Inter)** - Primary typeface for body text and UI elements
 - **[Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans)** - Secondary typeface (optional for headings)
 
@@ -43,6 +77,108 @@ Update onboarding copy, illustrations, or CTA targets by editing:
 - `components/onboarding/*` for UI building blocks
 - `lib/onboarding/steps.ts` for step-by-step metadata
 - `lib/onboarding/storage.ts` for localStorage persistence
+
+## Project Structure
+
+```
+frontend/
+├── app/              # Next.js App Router pages and layouts
+├── components/       # React components (UI library)
+├── hooks/            # Custom React hooks
+├── lib/              # Utility functions and helpers
+├── types/            # Shared TypeScript type definitions
+├── public/           # Static assets
+├── docs/             # Project documentation
+└── ...
+```
+
+### Directory Organization
+
+- **`/app`** - Next.js App Router pages, layouts, and route handlers
+- **`/components`** - Reusable React components (UI library)
+- **`/hooks`** - Custom React hooks (reusable logic)
+- **`/lib`** - Utility functions, helpers, and shared logic
+- **`/types`** - Shared TypeScript type definitions
+- **`/public`** - Static assets (images, icons, etc.)
+
+**Note:** Component-specific types and hooks can remain co-located with their components for better organization.
+
+## Development Workflow
+
+### Before Committing
+
+1. **Format code:**
+
+   ```bash
+   npm run format
+   ```
+
+2. **Lint code:**
+
+   ```bash
+   npm run lint
+   ```
+
+3. **Type check:**
+   ```bash
+   npm run build
+   ```
+
+### Hot Reload
+
+The development server supports hot module replacement (HMR) with Fast Refresh enabled by default:
+
+- Component changes are reflected immediately
+- State is preserved during hot reload
+- Fast refresh enabled by default
+- No full page reload required
+
+**Start the development server:**
+
+```bash
+npm run dev
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
+**Verifying Hot Reload:**
+
+1. Start the dev server: `npm run dev`
+2. Open [http://localhost:3000](http://localhost:3000) in your browser
+3. Open browser DevTools (F12) and check the Console tab
+4. Make a change to `app/page.tsx` (e.g., change the heading text)
+5. Save the file
+6. **Expected behavior:**
+   - Changes appear immediately in the browser
+   - Console shows "Fast Refresh" messages
+   - No full page reload occurs
+   - Browser URL stays the same
+   - Any form state or scroll position is preserved
+
+**Troubleshooting:**
+
+If hot reload doesn't work:
+
+- Check browser console for errors
+- Verify the dev server is running
+- Clear browser cache and hard refresh (Ctrl+Shift+R)
+- Restart the dev server
+- Check for syntax errors that might prevent HMR
+
+### Import Patterns
+
+The project uses path aliases for clean imports:
+
+```tsx
+// ✅ Good - Using path aliases
+import { Button } from "@/components";
+import { useBreakpoint } from "@/hooks";
+import { cn } from "@/lib/utils";
+import type { StepId } from "@/types";
+
+// ❌ Avoid - Relative paths
+import { Button } from "../../components/ui/button";
+```
 
 ## Component Library
 
@@ -86,10 +222,10 @@ For a complete reference of all available design tokens, see [`docs/DESIGN_TOKEN
 // Using Tailwind classes (recommended)
 <button className="bg-primary-green text-white px-6 py-3 rounded-lg">
   Create Gem
-</button>
+</button>;
 
 // Using TypeScript design tokens
-import { colors } from '@/lib/design-tokens';
+import { colors } from "@/lib/design-tokens";
 const primaryColor = colors.primary.green; // '#2D7A3E'
 ```
 
@@ -127,26 +263,24 @@ Krawl uses a mobile-first responsive design approach with Tailwind CSS breakpoin
 
 ```tsx
 // Using Tailwind responsive classes (recommended)
-<div className="
+<div
+  className="
   grid grid-cols-1 gap-4
   sm:grid-cols-2 sm:gap-6
   lg:grid-cols-3 lg:gap-8
-">
+"
+>
   {/* Content */}
-</div>
+</div>;
 
 // Using React hooks for conditional rendering
-import { useIsMobile, useIsDesktop } from '@/lib/design-tokens';
+import { useIsMobile, useIsDesktop } from "@/hooks";
 
 function MyComponent() {
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
-  
-  return (
-    <div>
-      {isMobile ? <MobileView /> : <DesktopView />}
-    </div>
-  );
+
+  return <div>{isMobile ? <MobileView /> : <DesktopView />}</div>;
 }
 ```
 

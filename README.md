@@ -107,8 +107,15 @@ project-krawl/
 │   │   ├── breakpoints.ts             # Responsive breakpoints and React hooks
 │   │   ├── design-tokens.ts           # TypeScript design token exports
 │   │   └── utils.ts                   # Utility functions (cn helper)
+│   ├── hooks/                         # Custom React hooks
+│   │   └── index.ts                   # Barrel export for hooks
+│   ├── types/                         # Shared TypeScript types
+│   │   └── index.ts                   # Barrel export for types
 │   ├── docs/                          # Frontend documentation
-│   │   └── DESIGN_TOKENS.md           # Design tokens quick reference
+│   │   ├── DESIGN_TOKENS.md           # Design tokens quick reference
+│   │   └── HOT_RELOAD_VERIFICATION.md # Hot reload verification guide
+│   ├── .prettierrc.json               # Prettier configuration
+│   ├── .prettierignore                # Prettier ignore patterns
 │   └── README.md                      # Frontend setup and usage guide
 │
 └── docs/                              # Documentation directory
@@ -163,6 +170,7 @@ project-krawl/
 - **Language:** TypeScript 5.x
 - **React:** React 19.2.0
 - **Styling:** Tailwind CSS v4 (CSS-based configuration with `@theme` directive)
+- **Code Quality:** ESLint 9.x (with eslint-config-next), Prettier 3.6.2 (code formatter)
 - **Fonts:** Inter (primary), Plus Jakarta Sans (secondary) - Optimized via `next/font/google`
 - **Design Tokens:** CSS custom properties and TypeScript exports covering colors, typography, spacing, shadows, transitions, z-index layers, borders, and breakpoints (see `frontend/docs/DESIGN_TOKENS.md`)
 - **State Management:** Zustand 4.4.x (planned)

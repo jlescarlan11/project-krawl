@@ -49,4 +49,3 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
 ];
 
 export const STEP_ID_ORDER: StepId[] = ONBOARDING_STEPS.map((step) => step.id);
-

@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import { XCircle, CheckCircle, ChevronDown } from 'lucide-react'
-import { forwardRef, useId } from 'react'
-import { cn } from '@/lib/utils'
+import { XCircle, CheckCircle, ChevronDown } from "lucide-react";
+import { forwardRef, useId } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Select option interface for dropdown options.
  */
 export interface SelectOption {
-  value: string
-  label: string
-  disabled?: boolean
+  value: string;
+  label: string;
+  disabled?: boolean;
 }
 
 /**
  * Select dropdown component with validation states and custom styling.
- * 
+ *
  * Supports error, success, and disabled states with visual feedback.
  * Custom styled dropdown arrow and proper ARIA attributes.
- * 
+ *
  * @example
  * ```tsx
  * <Select
@@ -31,14 +31,15 @@ export interface SelectOption {
  * />
  * ```
  */
-export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
-  label?: string
-  error?: string
-  success?: string
-  helperText?: string
-  options: SelectOption[]
-  placeholder?: string
-  fullWidth?: boolean
+export interface SelectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
+  label?: string;
+  error?: string;
+  success?: string;
+  helperText?: string;
+  options: SelectOption[];
+  placeholder?: string;
+  fullWidth?: boolean;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -58,13 +59,13 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const generatedId = useId()
-    const selectId = id || `select-${generatedId}`
-    const hasError = !!error
-    const hasSuccess = !!success && !hasError
+    const generatedId = useId();
+    const selectId = id || `select-${generatedId}`;
+    const hasError = !!error;
+    const hasSuccess = !!success && !hasError;
 
     return (
-      <div className={cn('space-y-2', fullWidth && 'w-full')}>
+      <div className={cn("space-y-2", fullWidth && "w-full")}>
         {label && (
           <label
             htmlFor={selectId}
@@ -81,20 +82,27 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             required={required}
             aria-invalid={hasError}
             aria-describedby={
-              error ? `${selectId}-error` :
-              success ? `${selectId}-success` :
-              helperText ? `${selectId}-helper` :
-              undefined
+              error
+                ? `${selectId}-error`
+                : success
+                  ? `${selectId}-success`
+                  : helperText
+                    ? `${selectId}-helper`
+                    : undefined
             }
             className={cn(
-              'w-full px-4 py-3 rounded-lg text-base text-text-primary',
-              'border min-h-[44px] appearance-none',
-              'focus:outline-none focus:ring-2',
-              'disabled:bg-bg-light disabled:border-bg-medium disabled:text-text-tertiary/60 disabled:cursor-not-allowed',
-              'bg-bg-white',
-              hasError && 'border-error bg-error/5 focus:border-error focus:ring-error/20',
-              hasSuccess && 'border-success bg-success/5 focus:border-success focus:ring-success/20',
-              !hasError && !hasSuccess && 'border-bg-medium focus:border-primary-green focus:ring-primary-green/20',
+              "w-full px-4 py-3 rounded-lg text-base text-text-primary",
+              "border min-h-[44px] appearance-none",
+              "focus:outline-none focus:ring-2",
+              "disabled:bg-bg-light disabled:border-bg-medium disabled:text-text-tertiary/60 disabled:cursor-not-allowed",
+              "bg-bg-white",
+              hasError &&
+                "border-error bg-error/5 focus:border-error focus:ring-error/20",
+              hasSuccess &&
+                "border-success bg-success/5 focus:border-success focus:ring-success/20",
+              !hasError &&
+                !hasSuccess &&
+                "border-bg-medium focus:border-primary-green focus:ring-primary-green/20",
               className
             )}
             {...props}
@@ -138,19 +146,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           </p>
         )}
         {helperText && !error && !success && (
-          <p
-            id={`${selectId}-helper`}
-            className="text-sm text-text-secondary"
-          >
+          <p id={`${selectId}-helper`} className="text-sm text-text-secondary">
             {helperText}
           </p>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-Select.displayName = 'Select'
+Select.displayName = "Select";
 
-export { Select }
-
+export { Select };

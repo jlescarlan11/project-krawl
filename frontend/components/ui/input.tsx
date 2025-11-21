@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { XCircle, CheckCircle } from 'lucide-react'
-import { forwardRef, useId } from 'react'
-import { cn } from '@/lib/utils'
+import { XCircle, CheckCircle } from "lucide-react";
+import { forwardRef, useId } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Text input component with validation states, icons, and accessibility support.
- * 
+ *
  * Supports error, success, and disabled states with visual feedback.
  * Includes left/right icon support and proper ARIA attributes for screen readers.
- * 
+ *
  * @example
  * ```tsx
  * <Input label="Email" type="email" required />
@@ -17,14 +17,15 @@ import { cn } from '@/lib/utils'
  * <Input label="Email" leftIcon={<Mail />} />
  * ```
  */
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  error?: string
-  success?: string
-  helperText?: string
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-  fullWidth?: boolean
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  success?: string;
+  helperText?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -44,13 +45,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const generatedId = useId()
-    const inputId = id || `input-${generatedId}`
-    const hasError = !!error
-    const hasSuccess = !!success && !hasError
+    const generatedId = useId();
+    const inputId = id || `input-${generatedId}`;
+    const hasError = !!error;
+    const hasSuccess = !!success && !hasError;
 
     return (
-      <div className={cn('space-y-2', fullWidth && 'w-full')}>
+      <div className={cn("space-y-2", fullWidth && "w-full")}>
         {label && (
           <label
             htmlFor={inputId}
@@ -72,22 +73,29 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             required={required}
             aria-invalid={hasError}
             aria-describedby={
-              error ? `${inputId}-error` :
-              success ? `${inputId}-success` :
-              helperText ? `${inputId}-helper` :
-              undefined
+              error
+                ? `${inputId}-error`
+                : success
+                  ? `${inputId}-success`
+                  : helperText
+                    ? `${inputId}-helper`
+                    : undefined
             }
             className={cn(
-              'w-full px-4 py-3 rounded-lg text-base text-text-primary',
-              'border min-h-[44px]',
-              'focus:outline-none focus:ring-2',
-              'disabled:bg-bg-light disabled:border-bg-medium disabled:text-text-tertiary/60 disabled:cursor-not-allowed',
-              'placeholder:text-text-secondary/60',
-              leftIcon && 'pl-10',
-              rightIcon && 'pr-10',
-              hasError && 'border-error bg-error/5 focus:border-error focus:ring-error/20',
-              hasSuccess && 'border-success bg-success/5 focus:border-success focus:ring-success/20',
-              !hasError && !hasSuccess && 'border-bg-medium focus:border-primary-green focus:ring-primary-green/20',
+              "w-full px-4 py-3 rounded-lg text-base text-text-primary",
+              "border min-h-[44px]",
+              "focus:outline-none focus:ring-2",
+              "disabled:bg-bg-light disabled:border-bg-medium disabled:text-text-tertiary/60 disabled:cursor-not-allowed",
+              "placeholder:text-text-secondary/60",
+              leftIcon && "pl-10",
+              rightIcon && "pr-10",
+              hasError &&
+                "border-error bg-error/5 focus:border-error focus:ring-error/20",
+              hasSuccess &&
+                "border-success bg-success/5 focus:border-success focus:ring-success/20",
+              !hasError &&
+                !hasSuccess &&
+                "border-bg-medium focus:border-primary-green focus:ring-primary-green/20",
               className
             )}
             {...props}
@@ -118,19 +126,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
         {helperText && !error && !success && (
-          <p
-            id={`${inputId}-helper`}
-            className="text-sm text-text-secondary"
-          >
+          <p id={`${inputId}-helper`} className="text-sm text-text-secondary">
             {helperText}
           </p>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-Input.displayName = 'Input'
+Input.displayName = "Input";
 
-export { Input }
-
+export { Input };

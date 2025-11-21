@@ -51,11 +51,7 @@ export function markStepCompleted(step: StepId) {
   writeState({ lastCompletedStep: step });
 }
 
-export function markOnboardingCompleted({
-  skipped,
-}: {
-  skipped: boolean;
-}) {
+export function markOnboardingCompleted({ skipped }: { skipped: boolean }) {
   writeState({
     skipped,
     completedAt: new Date().toISOString(),
@@ -71,4 +67,3 @@ export function resetOnboardingState() {
 export function getOnboardingState() {
   return readState();
 }
-

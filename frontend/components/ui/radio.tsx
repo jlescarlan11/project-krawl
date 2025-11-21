@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { XCircle } from 'lucide-react'
-import { forwardRef, useId } from 'react'
-import { cn } from '@/lib/utils'
+import { XCircle } from "lucide-react";
+import { forwardRef, useId } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Radio button component with custom styling and validation states.
- * 
+ *
  * Custom styled radio (20px × 20px circle) with Primary Green checked state.
  * Supports grouping via `name` prop and proper accessibility attributes.
- * 
+ *
  * @example
  * ```tsx
  * <Radio
@@ -21,12 +21,16 @@ import { cn } from '@/lib/utils'
  * />
  * ```
  */
-export interface RadioProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
-  label?: string
-  error?: string
-  helperText?: string
-  checked?: boolean
-  onCheckedChange?: (checked: boolean) => void
+export interface RadioProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "type" | "onChange"
+  > {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 const Radio = forwardRef<HTMLInputElement, RadioProps>(
@@ -46,15 +50,15 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
     },
     ref
   ) => {
-    const generatedId = useId()
-    const radioId = id || `radio-${generatedId}`
-    const hasError = !!error
+    const generatedId = useId();
+    const radioId = id || `radio-${generatedId}`;
+    const hasError = !!error;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (onCheckedChange) {
-        onCheckedChange(e.target.checked)
+        onCheckedChange(e.target.checked);
       }
-    }
+    };
 
     return (
       <div className="space-y-2">
@@ -72,9 +76,11 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
               required={required}
               aria-invalid={hasError}
               aria-describedby={
-                error ? `${radioId}-error` :
-                helperText ? `${radioId}-helper` :
-                undefined
+                error
+                  ? `${radioId}-error`
+                  : helperText
+                    ? `${radioId}-helper`
+                    : undefined
               }
               className="sr-only"
               {...props}
@@ -82,30 +88,28 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
             <label
               htmlFor={radioId}
               className={cn(
-                'flex items-center justify-center w-5 h-5 rounded-full border-2 cursor-pointer',
-                'transition-all duration-150',
-                'focus-within:outline-2 focus-within:outline-accent-orange focus-within:outline-offset-2',
+                "flex items-center justify-center w-5 h-5 rounded-full border-2 cursor-pointer",
+                "transition-all duration-150",
+                "focus-within:outline-2 focus-within:outline-accent-orange focus-within:outline-offset-2",
                 checked
-                  ? 'bg-primary-green border-primary-green'
-                  : 'bg-bg-white border-bg-medium',
-                disabled && 'opacity-60 cursor-not-allowed',
-                hasError && 'border-error',
+                  ? "bg-primary-green border-primary-green"
+                  : "bg-bg-white border-bg-medium",
+                disabled && "opacity-60 cursor-not-allowed",
+                hasError && "border-error",
                 className
               )}
             >
-              {checked && (
-                <div className="w-2 h-2 rounded-full bg-white" />
-              )}
+              {checked && <div className="w-2 h-2 rounded-full bg-white" />}
             </label>
           </div>
           {label && (
             <label
               htmlFor={radioId}
               className={cn(
-                'text-sm font-medium text-text-primary cursor-pointer',
-                'flex-1',
-                disabled && 'opacity-60 cursor-not-allowed',
-                hasError && 'text-error'
+                "text-sm font-medium text-text-primary cursor-pointer",
+                "flex-1",
+                disabled && "opacity-60 cursor-not-allowed",
+                hasError && "text-error"
               )}
             >
               {label}
@@ -132,11 +136,10 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
           </p>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-Radio.displayName = 'Radio'
+Radio.displayName = "Radio";
 
-export { Radio }
-
+export { Radio };
