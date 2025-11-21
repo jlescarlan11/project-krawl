@@ -37,4 +37,3 @@ This document describes the manual and automated checks required to validate TAS
 - Add Playwright scenario that intercepts network and asserts offline page content
 
 Document test evidence (screenshots, notes) in QA Verification Report for TASK-032.
-

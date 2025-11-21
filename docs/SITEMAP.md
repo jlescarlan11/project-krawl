@@ -643,6 +643,89 @@ Page          Discovery      Creation       Page
 
 ### Routing Structure (Next.js App Router)
 
+**Status:** ✅ **IMPLEMENTED** (TASK-034, 2025-01-27)
+
+The routing structure is fully implemented using Next.js 16 App Router with centralized route constants and comprehensive route protection.
+
+#### Route Organization
+
+All routes are defined in `frontend/lib/routes.ts` for type safety and maintainability:
+
+**Public Routes:**
+- `/` - Landing page
+- `/map` - Map view page
+- `/search` - Search & discovery page
+- `/gems/[id]` - Gem detail page (dynamic)
+- `/krawls/[id]` - Krawl detail page (dynamic)
+- `/krawls/[id]/mode` - Krawl mode page (dynamic)
+- `/users/[id]` - User profile page (dynamic)
+- `/onboarding` - Onboarding flow
+- `/auth/sign-in` - Sign in page
+- `/auth/signout` - Sign out page
+- `/auth/callback` - OAuth callback handler
+
+**Protected Routes:**
+- `/gems/create` - Create new Gem (requires authentication)
+- `/krawls/create` - Create new Krawl (requires authentication)
+- `/users/settings` - User profile settings (requires authentication)
+- `/offline` - Offline downloads management (requires authentication)
+
+**Legal Pages:**
+- `/terms` - Terms of Service
+- `/privacy` - Privacy Policy
+
+#### Route Protection
+
+Routes are protected at two levels:
+
+1. **Server-side Protection (Middleware):**
+   - File: `frontend/middleware.ts`
+   - Intercepts requests before page load
+   - Checks authentication token from cookies
+   - Redirects unauthenticated users to sign-in
+   - Preserves return URL in query parameters
+
+2. **Client-side Protection (ProtectedRoute Component):**
+   - File: `frontend/components/navigation/ProtectedRoute.tsx`
+   - Wraps protected page content
+   - Provides loading state during auth check
+   - Handles client-side redirects
+   - Uses Zustand `authStore` for authentication state
+
+#### Navigation Components
+
+All navigation components are implemented in `frontend/components/navigation/`:
+
+- **Header** (`Header.tsx`) - Desktop top navigation bar
+- **Footer** (`Footer.tsx`) - Site footer with links
+- **MobileMenu** (`MobileMenu.tsx`) - Mobile slide-in menu
+- **BottomNav** (`BottomNav.tsx`) - Mobile bottom navigation
+- **Breadcrumbs** (`Breadcrumbs.tsx`) - Dynamic breadcrumb navigation
+- **NavLink** (`NavLink.tsx`) - Reusable navigation link with active state
+- **ProtectedRoute** (`ProtectedRoute.tsx`) - Client-side route protection wrapper
+
+#### Route Utilities
+
+Utility functions for route-related logic in `frontend/lib/route-utils.ts`:
+
+- `isProtectedRoute(pathname)` - Check if route requires authentication
+- `isActiveRoute(currentPath, targetPath, exact)` - Check if route is active
+- `getReturnUrl(searchParams)` - Extract return URL from query parameters
+
+#### Implementation Details
+
+- **Route Constants:** Centralized in `lib/routes.ts` with TypeScript type safety
+- **Route Metadata:** Defined in `ROUTE_METADATA` object for navigation generation
+- **Dynamic Routes:** Properly configured with `[id]` segments
+- **Route Groups:** Organized by access level (public, protected, auth)
+- **Active State:** Implemented using `usePathname` hook
+- **State Management:** Mobile menu state managed via Zustand `uiStore`
+- **Accessibility:** All navigation components follow WCAG 2.1 Level AA standards
+
+For complete navigation component documentation, see [`frontend/components/navigation/README.md`](../../frontend/components/navigation/README.md).
+
+#### Directory Structure
+
 ```
 app/
 ├── page.tsx                    # Landing Page (/)
@@ -672,8 +755,8 @@ app/
 ├── offline/
 │   └── page.tsx                # Offline Downloads Page (/offline)
 ├── auth/
-│   ├── signin/
-│   │   └── page.tsx            # Sign In Page (/auth/signin)
+│   ├── sign-in/
+│   │   └── page.tsx            # Sign In Page (/auth/sign-in)
 │   ├── signout/
 │   │   └── page.tsx            # Sign Out Page (/auth/signout)
 │   └── callback/
@@ -682,17 +765,27 @@ app/
     └── page.tsx                # Onboarding Flow (/onboarding)
 ```
 
-### Navigation Components
+### Navigation Components ✅ IMPLEMENTED
 
-#### Mobile Bottom Navigation
+#### Mobile Bottom Navigation ✅
 - **Component:** `components/navigation/BottomNav.tsx`
-- **Pages:** Map View, Search, Create (FAB), Profile
+- **Pages:** Map View, Search, Create (FAB), Menu button
 - **Always visible on mobile**
+- **Features:** Active route highlighting, safe area padding
 
-#### Desktop Top Navigation
-- **Component:** `components/navigation/TopNav.tsx`
+#### Desktop Top Navigation ✅
+- **Component:** `components/navigation/Header.tsx`
 - **Pages:** Logo (Home), Map, Search, Create, Profile, Settings
 - **Sticky header on desktop**
+- **Features:** Active route highlighting, conditional user menu
+
+#### Mobile Menu ✅
+- **Component:** `components/navigation/MobileMenu.tsx`
+- **Features:** Slide-in from left, closes on route change, prevents body scroll
+
+#### Breadcrumbs ✅
+- **Component:** `components/navigation/Breadcrumbs.tsx`
+- **Features:** Dynamic generation from pathname, automatic segment humanization
 
 ### Authentication Flow
 
@@ -719,9 +812,9 @@ Redirect to intended destination
     └── Previous page (if protected)
 ```
 
-### Protected Routes
+### Protected Routes ✅ IMPLEMENTED
 
-Routes that require authentication:
+Routes that require authentication (protected via middleware and ProtectedRoute component):
 - `/gems/create` - Gem Creation
 - `/krawls/create` - Krawl Creation
 - `/users/settings` - Profile Settings

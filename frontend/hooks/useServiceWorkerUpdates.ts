@@ -8,7 +8,8 @@ type ServiceWorkerStatus = {
 };
 
 export function useServiceWorkerUpdates(): ServiceWorkerStatus {
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [registration, setRegistration] =
+    useState<ServiceWorkerRegistration | null>(null);
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -29,7 +30,10 @@ export function useServiceWorkerUpdates(): ServiceWorkerStatus {
       }
 
       const handleStateChange = (worker: ServiceWorker | null) => {
-        if (worker?.state === "installed" && navigator.serviceWorker.controller) {
+        if (
+          worker?.state === "installed" &&
+          navigator.serviceWorker.controller
+        ) {
           setIsUpdateAvailable(true);
         }
       };
@@ -38,11 +42,15 @@ export function useServiceWorkerUpdates(): ServiceWorkerStatus {
         const newWorker = readyRegistration.installing;
         const stateChangeListener = () => handleStateChange(newWorker ?? null);
         newWorker?.addEventListener("statechange", stateChangeListener);
-        cleanupFns.push(() => newWorker?.removeEventListener("statechange", stateChangeListener));
+        cleanupFns.push(() =>
+          newWorker?.removeEventListener("statechange", stateChangeListener)
+        );
       };
 
       readyRegistration.addEventListener("updatefound", handleUpdateFound);
-      cleanupFns.push(() => readyRegistration.removeEventListener("updatefound", handleUpdateFound));
+      cleanupFns.push(() =>
+        readyRegistration.removeEventListener("updatefound", handleUpdateFound)
+      );
     });
 
     return () => {
@@ -69,5 +77,3 @@ export function useServiceWorkerUpdates(): ServiceWorkerStatus {
     applyUpdate,
   };
 }
-
-

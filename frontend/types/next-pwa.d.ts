@@ -3,7 +3,12 @@ declare module "next-pwa" {
 
   export interface RuntimeCaching {
     urlPattern: RegExp | ((options: { url: URL; request: Request }) => boolean);
-    handler: "NetworkFirst" | "CacheFirst" | "NetworkOnly" | "CacheOnly" | "StaleWhileRevalidate";
+    handler:
+      | "NetworkFirst"
+      | "CacheFirst"
+      | "NetworkOnly"
+      | "CacheOnly"
+      | "StaleWhileRevalidate";
     method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     options?: {
       cacheName?: string;
@@ -40,4 +45,3 @@ declare module "next-pwa" {
 
   export default withPWA;
 }
-

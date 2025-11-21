@@ -3,6 +3,12 @@ import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 
 import { ToastProvider } from "@/components";
 import { ServiceWorkerUpdateToast } from "@/components/system/ServiceWorkerUpdateToast";
+import {
+  Header,
+  Footer,
+  MobileMenu,
+  BottomNav,
+} from "@/components/navigation";
 
 import "./globals.css";
 
@@ -46,7 +52,8 @@ const metadataBaseUrl = getMetadataBaseUrl();
 
 export const metadata: Metadata = {
   title: "Krawl - The Living Map of Filipino Culture",
-  description: "Discover authentic Filipino culture in Cebu City through community-curated Gems and Krawls",
+  description:
+    "Discover authentic Filipino culture in Cebu City through community-curated Gems and Krawls",
   manifest: "/manifest.webmanifest",
   themeColor: "#0F172A",
   metadataBase: metadataBaseUrl,
@@ -70,7 +77,13 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <body className={`${inter.className} antialiased`}>
         <ToastProvider>
-          {children}
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <MobileMenu />
+            <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+            <Footer />
+            <BottomNav />
+          </div>
           <ServiceWorkerUpdateToast />
         </ToastProvider>
       </body>

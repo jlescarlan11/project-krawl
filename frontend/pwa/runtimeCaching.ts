@@ -22,7 +22,11 @@ const runtimeCaching: RuntimeCaching[] = [
     // Static assets served from Next.js (/_next/static/*) and images in /public.
     urlPattern: ({ url }) => {
       const pathname = url.pathname;
-      return pathname.startsWith("/_next/static/") || pathname.startsWith("/icons/") || pathname.startsWith("/images/");
+      return (
+        pathname.startsWith("/_next/static/") ||
+        pathname.startsWith("/icons/") ||
+        pathname.startsWith("/images/")
+      );
     },
     handler: "StaleWhileRevalidate",
     options: {
@@ -65,4 +69,3 @@ const runtimeCaching: RuntimeCaching[] = [
 ];
 
 export default runtimeCaching;
-

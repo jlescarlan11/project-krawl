@@ -195,3 +195,4 @@ Both fonts support English, Tagalog, and Cebuano languages. For complete typogra
 **Manual Testing:** ⚠️ Required (cannot be automated)
 
 
+
