@@ -173,7 +173,7 @@ project-krawl/
 - **Code Quality:** ESLint 9.x (with eslint-config-next), Prettier 3.6.2 (code formatter)
 - **Fonts:** Inter (primary), Plus Jakarta Sans (secondary) - Optimized via `next/font/google`
 - **Design Tokens:** CSS custom properties and TypeScript exports covering colors, typography, spacing, shadows, transitions, z-index layers, borders, and breakpoints (see `frontend/docs/DESIGN_TOKENS.md`)
-- **State Management:** Zustand 4.4.x (planned)
+- **State Management:** Zustand 4.5.x (installed)
 - **Maps:** Mapbox GL JS 3.x (planned)
 
 ### Services & Infrastructure

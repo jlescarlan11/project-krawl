@@ -596,7 +596,7 @@ This document provides a centralized glossary of all terms, concepts, and techni
 ### Zustand
 **Definition:** Lightweight state management library for React applications.
 
-**Usage:** Krawl uses Zustand 4.4.x for frontend state management, including authentication state, map state, and search state.
+**Usage:** Krawl uses Zustand 4.5.x for frontend state management, including authentication state, UI state, and map state. Stores are located in `frontend/stores/` and include authStore, uiStore, and mapStore.
 
 **Related Terms:** State Management, React, Frontend
 

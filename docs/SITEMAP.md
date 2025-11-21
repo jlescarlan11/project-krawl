@@ -734,9 +734,14 @@ Routes that are public but have enhanced features for authenticated users:
 
 ### State Management (Zustand)
 
-Key stores:
-- `authStore` - Authentication state
-- `mapStore` - Map view state, markers, filters
+**Status:** ✅ Implemented (TASK-033)
+
+**Current Stores:**
+- `authStore` - Authentication state (user session, auth status) ✅
+- `uiStore` - UI state (modals, sidebars, theme preferences) ✅
+- `mapStore` - Map view state, markers, filters ✅
+
+**Planned Stores:**
 - `searchStore` - Search query, filters, results
 - `krawlModeStore` - Krawl Mode state, location tracking
 - `offlineStore` - Downloaded Krawls, storage usage
@@ -758,7 +763,7 @@ Key stores:
 - **Tailwind CSS v4** (installed) - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - **NextAuth.js v5 (Auth.js)** (planned) - [NextAuth.js Documentation](https://next-auth.js.org/)
 - **Mapbox GL JS 3.x** (planned) - [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/)
-- **Zustand 4.4.x** (planned) - [Zustand Documentation](https://github.com/pmndrs/zustand)
+- **Zustand 4.5.x** (installed) - [Zustand Documentation](https://github.com/pmndrs/zustand)
 
 ### Free Tools for Visual Sitemap Creation
 - **Slickplan** - 14-day free trial, drag-and-drop sitemap builder
