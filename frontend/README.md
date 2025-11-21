@@ -27,6 +27,23 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file (hot module replacement enabled).
 
+## Progressive Web App (PWA) Support
+
+Krawl ships with offline and installable capabilities powered by [`next-pwa`](https://github.com/shadowwalker/next-pwa).
+
+- `next.config.ts` wraps the Next.js config with `withPWA`
+- Manifest is served from `app/manifest.ts`
+- Offline fallback lives at `app/offline/page.tsx` + `public/offline.html`
+- Icons are stored in `public/icons/*`
+- Regenerate brand-accurate icons anytime with `python frontend/scripts/generate_pwa_icons.py`
+
+### Development Tips
+
+- PWA is disabled in development to avoid caching surprises. To test locally, set `NEXT_PUBLIC_ENABLE_PWA=true` before running `npm run dev`.
+- Production builds must use `npm run build` (which passes `--webpack`) because `next-pwa` is not yet compatible with the default Turbopack pipeline in Next.js 16.
+- Run Lighthouse (Chrome dev tools → Lighthouse → PWA) to validate install criteria.
+- Use the [PWA Test Plan](./docs/PWA_TEST_PLAN.md) for the full QA checklist.
+
 ## Code Formatting
 
 This project uses [Prettier](https://prettier.io/) for consistent code formatting.
