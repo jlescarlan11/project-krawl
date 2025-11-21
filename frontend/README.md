@@ -6,6 +6,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **React:** 19.2.0
 - **TypeScript:** 5.x
 - **Tailwind CSS:** v4 (CSS-based configuration with @tailwindcss/postcss)
+- **Zustand:** 4.5.x (state management)
 - **ESLint:** 9.x (with eslint-config-next)
 - **Prettier:** 3.x (code formatter)
 
@@ -103,6 +104,7 @@ frontend/
 ├── components/       # React components (UI library)
 ├── hooks/            # Custom React hooks
 ├── lib/              # Utility functions and helpers
+├── stores/           # Zustand state management stores
 ├── types/            # Shared TypeScript type definitions
 ├── public/           # Static assets
 ├── docs/             # Project documentation
@@ -115,6 +117,7 @@ frontend/
 - **`/components`** - Reusable React components (UI library)
 - **`/hooks`** - Custom React hooks (reusable logic)
 - **`/lib`** - Utility functions, helpers, and shared logic
+- **`/stores`** - Zustand state management stores
 - **`/types`** - Shared TypeScript type definitions
 - **`/public`** - Static assets (images, icons, etc.)
 
@@ -302,6 +305,77 @@ function MyComponent() {
 ```
 
 For complete breakpoint documentation and examples, see [`docs/DESIGN_TOKENS.md`](./docs/DESIGN_TOKENS.md#breakpoints).
+
+## State Management (Zustand)
+
+Krawl uses [Zustand](https://github.com/pmndrs/zustand) for lightweight, type-safe state management. The application includes three core stores:
+
+- **`authStore`** - Authentication state (user session, auth status)
+- **`uiStore`** - UI state (modals, sidebars, theme preferences)
+- **`mapStore`** - Map viewport state (center, zoom, selected markers, filters)
+
+### Usage
+
+```tsx
+// Import stores and selectors
+import { useAuthStore, useIsAuthenticated } from "@/stores";
+import { useUIStore, useModal, useTheme } from "@/stores";
+import { useMapStore, useMapCenter } from "@/stores";
+
+// Use stores in components
+function MyComponent() {
+  // Access full store
+  const { user, signIn, signOut } = useAuthStore();
+
+  // Use selectors for derived state
+  const isAuthenticated = useIsAuthenticated();
+  const theme = useTheme();
+  const mapCenter = useMapCenter();
+
+  // Update state
+  const openModal = useUIStore((state) => state.openModal);
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <button onClick={signOut}>Sign Out</button>
+      ) : (
+        <button onClick={() => signIn(userData, sessionData)}>Sign In</button>
+      )}
+    </div>
+  );
+}
+```
+
+### Store Features
+
+- **Type-safe:** Full TypeScript support with explicit interfaces
+- **Persistence:** Auth and UI theme preferences persist to localStorage
+- **Devtools:** Redux DevTools integration for debugging
+- **SSR-safe:** Handles Next.js App Router server/client boundaries
+- **Optimized:** Selectors prevent unnecessary re-renders
+
+### Available Stores
+
+#### Auth Store (`useAuthStore`)
+
+- **State:** `status`, `user`, `session`, `error`
+- **Actions:** `signIn()`, `signOut()`, `setStatus()`, `setUser()`, `setSession()`, `setError()`, `clearError()`
+- **Selectors:** `useAuthStatus()`, `useAuthUser()`, `useIsAuthenticated()`, `useAuthError()`
+
+#### UI Store (`useUIStore`)
+
+- **State:** `modals`, `sidebars`, `theme`, `loading`
+- **Actions:** `openModal()`, `closeModal()`, `toggleModal()`, `openSidebar()`, `closeSidebar()`, `toggleSidebar()`, `setTheme()`, `setLoading()`
+- **Selectors:** `useModal(id)`, `useSidebar(side)`, `useTheme()`, `useLoading(key)`
+
+#### Map Store (`useMapStore`)
+
+- **State:** `center`, `zoom`, `bearing`, `pitch`, `selectedMarkerId`, `filters`, `controls`
+- **Actions:** `setCenter()`, `setZoom()`, `selectMarker()`, `setFilters()`, `resetFilters()`, `toggleControl()`
+- **Selectors:** `useMapCenter()`, `useMapZoom()`, `useSelectedMarker()`, `useMapFilters()`
+
+For complete store documentation, see the store files in `stores/` directory.
 
 ## Learn More
 
