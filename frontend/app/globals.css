@@ -355,6 +355,43 @@ body {
 }
 
 /* ============================================
+ * ANIMATIONS
+ * ============================================ */
+
+/* Shimmer animation for loading skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Shimmer animation class for LoadingSkeleton component */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(107, 107, 107, 0.1), transparent);
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* Toast entrance animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-enter {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* ============================================
  * DARK MODE (Future Implementation)
  * ============================================ */
 
