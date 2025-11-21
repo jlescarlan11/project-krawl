@@ -141,6 +141,11 @@ dist
 .eslintcache
 .stylelintcache
 
+# PWA build artifacts
+frontend/public/sw.js
+frontend/public/workbox-*.js
+frontend/public/fallback-*.js
+
 # Misc
 *.bak
 *.backup
