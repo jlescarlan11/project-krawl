@@ -94,7 +94,13 @@ project-krawl/
 │   │   │   ├── select.tsx            # Select component
 │   │   │   ├── checkbox.tsx          # Checkbox component
 │   │   │   ├── radio.tsx             # Radio component
-│   │   │   └── file-upload.tsx       # FileUpload component
+│   │   │   ├── file-upload.tsx       # FileUpload component
+│   │   │   ├── spinner.tsx            # Spinner component
+│   │   │   ├── loading-skeleton.tsx  # LoadingSkeleton component
+│   │   │   ├── progress-bar.tsx       # ProgressBar component
+│   │   │   ├── empty-state.tsx       # EmptyState component
+│   │   │   ├── error-display.tsx     # ErrorDisplay component
+│   │   │   └── toast.tsx             # Toast notification system
 │   │   ├── index.ts                   # Barrel exports
 │   │   └── README.md                 # Component library documentation
 │   ├── lib/                           # Utility libraries
@@ -380,7 +386,7 @@ For complete glossary, see [GLOSSARY.md](./docs/GLOSSARY.md).
 ## 📞 Contact
 
 **Project Team:** Solo Developer – contact `hello@krawl.app` (update with full roster before Week 3)  
-**Last Updated:** November 20, 2025  
+**Last Updated:** November 21, 2025  
 **Status:** Development Phase - Week 2
 
 ---

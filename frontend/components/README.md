@@ -8,6 +8,7 @@ The component library includes:
 - **Buttons:** Primary, secondary, outline, text, and accent variants
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
+- **State Components:** Spinner, LoadingSkeleton, ProgressBar, EmptyState, ErrorDisplay, and Toast
 
 All components are:
 - ✅ Fully typed with TypeScript
@@ -345,6 +346,257 @@ import { FileUpload } from '@/components'
 - `required?: boolean` - Required field
 - `fullWidth?: boolean` - Full width upload
 
+### Spinner Component
+
+**Purpose:** Reusable spinner for loading states
+
+**Sizes:** `sm` | `md` | `lg`
+
+```tsx
+import { Spinner } from '@/components'
+
+// Basic spinner
+<Spinner size="md" aria-label="Loading content" />
+
+// Small spinner
+<Spinner size="sm" />
+
+// Large spinner
+<Spinner size="lg" />
+```
+
+**Props:**
+- `size?: 'sm' | 'md' | 'lg'` - Spinner size (default: 'md')
+- `className?: string` - Additional CSS classes
+- `aria-label?: string` - Accessibility label (default: 'Loading')
+
+### LoadingSkeleton Component
+
+**Purpose:** Skeleton loaders for content placeholders with shimmer animation
+
+**Variants:** `card` | `text` | `image` | `list` | `custom`
+
+```tsx
+import { LoadingSkeleton } from '@/components'
+
+// Card skeleton
+<LoadingSkeleton variant="card" />
+
+// Text skeleton (3 lines)
+<LoadingSkeleton variant="text" lines={3} />
+
+// Image skeleton
+<LoadingSkeleton variant="image" className="w-full aspect-video" />
+
+// List skeleton (multiple cards)
+<LoadingSkeleton variant="list" />
+
+// Custom skeleton
+<LoadingSkeleton variant="custom" width="200px" height="100px" />
+```
+
+**Props:**
+- `variant?: 'card' | 'text' | 'image' | 'list' | 'custom'` - Skeleton variant (default: 'card')
+- `lines?: number` - Number of lines for text variant (default: 3)
+- `width?: string` - Custom width (for custom variant)
+- `height?: string` - Custom height (for custom variant)
+- `className?: string` - Additional CSS classes
+
+### ProgressBar Component
+
+**Purpose:** Progress indicator for determinate loading
+
+**Sizes:** `sm` | `md` | `lg`
+
+```tsx
+import { ProgressBar } from '@/components'
+
+// Basic progress bar
+<ProgressBar value={75} max={100} />
+
+// With label and value
+<ProgressBar
+  value={50}
+  max={100}
+  label="Upload progress"
+  showValue
+  size="md"
+/>
+```
+
+**Props:**
+- `value: number` - Current progress value (required)
+- `max?: number` - Maximum value (default: 100)
+- `label?: string` - Progress label
+- `showValue?: boolean` - Show percentage value (default: false)
+- `size?: 'sm' | 'md' | 'lg'` - Progress bar size (default: 'md')
+- `className?: string` - Additional CSS classes
+
+### EmptyState Component
+
+**Purpose:** Display empty content states with icon, message, and optional CTA
+
+**Sizes:** `sm` | `md` | `lg`
+
+```tsx
+import { EmptyState } from '@/components'
+import { MapPin, Search } from 'lucide-react'
+
+// Basic empty state
+<EmptyState
+  icon={<MapPin className="w-30 h-30 md:w-40 md:h-40" />}
+  title="No Gems found"
+  description="Be the first to add a Gem in this area!"
+  action={() => router.push('/create-gem')}
+  actionLabel="Create First Gem"
+/>
+
+// Empty state without action
+<EmptyState
+  icon={<Search className="w-30 h-30 md:w-40 md:h-40" />}
+  title="No results found"
+  description="Try adjusting your search or filters"
+/>
+```
+
+**Props:**
+- `icon: React.ReactNode` - Icon element (required)
+- `title: string` - Empty state title (required)
+- `description?: string` - Empty state description
+- `action?: () => void` - Action callback
+- `actionLabel?: string` - Action button label
+- `size?: 'sm' | 'md' | 'lg'` - Empty state size (default: 'md')
+- `className?: string` - Additional CSS classes
+
+### ErrorDisplay Component
+
+**Purpose:** Full-page error component with retry action
+
+**Variants:** `network` | `error` | `404` | `500` | `permission`
+
+```tsx
+import { ErrorDisplay } from '@/components'
+
+// Network error
+<ErrorDisplay
+  title="Unable to load content"
+  message="Please check your connection and try again"
+  retryAction={() => refetch()}
+  variant="network"
+/>
+
+// 404 error
+<ErrorDisplay
+  title="Page Not Found"
+  message="The page you're looking for doesn't exist"
+  variant="404"
+/>
+
+// Custom error
+<ErrorDisplay
+  title="Something went wrong"
+  message="We're working on fixing this issue"
+  retryAction={handleRetry}
+  icon={<AlertCircle className="w-16 h-16" />}
+/>
+```
+
+**Props:**
+- `title: string` - Error title (required)
+- `message: string` - Error message (required)
+- `retryAction?: () => void` - Retry callback
+- `icon?: React.ReactNode` - Custom icon (defaults to variant icon)
+- `variant?: 'network' | 'error' | '404' | '500' | 'permission'` - Error variant (default: 'error')
+- `className?: string` - Additional CSS classes
+
+### Toast System
+
+**Purpose:** Toast notifications for success/error feedback
+
+**Variants:** `success` | `error` | `warning` | `info`
+
+**Setup:** Wrap your app with `ToastProvider` in the root layout
+
+```tsx
+// app/layout.tsx
+import { ToastProvider } from '@/components'
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+**Usage:**
+
+```tsx
+'use client'
+
+import { useToast } from '@/components'
+
+export function MyComponent() {
+  const { toast, success, error, warning, info } = useToast()
+
+  const handleSuccess = () => {
+    success('Gem created successfully!', 'Your Gem is now live on the map')
+  }
+
+  const handleError = () => {
+    error('Failed to upload', 'Please check your connection and try again')
+  }
+
+  // Or use the generic toast function
+  const handleCustom = () => {
+    toast({
+      variant: 'success',
+      title: 'Custom toast',
+      description: 'With custom message',
+      duration: 3000,
+      action: {
+        label: 'View',
+        onClick: () => console.log('View clicked')
+      }
+    })
+  }
+
+  return (
+    <div>
+      <button onClick={handleSuccess}>Show Success</button>
+      <button onClick={handleError}>Show Error</button>
+    </div>
+  )
+}
+```
+
+**Toast Hook Methods:**
+- `toast(props)` - Generic toast function
+- `success(title, description?)` - Show success toast
+- `error(title, description?)` - Show error toast
+- `warning(title, description?)` - Show warning toast
+- `info(title, description?)` - Show info toast
+- `dismiss(id)` - Dismiss specific toast
+
+**Toast Props:**
+- `variant: 'success' | 'error' | 'warning' | 'info'` - Toast variant
+- `title: string` - Toast title (required)
+- `description?: string` - Toast description
+- `duration?: number` - Auto-dismiss duration in ms (default: 5000, 0 = no auto-dismiss)
+- `action?: { label: string; onClick: () => void }` - Action button
+
+**Features:**
+- Auto-dismiss after duration (default: 5 seconds)
+- Maximum 5 toasts displayed simultaneously
+- Position: Top-right (desktop), Top-center (mobile)
+- Keyboard accessible (Escape to dismiss)
+- Accessible with screen readers
+
 ## Design Tokens
 
 All components use design tokens defined in `frontend/app/globals.css`. Key tokens:
@@ -483,7 +735,13 @@ components/
 │   ├── select.tsx        # Select component
 │   ├── checkbox.tsx      # Checkbox component
 │   ├── radio.tsx         # Radio component
-│   └── file-upload.tsx   # FileUpload component
+│   ├── file-upload.tsx   # FileUpload component
+│   ├── spinner.tsx       # Spinner component
+│   ├── loading-skeleton.tsx  # LoadingSkeleton component
+│   ├── progress-bar.tsx  # ProgressBar component
+│   ├── empty-state.tsx   # EmptyState component
+│   ├── error-display.tsx # ErrorDisplay component
+│   └── toast.tsx         # Toast system (ToastProvider, useToast)
 ├── index.ts              # Barrel exports
 └── README.md            # This file
 ```
@@ -497,7 +755,7 @@ components/
 
 ---
 
-**Last Updated:** 2025-11-16  
-**Version:** 1.0.0
+**Last Updated:** 2025-11-20  
+**Version:** 1.1.0
 
 
