@@ -32,7 +32,10 @@ export function PermissionActions({
         <ul className="space-y-2 text-base text-[var(--color-text-secondary)]">
           {bulletCopy.map((item) => (
             <li key={item} className="flex items-start gap-2">
-              <span aria-hidden className="mt-1 text-[var(--color-primary-green)]">
+              <span
+                aria-hidden
+                className="mt-1 text-[var(--color-primary-green)]"
+              >
                 ●
               </span>
               <span>{item}</span>
@@ -61,7 +64,9 @@ export function PermissionActions({
           )}
         </button>
         {status.locationMessage && (
-          <p className="text-sm text-[var(--color-error)]">{status.locationMessage}</p>
+          <p className="text-sm text-[var(--color-error)]">
+            {status.locationMessage}
+          </p>
         )}
 
         <button
@@ -95,4 +100,3 @@ export function PermissionActions({
     </div>
   );
 }
-

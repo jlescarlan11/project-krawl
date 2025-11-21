@@ -5,9 +5,7 @@
  * These functions gracefully handle unsupported environments.
  */
 
-export async function requestLocationPermission(): Promise<
-  PermissionStateResult
-> {
+export async function requestLocationPermission(): Promise<PermissionStateResult> {
   if (typeof navigator === "undefined" || !navigator.geolocation) {
     return { status: "error", message: "Location services unavailable." };
   }
@@ -37,9 +35,7 @@ export async function requestLocationPermission(): Promise<
   });
 }
 
-export async function requestNotificationPermission(): Promise<
-  PermissionStateResult
-> {
+export async function requestNotificationPermission(): Promise<PermissionStateResult> {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return { status: "error", message: "Notifications not supported." };
   }
@@ -59,4 +55,3 @@ export type PermissionStateResult =
   | { status: "denied"; message?: string }
   | { status: "prompt" }
   | { status: "error"; message: string };
-

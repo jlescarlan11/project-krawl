@@ -5,12 +5,14 @@ This directory contains the reusable UI component library for the Krawl applicat
 ## Overview
 
 The component library includes:
+
 - **Buttons:** Primary, secondary, outline, text, and accent variants
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
 - **State Components:** Spinner, LoadingSkeleton, ProgressBar, EmptyState, ErrorDisplay, and Toast
 
 All components are:
+
 - ✅ Fully typed with TypeScript
 - ✅ Accessible (WCAG 2.1 Level AA compliant)
 - ✅ Responsive (mobile-first design)
@@ -19,6 +21,7 @@ All components are:
 ## Installation
 
 Components are already installed. Dependencies include:
+
 - `lucide-react` - Icon library
 - `clsx` - Class name utility
 - `tailwind-merge` - Tailwind class merging utility
@@ -29,10 +32,10 @@ Components are already installed. Dependencies include:
 
 ```tsx
 // Import individual components
-import { Button, Card, Input } from '@/components'
+import { Button, Card, Input } from "@/components";
 
 // Or import from specific files
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 ```
 
 ### Button Component
@@ -63,6 +66,7 @@ import { Plus } from 'lucide-react'
 ```
 
 **Props:**
+
 - `variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'accent'` - Button style variant
 - `size?: 'sm' | 'md' | 'lg'` - Button size
 - `loading?: boolean` - Show loading state
@@ -120,6 +124,7 @@ import { Button } from '@/components'
 ```
 
 **Props:**
+
 - `variant?: 'standard' | 'interactive' | 'elevated'` - Card style variant
 - `padding?: 'compact' | 'default' | 'spacious'` - Padding size
 - `image?: { src: string; alt: string; width?: number; height?: number }` - Card image
@@ -127,6 +132,7 @@ import { Button } from '@/components'
 - All standard div HTML attributes are supported
 
 **Sub-components:**
+
 - `CardHeader` - Card header section
 - `CardBody` - Card body content
 - `CardFooter` - Card footer section
@@ -172,6 +178,7 @@ import { Mail } from 'lucide-react'
 ```
 
 **Props:**
+
 - `label?: string` - Input label
 - `error?: string` - Error message
 - `success?: string` - Success message
@@ -204,6 +211,7 @@ import { Textarea } from '@/components'
 ```
 
 **Props:**
+
 - `label?: string` - Textarea label
 - `error?: string` - Error message
 - `success?: string` - Success message
@@ -239,6 +247,7 @@ import { Select } from '@/components'
 ```
 
 **Props:**
+
 - `label?: string` - Select label
 - `error?: string` - Error message
 - `success?: string` - Success message
@@ -269,6 +278,7 @@ import { Checkbox } from '@/components'
 ```
 
 **Props:**
+
 - `label?: string` - Checkbox label
 - `error?: string` - Error message
 - `helperText?: string` - Helper text
@@ -301,6 +311,7 @@ import { Radio } from '@/components'
 ```
 
 **Props:**
+
 - `label?: string` - Radio label
 - `error?: string` - Error message
 - `helperText?: string` - Helper text
@@ -334,10 +345,11 @@ import { FileUpload } from '@/components'
 ```
 
 **Props:**
+
 - `label?: string` - Upload label
 - `error?: string` - Error message
 - `helperText?: string` - Helper text
-- `accept?: string` - Accepted file types (e.g., "image/*", ".pdf,.doc")
+- `accept?: string` - Accepted file types (e.g., "image/\*", ".pdf,.doc")
 - `multiple?: boolean` - Allow multiple files (default: false)
 - `maxSize?: number` - Maximum file size in bytes
 - `maxFiles?: number` - Maximum number of files
@@ -366,6 +378,7 @@ import { Spinner } from '@/components'
 ```
 
 **Props:**
+
 - `size?: 'sm' | 'md' | 'lg'` - Spinner size (default: 'md')
 - `className?: string` - Additional CSS classes
 - `aria-label?: string` - Accessibility label (default: 'Loading')
@@ -396,6 +409,7 @@ import { LoadingSkeleton } from '@/components'
 ```
 
 **Props:**
+
 - `variant?: 'card' | 'text' | 'image' | 'list' | 'custom'` - Skeleton variant (default: 'card')
 - `lines?: number` - Number of lines for text variant (default: 3)
 - `width?: string` - Custom width (for custom variant)
@@ -425,6 +439,7 @@ import { ProgressBar } from '@/components'
 ```
 
 **Props:**
+
 - `value: number` - Current progress value (required)
 - `max?: number` - Maximum value (default: 100)
 - `label?: string` - Progress label
@@ -460,6 +475,7 @@ import { MapPin, Search } from 'lucide-react'
 ```
 
 **Props:**
+
 - `icon: React.ReactNode` - Icon element (required)
 - `title: string` - Empty state title (required)
 - `description?: string` - Empty state description
@@ -502,6 +518,7 @@ import { ErrorDisplay } from '@/components'
 ```
 
 **Props:**
+
 - `title: string` - Error title (required)
 - `message: string` - Error message (required)
 - `retryAction?: () => void` - Retry callback
@@ -519,63 +536,62 @@ import { ErrorDisplay } from '@/components'
 
 ```tsx
 // app/layout.tsx
-import { ToastProvider } from '@/components'
+import { ToastProvider } from "@/components";
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
-  )
+  );
 }
 ```
 
 **Usage:**
 
 ```tsx
-'use client'
+"use client";
 
-import { useToast } from '@/components'
+import { useToast } from "@/components";
 
 export function MyComponent() {
-  const { toast, success, error, warning, info } = useToast()
+  const { toast, success, error, warning, info } = useToast();
 
   const handleSuccess = () => {
-    success('Gem created successfully!', 'Your Gem is now live on the map')
-  }
+    success("Gem created successfully!", "Your Gem is now live on the map");
+  };
 
   const handleError = () => {
-    error('Failed to upload', 'Please check your connection and try again')
-  }
+    error("Failed to upload", "Please check your connection and try again");
+  };
 
   // Or use the generic toast function
   const handleCustom = () => {
     toast({
-      variant: 'success',
-      title: 'Custom toast',
-      description: 'With custom message',
+      variant: "success",
+      title: "Custom toast",
+      description: "With custom message",
       duration: 3000,
       action: {
-        label: 'View',
-        onClick: () => console.log('View clicked')
-      }
-    })
-  }
+        label: "View",
+        onClick: () => console.log("View clicked"),
+      },
+    });
+  };
 
   return (
     <div>
       <button onClick={handleSuccess}>Show Success</button>
       <button onClick={handleError}>Show Error</button>
     </div>
-  )
+  );
 }
 ```
 
 **Toast Hook Methods:**
+
 - `toast(props)` - Generic toast function
 - `success(title, description?)` - Show success toast
 - `error(title, description?)` - Show error toast
@@ -584,6 +600,7 @@ export function MyComponent() {
 - `dismiss(id)` - Dismiss specific toast
 
 **Toast Props:**
+
 - `variant: 'success' | 'error' | 'warning' | 'info'` - Toast variant
 - `title: string` - Toast title (required)
 - `description?: string` - Toast description
@@ -591,6 +608,7 @@ export function MyComponent() {
 - `action?: { label: string; onClick: () => void }` - Action button
 
 **Features:**
+
 - Auto-dismiss after duration (default: 5 seconds)
 - Maximum 5 toasts displayed simultaneously
 - Position: Top-right (desktop), Top-center (mobile)
@@ -602,6 +620,7 @@ export function MyComponent() {
 All components use design tokens defined in `frontend/app/globals.css`. Key tokens:
 
 **Colors:**
+
 - `bg-primary-green` - Primary brand color
 - `bg-accent-orange` - Accent color
 - `text-text-primary` - Primary text color
@@ -610,9 +629,11 @@ All components use design tokens defined in `frontend/app/globals.css`. Key toke
 - `border-bg-medium` - Medium gray border
 
 **Spacing:**
+
 - Uses 8px base spacing scale (`p-2`, `p-4`, `p-6`, etc.)
 
 **Typography:**
+
 - Font family: Inter (via `font-sans`)
 - Font sizes: `text-sm`, `text-base`, `text-lg`, etc.
 
@@ -629,12 +650,14 @@ All components are built with accessibility in mind:
 - **Color Contrast:** WCAG 2.1 Level AA compliant
 
 **Testing:**
+
 - Test with screen readers (NVDA, JAWS, VoiceOver)
 - Test keyboard-only navigation
 - Test with high contrast mode
 - Test at 200% zoom
 
 For complete accessibility guidelines and checklists, see:
+
 - [ACCESSIBILITY_GUIDELINES.md](../../../docs/design/ACCESSIBILITY_GUIDELINES.md) - Comprehensive accessibility guidelines
 - [ACCESSIBILITY_CHECKLIST.md](../../../docs/design/ACCESSIBILITY_CHECKLIST.md) - Developer and QA checklists
 
@@ -660,26 +683,26 @@ Components are mobile-first and responsive:
 ### Form Example
 
 ```tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button, Input, Textarea, Select, Checkbox } from '@/components'
+import { useState } from "react";
+import { Button, Input, Textarea, Select, Checkbox } from "@/components";
 
 export function CreateGemForm() {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
+    name: "",
+    description: "",
+    category: "",
     agree: false,
-  })
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
     // Form submission logic
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -693,15 +716,17 @@ export function CreateGemForm() {
       <Textarea
         label="Description"
         value={formData.description}
-        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        onChange={(e) =>
+          setFormData({ ...formData, description: e.target.value })
+        }
         error={errors.description}
         required
       />
       <Select
         label="Category"
         options={[
-          { value: 'historical', label: 'Historical Site' },
-          { value: 'cultural', label: 'Cultural Landmark' },
+          { value: "historical", label: "Historical Site" },
+          { value: "cultural", label: "Cultural Landmark" },
         ]}
         value={formData.category}
         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -711,7 +736,9 @@ export function CreateGemForm() {
       <Checkbox
         label="I agree to the terms and conditions"
         checked={formData.agree}
-        onCheckedChange={(checked) => setFormData({ ...formData, agree: checked })}
+        onCheckedChange={(checked) =>
+          setFormData({ ...formData, agree: checked })
+        }
         error={errors.agree}
         required
       />
@@ -719,7 +746,7 @@ export function CreateGemForm() {
         Create Gem
       </Button>
     </form>
-  )
+  );
 }
 ```
 
@@ -757,5 +784,3 @@ components/
 
 **Last Updated:** 2025-11-20  
 **Version:** 1.1.0
-
-

@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { Upload, X, XCircle, FileImage } from 'lucide-react'
-import { useState, useRef, useId, DragEvent } from 'react'
-import { cn } from '@/lib/utils'
+import { Upload, X, XCircle, FileImage } from "lucide-react";
+import { useState, useRef, useId, DragEvent } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * File upload component with drag-and-drop support, validation, and file preview.
- * 
+ *
  * Supports multiple files, file type/size validation, and displays validation errors.
  * Includes drag-and-drop functionality and file preview with removal capability.
- * 
+ *
  * @example
  * ```tsx
  * <FileUpload
@@ -23,17 +23,17 @@ import { cn } from '@/lib/utils'
  * ```
  */
 export interface FileUploadProps {
-  label?: string
-  error?: string
-  helperText?: string
-  accept?: string
-  multiple?: boolean
-  maxSize?: number // in bytes
-  maxFiles?: number
-  onFilesChange?: (files: File[]) => void
-  disabled?: boolean
-  required?: boolean
-  fullWidth?: boolean
+  label?: string;
+  error?: string;
+  helperText?: string;
+  accept?: string;
+  multiple?: boolean;
+  maxSize?: number; // in bytes
+  maxFiles?: number;
+  onFilesChange?: (files: File[]) => void;
+  disabled?: boolean;
+  required?: boolean;
+  fullWidth?: boolean;
 }
 
 export function FileUpload({
@@ -49,115 +49,123 @@ export function FileUpload({
   required = false,
   fullWidth = true,
 }: FileUploadProps) {
-  const [files, setFiles] = useState<File[]>([])
-  const [isDragging, setIsDragging] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const generatedId = useId()
-  const fileUploadId = `file-upload-${generatedId}`
-  const hasError = !!error || !!uploadError
+  const [files, setFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const generatedId = useId();
+  const fileUploadId = `file-upload-${generatedId}`;
+  const hasError = !!error || !!uploadError;
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-  }
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  };
 
   const validateFile = (file: File): string | null => {
     if (maxSize && file.size > maxSize) {
-      return `File size must be less than ${formatFileSize(maxSize)}`
+      return `File size must be less than ${formatFileSize(maxSize)}`;
     }
-    if (accept && !accept.split(',').some(type => {
-      const trimmedType = type.trim()
-      return file.type.match(trimmedType) || file.name.match(new RegExp(trimmedType.replace('*', '.*')))
-    })) {
-      return `File type must be one of: ${accept}`
+    if (
+      accept &&
+      !accept.split(",").some((type) => {
+        const trimmedType = type.trim();
+        return (
+          file.type.match(trimmedType) ||
+          file.name.match(new RegExp(trimmedType.replace("*", ".*")))
+        );
+      })
+    ) {
+      return `File type must be one of: ${accept}`;
     }
-    return null
-  }
+    return null;
+  };
 
   const handleFiles = (newFiles: FileList | File[]) => {
-    const fileArray = Array.from(newFiles)
-    setUploadError(null)
+    const fileArray = Array.from(newFiles);
+    setUploadError(null);
 
     // Check max files limit
     if (maxFiles && files.length + fileArray.length > maxFiles) {
-      setUploadError(`Maximum ${maxFiles} file(s) allowed`)
-      return
+      setUploadError(`Maximum ${maxFiles} file(s) allowed`);
+      return;
     }
 
     // Validate each file
-    const validFiles: File[] = []
-    const validationErrors: string[] = []
-    
+    const validFiles: File[] = [];
+    const validationErrors: string[] = [];
+
     for (const file of fileArray) {
-      const validationError = validateFile(file)
+      const validationError = validateFile(file);
       if (validationError) {
-        validationErrors.push(`${file.name}: ${validationError}`)
-        continue
+        validationErrors.push(`${file.name}: ${validationError}`);
+        continue;
       }
-      validFiles.push(file)
+      validFiles.push(file);
     }
 
     // Display validation errors if any
     if (validationErrors.length > 0) {
       if (validationErrors.length === 1) {
-        setUploadError(validationErrors[0])
+        setUploadError(validationErrors[0]);
       } else {
-        setUploadError(`${validationErrors.length} file(s) failed validation. ${validationErrors.slice(0, 2).join('; ')}${validationErrors.length > 2 ? '...' : ''}`)
+        setUploadError(
+          `${validationErrors.length} file(s) failed validation. ${validationErrors.slice(0, 2).join("; ")}${validationErrors.length > 2 ? "..." : ""}`
+        );
       }
     }
 
     // Add valid files if any
     if (validFiles.length > 0) {
-      const updatedFiles = multiple ? [...files, ...validFiles] : validFiles
-      setFiles(updatedFiles)
-      onFilesChange?.(updatedFiles)
+      const updatedFiles = multiple ? [...files, ...validFiles] : validFiles;
+      setFiles(updatedFiles);
+      onFilesChange?.(updatedFiles);
     }
-  }
+  };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-    if (disabled) return
+    e.preventDefault();
+    setIsDragging(false);
+    if (disabled) return;
 
-    const droppedFiles = e.dataTransfer.files
+    const droppedFiles = e.dataTransfer.files;
     if (droppedFiles.length > 0) {
-      handleFiles(droppedFiles)
+      handleFiles(droppedFiles);
     }
-  }
+  };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!disabled) {
-      setIsDragging(true)
+      setIsDragging(true);
     }
-  }
+  };
 
   const handleDragLeave = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files)
+      handleFiles(e.target.files);
     }
-  }
+  };
 
   const removeFile = (index: number) => {
-    const updatedFiles = files.filter((_, i) => i !== index)
-    setFiles(updatedFiles)
-    onFilesChange?.(updatedFiles)
-  }
+    const updatedFiles = files.filter((_, i) => i !== index);
+    setFiles(updatedFiles);
+    onFilesChange?.(updatedFiles);
+  };
 
   const isImageFile = (file: File): boolean => {
-    return file.type.startsWith('image/')
-  }
+    return file.type.startsWith("image/");
+  };
 
   return (
-    <div className={cn('space-y-2', fullWidth && 'w-full')}>
+    <div className={cn("space-y-2", fullWidth && "w-full")}>
       {label && (
         <label
           htmlFor={fileUploadId}
@@ -172,12 +180,14 @@ export function FileUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={cn(
-          'border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200',
-          'cursor-pointer',
-          isDragging && !disabled && 'border-primary-green bg-light-green/10',
-          hasError && 'border-error bg-error/5',
-          !hasError && !isDragging && 'border-bg-medium hover:border-primary-green hover:bg-bg-light',
-          disabled && 'opacity-60 cursor-not-allowed',
+          "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
+          "cursor-pointer",
+          isDragging && !disabled && "border-primary-green bg-light-green/10",
+          hasError && "border-error bg-error/5",
+          !hasError &&
+            !isDragging &&
+            "border-bg-medium hover:border-primary-green hover:bg-bg-light",
+          disabled && "opacity-60 cursor-not-allowed"
         )}
         onClick={() => !disabled && fileInputRef.current?.click()}
       >
@@ -193,20 +203,26 @@ export function FileUpload({
           className="hidden"
           aria-invalid={hasError}
           aria-describedby={
-            error || uploadError ? `${fileUploadId}-error` :
-            helperText ? `${fileUploadId}-helper` :
-            undefined
+            error || uploadError
+              ? `${fileUploadId}-error`
+              : helperText
+                ? `${fileUploadId}-helper`
+                : undefined
           }
         />
-        <Upload className={cn(
-          'w-8 h-8 mx-auto mb-2',
-          hasError ? 'text-error' : 'text-text-secondary'
-        )} />
-        <p className={cn(
-          'text-sm font-medium mb-1',
-          hasError ? 'text-error' : 'text-text-primary'
-        )}>
-          {isDragging ? 'Drop files here' : 'Click to upload or drag and drop'}
+        <Upload
+          className={cn(
+            "w-8 h-8 mx-auto mb-2",
+            hasError ? "text-error" : "text-text-secondary"
+          )}
+        />
+        <p
+          className={cn(
+            "text-sm font-medium mb-1",
+            hasError ? "text-error" : "text-text-primary"
+          )}
+        >
+          {isDragging ? "Drop files here" : "Click to upload or drag and drop"}
         </p>
         <p className="text-xs text-text-secondary">
           {accept && `Accepted: ${accept}`}
@@ -238,8 +254,8 @@ export function FileUpload({
               <button
                 type="button"
                 onClick={(e) => {
-                  e.stopPropagation()
-                  removeFile(index)
+                  e.stopPropagation();
+                  removeFile(index);
                 }}
                 className="text-text-secondary hover:text-error transition-colors"
                 aria-label={`Remove ${file.name}`}
@@ -270,6 +286,5 @@ export function FileUpload({
         </p>
       )}
     </div>
-  )
+  );
 }
-

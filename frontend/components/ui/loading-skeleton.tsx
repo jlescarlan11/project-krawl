@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 /**
  * LoadingSkeleton component for displaying loading placeholders.
- * 
+ *
  * Provides skeleton loaders with shimmer animation for different content types.
  * Supports card, text, image, list, and custom variants.
- * 
+ *
  * @example
  * ```tsx
  * <LoadingSkeleton variant="card" />
@@ -16,56 +16,56 @@ import { cn } from '@/lib/utils'
  * ```
  */
 export interface LoadingSkeletonProps {
-  variant?: 'card' | 'text' | 'image' | 'list' | 'custom'
-  lines?: number
-  width?: string
-  height?: string
-  className?: string
+  variant?: "card" | "text" | "image" | "list" | "custom";
+  lines?: number;
+  width?: string;
+  height?: string;
+  className?: string;
 }
 
 const LoadingSkeleton = ({
-  variant = 'card',
+  variant = "card",
   lines = 3,
   width,
   height,
   className,
 }: LoadingSkeletonProps) => {
   // Custom styles for width/height when provided
-  const customStyles = width || height ? { width, height } : undefined
+  const customStyles = width || height ? { width, height } : undefined;
 
-  if (variant === 'text') {
+  if (variant === "text") {
     return (
-      <div className={cn('space-y-2', className)}>
+      <div className={cn("space-y-2", className)}>
         {Array.from({ length: lines }).map((_, index) => (
           <div
             key={index}
             className={cn(
-              'h-4 rounded-lg bg-bg-light skeleton-shimmer',
-              index === lines - 1 ? 'w-3/4' : 'w-full',
-              'animate-pulse'
+              "h-4 rounded-lg bg-bg-light skeleton-shimmer",
+              index === lines - 1 ? "w-3/4" : "w-full",
+              "animate-pulse"
             )}
           />
         ))}
       </div>
-    )
+    );
   }
 
-  if (variant === 'image') {
+  if (variant === "image") {
     return (
       <div
         className={cn(
-          'rounded-xl bg-bg-light skeleton-shimmer',
-          'aspect-square',
+          "rounded-xl bg-bg-light skeleton-shimmer",
+          "aspect-square",
           className
         )}
         style={customStyles}
       />
-    )
+    );
   }
 
-  if (variant === 'list') {
+  if (variant === "list") {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
@@ -73,30 +73,32 @@ const LoadingSkeleton = ({
           />
         ))}
       </div>
-    )
+    );
   }
 
-  if (variant === 'custom') {
+  if (variant === "custom") {
     return (
       <div
-        className={cn('rounded-lg bg-bg-light skeleton-shimmer animate-pulse', className)}
+        className={cn(
+          "rounded-lg bg-bg-light skeleton-shimmer animate-pulse",
+          className
+        )}
         style={customStyles}
       />
-    )
+    );
   }
 
   // Default: card variant
   return (
     <div
       className={cn(
-        'h-32 w-full rounded-xl bg-bg-light skeleton-shimmer animate-pulse',
+        "h-32 w-full rounded-xl bg-bg-light skeleton-shimmer animate-pulse",
         className
       )}
     />
-  )
-}
+  );
+};
 
-LoadingSkeleton.displayName = 'LoadingSkeleton'
+LoadingSkeleton.displayName = "LoadingSkeleton";
 
-export { LoadingSkeleton }
-
+export { LoadingSkeleton };

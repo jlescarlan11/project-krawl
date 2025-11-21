@@ -83,10 +83,10 @@ export function OnboardingFlow() {
           result.status === "granted"
             ? "granted"
             : result.status === "denied"
-            ? "denied"
-            : result.status === "error"
-            ? "error"
-            : "unknown",
+              ? "denied"
+              : result.status === "error"
+                ? "error"
+                : "unknown",
         locationMessage:
           result.status === "error" || result.status === "denied"
             ? result.message
@@ -107,10 +107,10 @@ export function OnboardingFlow() {
           result.status === "granted"
             ? "granted"
             : result.status === "denied"
-            ? "denied"
-            : result.status === "error"
-            ? "error"
-            : "unknown",
+              ? "denied"
+              : result.status === "error"
+                ? "error"
+                : "unknown",
         notificationMessage:
           result.status === "error" || result.status === "denied"
             ? result.message
@@ -122,7 +122,8 @@ export function OnboardingFlow() {
   };
 
   const showQuickStart =
-    currentStep?.id === "permissions" || permissionStatus.location === "granted";
+    currentStep?.id === "permissions" ||
+    permissionStatus.location === "granted";
 
   return (
     <section className="mx-auto flex min-h-[100dvh] w-full max-w-3xl flex-col gap-10 px-6 py-8 sm:py-12">
@@ -165,4 +166,3 @@ export function OnboardingFlow() {
     </section>
   );
 }
-

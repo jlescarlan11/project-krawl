@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { forwardRef } from 'react'
-import { cn } from '@/lib/utils'
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * ProgressBar component for displaying determinate progress.
- * 
+ *
  * Shows progress with optional label and value display.
  * Supports multiple sizes and full accessibility.
- * 
+ *
  * @example
  * ```tsx
  * <ProgressBar
@@ -21,38 +21,31 @@ import { cn } from '@/lib/utils'
  * ```
  */
 export interface ProgressBarProps {
-  value: number
-  max?: number
-  label?: string
-  showValue?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
+  value: number;
+  max?: number;
+  label?: string;
+  showValue?: boolean;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 const sizeClasses = {
-  sm: 'h-2',
-  md: 'h-3',
-  lg: 'h-4',
-}
+  sm: "h-2",
+  md: "h-3",
+  lg: "h-4",
+};
 
 const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
   (
-    {
-      value,
-      max = 100,
-      label,
-      showValue = false,
-      size = 'md',
-      className,
-    },
+    { value, max = 100, label, showValue = false, size = "md", className },
     ref
   ) => {
     // Clamp value between 0 and max
-    const clampedValue = Math.max(0, Math.min(value, max))
-    const percentage = (clampedValue / max) * 100
+    const clampedValue = Math.max(0, Math.min(value, max));
+    const percentage = (clampedValue / max) * 100;
 
     return (
-      <div ref={ref} className={cn('w-full', className)}>
+      <div ref={ref} className={cn("w-full", className)}>
         {(label || showValue) && (
           <div className="flex items-center justify-between mb-2">
             {label && (
@@ -70,26 +63,25 @@ const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
           aria-valuenow={clampedValue}
           aria-valuemin={0}
           aria-valuemax={max}
-          aria-label={label || 'Progress'}
+          aria-label={label || "Progress"}
           className={cn(
-            'w-full rounded-full bg-bg-light overflow-hidden',
+            "w-full rounded-full bg-bg-light overflow-hidden",
             sizeClasses[size]
           )}
         >
           <div
             className={cn(
-              'h-full bg-primary-green transition-all duration-300',
+              "h-full bg-primary-green transition-all duration-300",
               sizeClasses[size]
             )}
             style={{ width: `${percentage}%` }}
           />
         </div>
       </div>
-    )
+    );
   }
-)
+);
 
-ProgressBar.displayName = 'ProgressBar'
+ProgressBar.displayName = "ProgressBar";
 
-export { ProgressBar }
-
+export { ProgressBar };

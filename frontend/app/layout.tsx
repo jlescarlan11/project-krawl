@@ -26,7 +26,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Krawl - The Living Map of Filipino Culture",
-  description: "Discover authentic Filipino culture in Cebu City through community-curated Gems and Krawls",
+  description:
+    "Discover authentic Filipino culture in Cebu City through community-curated Gems and Krawls",
 };
 
 export default function RootLayout({
@@ -36,9 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
-      <body className={`${inter.className} antialiased`}>
-        {children}
-      </body>
+      <body className={`${inter.className} antialiased`}>{children}</body>
     </html>
   );
 }

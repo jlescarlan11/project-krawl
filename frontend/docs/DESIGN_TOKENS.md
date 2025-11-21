@@ -10,6 +10,7 @@ This document provides a quick reference for Krawl design tokens.
 ## Colors
 
 ### Primary Colors
+
 - `bg-primary-green` / `text-primary-green` - `#2D7A3E` - Main brand color
 - `bg-accent-orange` / `text-accent-orange` - `#FF6B35` - Highlights, energy
 - `bg-warm-yellow` / `text-warm-yellow` - `#F7B801` - Discovery, positivity
@@ -17,18 +18,21 @@ This document provides a quick reference for Krawl design tokens.
 - `bg-light-green` / `text-light-green` - `#4A9D5E` - Accents, disabled states
 
 ### Text Colors
+
 - `text-text-primary` - `#1A1A1A` - Main content text
 - `text-text-secondary` - `#4A4A4A` - Supporting text
 - `text-text-tertiary` - `#6B6B6B` - Captions, labels
 - `text-text-on-dark` - `#FFFFFF` - Text on dark backgrounds
 
 ### Background Colors
+
 - `bg-bg-white` - `#FFFFFF` - Primary background
 - `bg-bg-light` - `#F5F5F5` - Secondary background
 - `bg-bg-medium` - `#E5E5E5` - Borders, dividers
 - `bg-bg-dark` - `#1A1A1A` - Dark mode background (future)
 
 ### Semantic Colors
+
 - `bg-success` / `text-success` - `#2D7A3E` - Success messages
 - `bg-error` / `text-error` - `#DC2626` - Error messages
 - `bg-warning` / `text-warning` - `#F7B801` - Warning messages
@@ -39,10 +43,12 @@ This document provides a quick reference for Krawl design tokens.
 ## Typography
 
 ### Font Families
+
 - `font-sans` - Inter (default body font)
 - `font-heading` - Plus Jakarta Sans (optional for headings)
 
 ### Font Sizes
+
 - `text-xs` - 12px - Extra small text
 - `text-sm` - 14px - Small text, captions
 - `text-base` - 16px - Body text (desktop)
@@ -53,18 +59,21 @@ This document provides a quick reference for Krawl design tokens.
 - `text-4xl` - 40px - H1 (desktop)
 
 ### Font Weights
+
 - `font-normal` - 400 - Regular weight
 - `font-medium` - 500 - Medium weight
 - `font-semibold` - 600 - SemiBold weight
 - `font-bold` - 700 - Bold weight
 
 ### Line Heights
+
 - `leading-tight` - 1.2 - Headings
 - `leading-snug` - 1.3 - Section headings
 - `leading-normal` - 1.5 - Body text, buttons
 - `leading-relaxed` - 1.6 - Paragraphs
 
 ### Letter Spacing
+
 - `tracking-tight` - -0.02em - H1 headings
 - `tracking-normal` - 0 - Body text
 - `tracking-wide` - 0.01em - Captions, buttons
@@ -363,13 +372,18 @@ The primary way to use breakpoints is through Tailwind CSS responsive classes. T
 For programmatic breakpoint detection in JavaScript/TypeScript:
 
 ```tsx
-import { breakpoints, isMobile, isTablet, isDesktop } from '@/lib/design-tokens';
+import {
+  breakpoints,
+  isMobile,
+  isTablet,
+  isDesktop,
+} from "@/lib/design-tokens";
 
 // Access breakpoint values
 const tabletBreakpoint = breakpoints.sm; // 640
 
 // Check breakpoint in JavaScript
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   const width = window.innerWidth;
   if (isMobile(width)) {
     // Mobile-specific logic
@@ -386,24 +400,18 @@ if (typeof window !== 'undefined') {
 For dynamic responsive behavior in React components:
 
 ```tsx
-import { useIsMobile, useIsDesktop, useBreakpoint } from '@/lib/design-tokens';
+import { useIsMobile, useIsDesktop, useBreakpoint } from "@/lib/design-tokens";
 
 function MyComponent() {
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
-  
+
   // Or use the general hook
-  const isTablet = useBreakpoint('sm', 'min') && useBreakpoint('lg', 'max');
-  
+  const isTablet = useBreakpoint("sm", "min") && useBreakpoint("lg", "max");
+
   return (
     <div>
-      {isMobile ? (
-        <MobileView />
-      ) : isDesktop ? (
-        <DesktopView />
-      ) : (
-        <TabletView />
-      )}
+      {isMobile ? <MobileView /> : isDesktop ? <DesktopView /> : <TabletView />}
     </div>
   );
 }
@@ -415,12 +423,14 @@ function MyComponent() {
 
 ```tsx
 // Mobile: 1 column, Tablet: 2 columns, Desktop: 3 columns, Large Desktop: 4 columns
-<div className="
+<div
+  className="
   grid grid-cols-1 gap-4
   sm:grid-cols-2 sm:gap-6
   lg:grid-cols-3 lg:gap-8
   xl:grid-cols-4 xl:gap-10
-">
+"
+>
   {/* Grid items */}
 </div>
 ```
@@ -452,12 +462,14 @@ function MyComponent() {
 
 ```tsx
 // Responsive padding and gaps
-<div className="
+<div
+  className="
   p-4 gap-4
   sm:p-6 sm:gap-6
   lg:p-8 lg:gap-8
   xl:p-10 xl:gap-10
-">
+"
+>
   {/* Content with responsive spacing */}
 </div>
 ```
@@ -466,12 +478,14 @@ function MyComponent() {
 
 ```tsx
 // Responsive container with max-width
-<div className="
+<div
+  className="
   w-full px-4
   sm:px-6
   lg:px-8
   xl:max-w-7xl xl:mx-auto xl:px-10
-">
+"
+>
   {/* Content constrained to max-width on large screens */}
 </div>
 ```
@@ -487,23 +501,24 @@ function MyComponent() {
 
 ### Breakpoint Reference
 
-| Breakpoint | Min Width | Tailwind Prefix | Device Category |
-|------------|-----------|-----------------|-----------------|
-| Mobile | 0px | (none) | Mobile |
-| Tablet | 640px | `sm:` | Tablet |
-| Desktop | 1024px | `lg:` | Desktop |
-| Large Desktop | 1280px | `xl:` | Large Desktop |
-| Extra Large | 1536px | `2xl:` | Extra Large |
+| Breakpoint    | Min Width | Tailwind Prefix | Device Category |
+| ------------- | --------- | --------------- | --------------- |
+| Mobile        | 0px       | (none)          | Mobile          |
+| Tablet        | 640px     | `sm:`           | Tablet          |
+| Desktop       | 1024px    | `lg:`           | Desktop         |
+| Large Desktop | 1280px    | `xl:`           | Large Desktop   |
+| Extra Large   | 1536px    | `2xl:`          | Extra Large     |
 
 ---
 
 ## Usage Examples
 
-**Note:** Tailwind CSS v4 automatically generates utility classes from `@theme` tokens. 
+**Note:** Tailwind CSS v4 automatically generates utility classes from `@theme` tokens.
 Class names follow the pattern: `{property}-{token-name}` (e.g., `bg-primary-green`, `text-text-primary`).
 If a class doesn't work, verify it's defined in `globals.css` under the `@theme` directive.
 
 ### Button with Primary Color
+
 ```tsx
 <button className="bg-primary-green text-white px-6 py-3 rounded-lg hover:bg-dark-green">
   Create Gem
@@ -511,14 +526,18 @@ If a class doesn't work, verify it's defined in `globals.css` under the `@theme`
 ```
 
 ### Card with Typography
+
 ```tsx
 <div className="bg-bg-white border border-bg-medium rounded-xl p-6">
   <h3 className="text-2xl font-semibold text-text-primary mb-2">Card Title</h3>
-  <p className="text-base text-text-secondary leading-relaxed">Card description</p>
+  <p className="text-base text-text-secondary leading-relaxed">
+    Card description
+  </p>
 </div>
 ```
 
 ### Semantic Alert
+
 ```tsx
 <div className="bg-success/10 text-success border border-success rounded-lg p-4">
   Success message
@@ -526,8 +545,9 @@ If a class doesn't work, verify it's defined in `globals.css` under the `@theme`
 ```
 
 ### Using Design Tokens in TypeScript
+
 ```tsx
-import { colors, typography } from '@/lib/design-tokens';
+import { colors, typography } from "@/lib/design-tokens";
 
 // Access colors programmatically
 const primaryColor = colors.primary.green; // '#2D7A3E'
@@ -549,6 +569,6 @@ const bodyFontSize = typography.fontSize.base; // '1rem'
 ---
 
 For complete brand guidelines and design system documentation, see:
+
 - `docs/design/BRAND_GUIDELINES.md`
 - `docs/design/UI_UX_DESIGN_SYSTEM.md`
-

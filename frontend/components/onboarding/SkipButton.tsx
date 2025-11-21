@@ -15,4 +15,3 @@ export function SkipButton({ onClick }: SkipButtonProps) {
     </button>
   );
 }
-

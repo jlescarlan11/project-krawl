@@ -41,4 +41,3 @@ export type OnboardingStorageState = {
 };
 
 export type QuickStartAction = "guest" | "sign-in";
-
