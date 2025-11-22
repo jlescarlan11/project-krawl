@@ -90,24 +90,18 @@ export const useAuthStore = create<AuthStore>()(
     persist(
       (set) => ({
         ...defaultState,
-        setStatus: (status) => set({ status }, false, "setStatus"),
-        setUser: (user) => set({ user }, false, "setUser"),
-        setSession: (session) => set({ session }, false, "setSession"),
-        setError: (error) => set({ error }, false, "setError"),
+        setStatus: (status) => set({ status }),
+        setUser: (user) => set({ user }),
+        setSession: (session) => set({ session }),
+        setError: (error) => set({ error }),
         signIn: (user, session) =>
-          set(
-            { user, session, status: "authenticated", error: null },
-            false,
-            "signIn"
-          ),
+          set({ user, session, status: "authenticated", error: null }),
         signOut: () =>
           set(
             // Preserve _hasHydrated flag to prevent hydration mismatch after sign out
-            { ...defaultState, _hasHydrated: true },
-            false,
-            "signOut"
+            { ...defaultState, _hasHydrated: true }
           ),
-        clearError: () => set({ error: null }, false, "clearError"),
+        clearError: () => set({ error: null }),
       }),
       {
         name: "krawl:auth:v1",

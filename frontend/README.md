@@ -6,7 +6,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **React:** 19.2.0
 - **TypeScript:** 5.x
 - **Tailwind CSS:** v4 (CSS-based configuration with @tailwindcss/postcss)
-- **Zustand:** 4.5.x (state management)
+- **Zustand:** 5.0.8 (state management)
+- **Sentry:** @sentry/nextjs@10.26.0 (error tracking and performance monitoring)
 - **ESLint:** 9.x (with eslint-config-next)
 - **Prettier:** 3.x (code formatter)
 
@@ -30,18 +31,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 ## Progressive Web App (PWA) Support
 
-Krawl ships with offline and installable capabilities powered by [`next-pwa`](https://github.com/shadowwalker/next-pwa).
+Krawl ships with offline and installable capabilities using the [official Next.js PWA approach](https://nextjs.org/docs/app/guides/progressive-web-apps).
 
-- `next.config.ts` wraps the Next.js config with `withPWA`
-- Manifest is served from `app/manifest.ts`
+- `app/manifest.ts` defines the web app manifest (Next.js built-in support)
+- `public/sw.js` implements the service worker with caching strategies
+- `components/system/ServiceWorkerRegistration.tsx` handles service worker registration
 - Offline fallback lives at `app/offline/page.tsx` + `public/offline.html`
 - Icons are stored in `public/icons/*`
 - Regenerate brand-accurate icons anytime with `python frontend/scripts/generate_pwa_icons.py`
 
 ### Development Tips
 
-- PWA is disabled in development to avoid caching surprises. To test locally, set `NEXT_PUBLIC_ENABLE_PWA=true` before running `npm run dev`.
-- Production builds must use `npm run build` (which passes `--webpack`) because `next-pwa` is not yet compatible with the default Turbopack pipeline in Next.js 16.
+- PWA is disabled in development by default. To test locally, set `NEXT_PUBLIC_ENABLE_PWA=true` before running `npm run dev`.
+- Production builds use standard `npm run build` (no special flags needed).
 - Run Lighthouse (Chrome dev tools → Lighthouse → PWA) to validate install criteria.
 - Use the [PWA Test Plan](./docs/PWA_TEST_PLAN.md) for the full QA checklist.
 
@@ -471,6 +473,76 @@ function MyComponent() {
 - **Selectors:** `useMapCenter()`, `useMapZoom()`, `useSelectedMarker()`, `useMapFilters()`
 
 For complete store documentation, see the store files in `stores/` directory.
+
+## Error Tracking & Monitoring (Sentry)
+
+Krawl uses [Sentry](https://sentry.io/) for comprehensive error tracking and performance monitoring. The integration provides:
+
+- ✅ **Error Tracking:** Automatic capture of JavaScript errors, React component errors, and API errors
+- ✅ **Performance Monitoring:** Track page load times, API response times, and user interactions
+- ✅ **User Context:** Privacy-first user identification (ID and username only, no email)
+- ✅ **Error Filtering:** Automatic filtering of browser extension errors and rate limiting
+- ✅ **Data Sanitization:** Automatic removal of sensitive data (passwords, tokens, etc.)
+- ✅ **Source Maps:** Production debugging with source map uploads
+- ✅ **Error Boundaries:** React error boundaries with user-friendly error UI
+
+### Configuration
+
+Sentry is configured via environment variables in `.env.local`:
+
+```bash
+# Sentry DSN (required)
+NEXT_PUBLIC_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+
+# Sentry Environment
+NEXT_PUBLIC_SENTRY_ENVIRONMENT=development  # or staging, production
+
+# Optional: Sentry Release (Git commit SHA)
+NEXT_PUBLIC_SENTRY_RELEASE=git-commit-sha
+```
+
+### Configuration Files
+
+- **`sentry.client.config.ts`** - Client-side configuration (browser)
+- **`sentry.server.config.ts`** - Server-side configuration (Node.js)
+- **`sentry.edge.config.ts`** - Edge runtime configuration (middleware)
+- **`instrumentation.ts`** - Runtime detection and config loading
+- **`lib/sentry/error-filtering.ts`** - Error filtering and sanitization logic
+- **`lib/sentry/user-context.ts`** - User context management
+- **`lib/sentry/config-validation.ts`** - DSN validation utilities
+
+### Components
+
+- **`SentryErrorBoundary`** - React error boundary that catches component errors
+- **`SentryUserContextSync`** - Automatically syncs user context from auth store
+
+### Usage
+
+Sentry is automatically initialized when the application starts. No manual setup required.
+
+**Testing Error Tracking:**
+- Visit `/sentry-example-page` to test error tracking
+- Errors are automatically captured and sent to Sentry dashboard
+
+**Manual Error Reporting:**
+```tsx
+import * as Sentry from "@sentry/nextjs";
+
+// Capture an exception
+Sentry.captureException(new Error("Something went wrong"));
+
+// Capture a message
+Sentry.captureMessage("User performed action", "info");
+
+// Add context
+Sentry.setContext("custom", { key: "value" });
+```
+
+### Documentation
+
+For complete Sentry setup and troubleshooting, see:
+- **[SENTRY_INSTALLATION.md](./docs/SENTRY_INSTALLATION.md)** - Installation and configuration guide
+- **[SENTRY_SETUP.md](../../docs/private-docs/operations/SENTRY_SETUP.md)** - Account setup and DSN configuration
 
 ## Learn More
 

@@ -73,68 +73,40 @@ export const useUIStore = create<UIStore>()(
       (set) => ({
         ...defaultState,
         openModal: (id) =>
-          set(
-            (state) => ({
+          set((state) => ({
               modals: { ...state.modals, [id]: true },
-            }),
-            false,
-            `openModal:${id}`
-          ),
+          })),
         closeModal: (id) =>
-          set(
-            (state) => ({
+          set((state) => ({
               modals: { ...state.modals, [id]: false },
-            }),
-            false,
-            `closeModal:${id}`
-          ),
+          })),
         toggleModal: (id) =>
-          set(
-            (state) => ({
+          set((state) => ({
               modals: {
                 ...state.modals,
                 [id]: !state.modals[id],
               },
-            }),
-            false,
-            `toggleModal:${id}`
-          ),
+          })),
         openSidebar: (side) =>
-          set(
-            (state) => ({
+          set((state) => ({
               sidebars: { ...state.sidebars, [side]: true },
-            }),
-            false,
-            `openSidebar:${side}`
-          ),
+          })),
         closeSidebar: (side) =>
-          set(
-            (state) => ({
+          set((state) => ({
               sidebars: { ...state.sidebars, [side]: false },
-            }),
-            false,
-            `closeSidebar:${side}`
-          ),
+          })),
         toggleSidebar: (side) =>
-          set(
-            (state) => ({
+          set((state) => ({
               sidebars: {
                 ...state.sidebars,
                 [side]: !state.sidebars[side],
               },
-            }),
-            false,
-            `toggleSidebar:${side}`
-          ),
-        setTheme: (theme) => set({ theme }, false, "setTheme"),
+          })),
+        setTheme: (theme) => set({ theme }),
         setLoading: (key, value) =>
-          set(
-            (state) => ({
+          set((state) => ({
               loading: { ...state.loading, [key]: value },
-            }),
-            false,
-            `setLoading:${key}`
-          ),
+          })),
       }),
       {
         name: "krawl:ui:v1",
