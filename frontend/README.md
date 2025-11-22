@@ -544,6 +544,215 @@ For complete Sentry setup and troubleshooting, see:
 - **[SENTRY_INSTALLATION.md](./docs/SENTRY_INSTALLATION.md)** - Installation and configuration guide
 - **[SENTRY_SETUP.md](../../docs/private-docs/operations/SENTRY_SETUP.md)** - Account setup and DSN configuration
 
+## Error Logging & Handling
+
+Krawl provides centralized error logging and error handling utilities for consistent error management throughout the application.
+
+### Error Logging Utility
+
+The error logging utility (`lib/error-logging.ts`) provides environment-aware error logging:
+
+- **Development:** Logs to console with appropriate methods (`console.error`, `console.warn`, etc.)
+- **Production:** Sends to Sentry with appropriate severity levels
+- **Automatic Context:** Enriches logs with user context, tags, and extra data
+
+**Available Log Levels:**
+- `logError()` - Critical errors
+- `logWarning()` - Non-critical issues
+- `logInfo()` - Informational messages
+- `logDebug()` - Development-only messages
+
+**Usage:**
+```typescript
+import { logError, logWarning, logInfo, logDebug } from "@/lib/error-logging";
+
+// Log critical error
+try {
+  await riskyOperation();
+} catch (error) {
+  logError(error, {
+    tags: { operation: "riskyOperation" },
+    extra: { userId: "123" },
+  });
+}
+
+// Log warning
+logWarning("Deprecated feature used", {
+  tags: { feature: "oldFeature" },
+});
+
+// Log info
+logInfo("User logged in", {
+  tags: { action: "login" },
+  extra: { userId: "123" },
+});
+
+// Log debug (development only)
+logDebug("Component rendered", {
+  extra: { componentName: "UserProfile" },
+});
+```
+
+### API Error Handling
+
+The API error handler (`lib/api-error-handler.ts`) provides utilities for parsing and handling API errors:
+
+**Key Functions:**
+- `parseApiError()` - Parses unknown errors into standardized ApiError
+- `handleApiError()` - Handles and logs API errors
+- `getErrorMessage()` - Gets user-friendly error messages
+- `getErrorDetails()` - Gets technical error details for debugging
+
+**Usage:**
+```typescript
+import { handleApiError, getErrorMessage } from "@/lib/api-error-handler";
+
+async function fetchUser(userId: string) {
+  try {
+    const response = await fetch(`/api/users/${userId}`);
+    
+    if (!response.ok) {
+      const apiError = await handleApiError(response);
+      // Show user-friendly message
+      showToast(getErrorMessage(apiError));
+      return null;
+    }
+    
+    return await response.json();
+  } catch (error) {
+    const apiError = await handleApiError(error);
+    showToast(getErrorMessage(apiError));
+    return null;
+  }
+}
+```
+
+**Error Codes:**
+- `NETWORK_ERROR` - Network connection issues
+- `TIMEOUT_ERROR` - Request timeout
+- `VALIDATION_ERROR` - Input validation errors
+- `UNAUTHORIZED` - Authentication required
+- `FORBIDDEN` - Insufficient permissions
+- `NOT_FOUND` - Resource not found
+- `SERVER_ERROR` - Server-side errors
+- `UNKNOWN_ERROR` - Unexpected errors
+
+### Form Validation Error Handling
+
+The form error handler (`lib/form-error-handler.ts`) provides utilities for handling form validation errors:
+
+**Key Functions:**
+- `parseValidationErrors()` - Extracts field-level errors from API responses
+- `getFieldError()` - Gets error message for a specific field
+- `hasFormErrors()` - Checks if form has errors
+- `getAllErrorMessages()` - Gets all error messages
+- `clearFieldError()` - Clears error for a field
+- `clearAllErrors()` - Clears all errors
+
+**Usage:**
+```typescript
+import { handleApiError } from "@/lib/api-error-handler";
+import { parseValidationErrors, getFieldError } from "@/lib/form-error-handler";
+
+async function handleSubmit(formData: FormData) {
+  try {
+    const response = await fetch("/api/users", {
+      method: "POST",
+      body: JSON.stringify(formData),
+    });
+    
+    if (!response.ok) {
+      const apiError = await handleApiError(response);
+      const formErrors = parseValidationErrors(apiError);
+      
+      // Set field-level errors
+      setFieldErrors(formErrors);
+      
+      // Get error for specific field
+      const emailError = getFieldError(formErrors, "email");
+      if (emailError) {
+        setEmailError(emailError);
+      }
+      
+      return;
+    }
+    
+    // Success
+    showToast("User created successfully!");
+  } catch (error) {
+    const apiError = await handleApiError(error);
+    showToast(getErrorMessage(apiError));
+  }
+}
+```
+
+### Error Codes
+
+Error code constants and mappings are available in `lib/error-codes.ts`:
+
+```typescript
+import { API_ERROR_CODES, VALIDATION_ERROR_CODES, getErrorMessageForCode } from "@/lib/error-codes";
+
+// Use error codes
+const errorCode = API_ERROR_CODES.UNAUTHORIZED;
+
+// Get user-friendly message
+const message = getErrorMessageForCode(errorCode);
+```
+
+### Error Handling Best Practices
+
+1. **Use Error Logging in Try-Catch Blocks:**
+   ```typescript
+   try {
+     await riskyOperation();
+   } catch (error) {
+     logError(error, {
+       tags: { operation: "riskyOperation" },
+     });
+   }
+   ```
+
+2. **Use API Error Handler for HTTP Requests:**
+   ```typescript
+   try {
+     const response = await fetch("/api/endpoint");
+     if (!response.ok) {
+       const apiError = await handleApiError(response);
+       showToast(getErrorMessage(apiError));
+     }
+   } catch (error) {
+     const apiError = await handleApiError(error);
+     showToast(getErrorMessage(apiError));
+   }
+   ```
+
+3. **Use Form Error Handler for Validation:**
+   ```typescript
+   const apiError = await handleApiError(response);
+   const formErrors = parseValidationErrors(apiError);
+   setFieldErrors(formErrors);
+   ```
+
+4. **Complement Error Boundaries:**
+   - Error boundaries catch React component errors
+   - Use error logging in try-catch blocks
+   - Don't duplicate error logging in error boundaries
+
+### Configuration
+
+Error logging uses the same Sentry configuration as error tracking. No additional configuration required.
+
+**Optional Environment Variables:**
+- `NEXT_PUBLIC_ENABLE_SENTRY_IN_DEV` - Enable Sentry in development (default: false)
+
+### Files
+
+- **`lib/error-logging.ts`** - Core error logging utility
+- **`lib/api-error-handler.ts`** - API error parsing and handling
+- **`lib/form-error-handler.ts`** - Form validation error handling
+- **`lib/error-codes.ts`** - Error code constants and mappings
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
