@@ -93,7 +93,7 @@ export const useMapStore = create<MapStore>()(
           );
           return;
         }
-        set({ center }, false, "setCenter");
+        set({ center });
       },
       setZoom: (zoom) => {
         // Validate zoom level: typically 0-22 for most map libraries
@@ -103,33 +103,23 @@ export const useMapStore = create<MapStore>()(
           );
           return;
         }
-        set({ zoom }, false, "setZoom");
+        set({ zoom });
       },
-      setBearing: (bearing) => set({ bearing }, false, "setBearing"),
-      setPitch: (pitch) => set({ pitch }, false, "setPitch"),
-      selectMarker: (id) =>
-        set({ selectedMarkerId: id }, false, "selectMarker"),
+      setBearing: (bearing) => set({ bearing }),
+      setPitch: (pitch) => set({ pitch }),
+      selectMarker: (id) => set({ selectedMarkerId: id }),
       setFilters: (filters) =>
-        set(
-          (state) => ({
+        set((state) => ({
             filters: { ...state.filters, ...filters },
-          }),
-          false,
-          "setFilters"
-        ),
-      resetFilters: () =>
-        set({ filters: defaultState.filters }, false, "resetFilters"),
+        })),
+      resetFilters: () => set({ filters: defaultState.filters }),
       toggleControl: (control) =>
-        set(
-          (state) => ({
+        set((state) => ({
             controls: {
               ...state.controls,
               [control]: !state.controls[control],
             },
-          }),
-          false,
-          `toggleControl:${control}`
-        ),
+        })),
     }),
     { name: "MapStore" }
   )

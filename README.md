@@ -214,7 +214,7 @@ project-krawl/
 - **Email:** Brevo (free tier: 300 emails/day)
 - **Maps & Location:** Mapbox (free tier: 50,000 map loads/month)
 - **CI/CD:** GitHub Actions (free tier)
-- **Monitoring:** Spring Boot Actuator + Sentry (free tier)
+- **Monitoring:** Spring Boot Actuator + Sentry (free tier) ✅ **Configured** (see [SENTRY_SETUP.md](./docs/private-docs/operations/SENTRY_SETUP.md) and [frontend/docs/SENTRY_INSTALLATION.md](./frontend/docs/SENTRY_INSTALLATION.md))
 
 ---
 
@@ -351,6 +351,7 @@ UI_UX_DESIGN_SYSTEM.md (UI components & implementation)
    - Create Brevo account
    - [x] Create Mapbox account ✅ (see [MAPBOX_SETUP.md](./docs/private-docs/operations/MAPBOX_SETUP.md))
    - [x] Create Sentry account ✅ (see [SENTRY_SETUP.md](./docs/private-docs/operations/SENTRY_SETUP.md))
+   - [x] Set up Sentry monitoring ✅ (see [frontend/docs/SENTRY_INSTALLATION.md](./frontend/docs/SENTRY_INSTALLATION.md))
    - [x] Set up Oracle Cloud Infrastructure account ✅ (see [OCI_SETUP.md](./docs/private-docs/operations/OCI_SETUP.md))
 
 4. **Initialize projects**

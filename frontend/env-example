@@ -134,7 +134,7 @@ NEXT_PUBLIC_API_RATE_LIMIT=60
 # Get from: https://sentry.io/
 # Note: This will be exposed to the browser
 
-NEXT_PUBLIC_SENTRY_DSN=
+NEXT_PUBLIC_SENTRY_DSN=https://your-dsn@sentry.io/project-id
 
 # Sentry Environment
 NEXT_PUBLIC_SENTRY_ENVIRONMENT=development

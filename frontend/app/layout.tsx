@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 
 import { ToastProvider } from "@/components";
 import { ServiceWorkerUpdateToast } from "@/components/system/ServiceWorkerUpdateToast";
+import { ServiceWorkerRegistration } from "@/components/system/ServiceWorkerRegistration";
+import { SentryErrorBoundary } from "@/components/system/SentryErrorBoundary";
+import { SentryUserContextSync } from "@/components/system/SentryUserContextSync";
 import {
   Header,
   Footer,
@@ -55,17 +58,18 @@ export const metadata: Metadata = {
   description:
     "Discover authentic Filipino culture in Cebu City through community-curated Gems and Krawls",
   manifest: "/manifest.webmanifest",
-  themeColor: "#0F172A",
   metadataBase: metadataBaseUrl,
   appleWebApp: {
     capable: true,
     title: "Krawl",
     statusBarStyle: "black-translucent",
   },
-  viewport: {
+};
+
+export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
-  },
+  themeColor: "#0F172A",
 };
 
 export default function RootLayout({
@@ -76,6 +80,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <body className={`${inter.className} antialiased`}>
+        <SentryErrorBoundary>
+          <SentryUserContextSync />
+          <ServiceWorkerRegistration />
         <ToastProvider>
           <div className="flex min-h-screen flex-col">
             <Header />
@@ -86,6 +93,7 @@ export default function RootLayout({
           </div>
           <ServiceWorkerUpdateToast />
         </ToastProvider>
+        </SentryErrorBoundary>
       </body>
     </html>
   );

@@ -852,7 +852,7 @@ Create basic layout components including main layout, page layouts, and containe
 
 ---
 
-### TASK-036: Set up monitoring tools (Sentry) for frontend
+### TASK-036: Set up monitoring tools (Sentry) for frontend ✅ COMPLETED
 
 **Epic:** epic:design-system  
 **Priority:** Medium  
