@@ -55,6 +55,11 @@ This project includes comprehensive documentation organized in the `docs/` direc
 - **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints
 - **[FEATURE_LIST_AND_USER_STORIES.md](./docs/user-research/FEATURE_LIST_AND_USER_STORIES.md)** - Comprehensive feature list with corresponding user stories
 
+### SEO & Marketing
+
+- **[SEO_PLAN_AND_KEYWORD_STRATEGY.md](./docs/private-docs/SEO_PLAN_AND_KEYWORD_STRATEGY.md)** - Comprehensive SEO plan and keyword strategy for improving search engine visibility
+- **[TASK-038_SEO_IMPLEMENTATION_PLAN.md](./docs/private-docs/tasks/TASK-038_SEO_IMPLEMENTATION_PLAN.md)** - Detailed SEO implementation roadmap with code templates, best practices, and phase-by-phase tasks
+
 ### Content Strategy
 
 - **[CONTENT_SEEDING_STRATEGY.md](./docs/content/CONTENT_SEEDING_STRATEGY.md)** - Guidelines for creating and seeding initial content (100+ Gems, 10+ Krawls)
@@ -425,7 +430,7 @@ For complete glossary, see [GLOSSARY.md](./docs/GLOSSARY.md).
 ## 📞 Contact
 
 **Project Team:** Solo Developer – contact `hello@krawl.app` (update with full roster before Week 3)  
-**Last Updated:** November 21, 2025  
+**Last Updated:** November 23, 2025  
 **Status:** Development Phase - Week 2
 
 ---
