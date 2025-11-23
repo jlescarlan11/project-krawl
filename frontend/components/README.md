@@ -8,6 +8,7 @@ The component library includes:
 
 - **Layout Components:** Container, Section, and PageLayout for consistent page structure
 - **Navigation Components:** Header, Footer, MobileMenu, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
+- **Brand Components:** Logo component with multiple variants and sizes
 - **Buttons:** Primary, secondary, outline, text, and accent variants
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
@@ -772,6 +773,10 @@ components/
 │   ├── ProtectedRoute.tsx # Client-side route protection
 │   ├── index.ts         # Barrel exports
 │   └── README.md        # Navigation documentation
+├── brand/               # Brand components (TASK-044)
+│   ├── Logo.tsx         # Logo component with variants and sizes
+│   ├── index.ts         # Barrel exports
+│   └── README.md        # Brand components documentation
 ├── ui/                  # Base UI components
 │   ├── button.tsx       # Button component
 │   ├── card.tsx         # Card component
@@ -795,6 +800,7 @@ components/
 
 - **Layout Components:** [`layout/README.md`](./layout/README.md) - Container, Section, PageLayout
 - **Navigation Components:** [`navigation/README.md`](./navigation/README.md) - Header, Footer, Breadcrumbs, etc.
+- **Brand Components:** [`brand/README.md`](./brand/README.md) - Logo component
 
 ## References
 
