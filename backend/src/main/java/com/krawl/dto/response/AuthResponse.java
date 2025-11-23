@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
     private String jwt;
     private UserResponse user;
+    private boolean isNewUser;
 }
 

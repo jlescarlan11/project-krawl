@@ -16,6 +16,7 @@ declare module "next-auth" {
       picture?: string;
     };
     jwt: string; // Backend JWT token for API authentication
+    isNewUser?: boolean; // Flag indicating if user was just created
     expires: Date | string; // Can be Date or ISO string
   }
 
@@ -34,6 +35,7 @@ declare module "next-auth/jwt" {
     name: string;
     picture?: string;
     jwt?: string; // Backend JWT token
+    isNewUser?: boolean; // Flag indicating if user was just created
   }
 }
 

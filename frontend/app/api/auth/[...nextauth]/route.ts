@@ -91,12 +91,16 @@ const authConfig: NextAuthConfig = {
           // Exchange Google token for backend JWT
           const authResponse = await exchangeToken(account.access_token);
 
-          // Store JWT and user ID in account for jwt callback
-          // Extend account object with custom properties
-          (account as Account & { jwt?: string; userId?: string }).jwt =
-            authResponse.token;
-          (account as Account & { jwt?: string; userId?: string }).userId =
-            authResponse.user.id;
+          // Store JWT, user ID, and isNewUser flag in account for jwt callback
+          // Type assertion needed for account extension
+          const extendedAccount = account as Account & { 
+            jwt?: string; 
+            userId?: string; 
+            isNewUser?: boolean 
+          };
+          extendedAccount.jwt = authResponse.token;
+          extendedAccount.userId = authResponse.user.id;
+          extendedAccount.isNewUser = authResponse.isNewUser;
 
           return true;
         } catch (error) {
@@ -128,12 +132,14 @@ const authConfig: NextAuthConfig = {
         const extendedAccount = account as Account & {
           jwt?: string;
           userId?: string;
+          isNewUser?: boolean;
         };
         token.id = extendedAccount.userId || user.id;
         token.email = user.email || "";
         token.name = user.name || "";
         token.picture = user.image || "";
         token.jwt = extendedAccount.jwt; // Backend JWT token
+        token.isNewUser = extendedAccount.isNewUser ?? false; // Flag for new user
       }
 
       return token;
@@ -152,7 +158,9 @@ const authConfig: NextAuthConfig = {
           session.user.picture = token.picture as string;
         }
         // Add JWT to session (extended via type augmentation)
-        (session as any).jwt = token.jwt as string;
+        session.jwt = token.jwt as string;
+        // Add isNewUser flag to session
+        session.isNewUser = token.isNewUser ?? false;
         // Set expires as Date (NextAuth.js will convert to ISO string for client)
         session.expires = new Date((token.exp as number) * 1000);
       }

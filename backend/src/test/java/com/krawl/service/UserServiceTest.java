@@ -29,6 +29,9 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
     
+    @Mock
+    private EmailService emailService;
+    
     @InjectMocks
     private UserService userService;
     
@@ -59,29 +62,37 @@ class UserServiceTest {
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(existingUser);
+        doNothing().when(emailService).sendWelcomeEmail(anyString(), anyString());
         
         // When
-        User result = userService.createOrUpdateUser(googleUserInfo);
+        UserService.UserCreationResult result = userService.createOrUpdateUser(googleUserInfo);
         
         // Then
         assertNotNull(result);
-        verify(userRepository, times(1)).save(any(User.class));
+        assertTrue(result.isNewUser());
+        assertEquals(existingUser, result.getUser());
+        verify(userRepository, times(2)).save(any(User.class)); // Once for creation, once for lastLoginAt
         verify(userRepository, times(1)).findByGoogleId("google-123");
         verify(userRepository, times(1)).findByEmail("test@example.com");
+        verify(emailService, times(1)).sendWelcomeEmail("test@example.com", "Test User");
     }
     
     @Test
     void testCreateOrUpdateUser_ExistingUser_UpdatesUser() {
         // Given
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
         
         // When
-        User result = userService.createOrUpdateUser(googleUserInfo);
+        UserService.UserCreationResult result = userService.createOrUpdateUser(googleUserInfo);
         
         // Then
         assertNotNull(result);
-        verify(userRepository, never()).save(any(User.class)); // No changes, so no save
+        assertFalse(result.isNewUser());
+        assertEquals(existingUser, result.getUser());
+        verify(userRepository, times(1)).save(any(User.class)); // Save for lastLoginAt update
         verify(userRepository, times(1)).findByGoogleId("google-123");
+        verify(emailService, never()).sendWelcomeEmail(anyString(), anyString());
     }
     
     @Test
@@ -108,21 +119,23 @@ class UserServiceTest {
     @Test
     void testCreateOrUpdateUser_ConcurrentCreation_RetriesWithExisting() {
         // Given
-        when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
+        when(userRepository.findByGoogleId("google-123"))
+            .thenReturn(Optional.empty())
+            .thenReturn(Optional.of(existingUser));
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class)))
             .thenThrow(new DataIntegrityViolationException("Duplicate key"))
             .thenReturn(existingUser);
-        when(userRepository.findByGoogleId("google-123"))
-            .thenReturn(Optional.empty())
-            .thenReturn(Optional.of(existingUser));
         
         // When
-        User result = userService.createOrUpdateUser(googleUserInfo);
+        UserService.UserCreationResult result = userService.createOrUpdateUser(googleUserInfo);
         
         // Then
         assertNotNull(result);
-        verify(userRepository, atLeastOnce()).findByGoogleId("google-123");
+        assertFalse(result.isNewUser()); // Should be false since user already existed
+        assertEquals(existingUser, result.getUser());
+        verify(userRepository, atLeast(2)).findByGoogleId("google-123");
+        verify(emailService, never()).sendWelcomeEmail(anyString(), anyString());
     }
     
     @Test
@@ -136,14 +149,17 @@ class UserServiceTest {
             .build();
         
         when(userRepository.findByGoogleId("google-123")).thenReturn(Optional.of(existingUser));
-        when(userRepository.save(existingUser)).thenReturn(existingUser);
+        when(userRepository.save(any(User.class))).thenReturn(existingUser);
         
         // When
-        User result = userService.createOrUpdateUser(updatedInfo);
+        UserService.UserCreationResult result = userService.createOrUpdateUser(updatedInfo);
         
         // Then
         assertNotNull(result);
-        verify(userRepository, times(1)).save(existingUser);
+        assertFalse(result.isNewUser());
+        assertEquals(existingUser, result.getUser());
+        verify(userRepository, times(2)).save(any(User.class)); // Once for update, once for lastLoginAt
+        verify(emailService, never()).sendWelcomeEmail(anyString(), anyString());
     }
 }
 

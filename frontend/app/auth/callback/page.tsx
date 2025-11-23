@@ -31,20 +31,33 @@ function AuthCallbackContent() {
       // Sync session to Zustand store for backward compatibility
       syncSessionToZustand(session, authStore);
 
-      // Redirect to return URL or home
-      router.push(returnUrl);
+      // Check if user is new (from session)
+      const isNewUser = session.isNewUser || false;
+
+      // Redirect based on whether user is new
+      if (isNewUser) {
+        router.push(ROUTES.ONBOARDING);
+      } else {
+        router.push(returnUrl);
+      }
     } else if (status === "unauthenticated") {
       // Authentication failed, redirect to sign-in with error
       router.push(`${ROUTES.SIGN_IN}?error=Verification&returnUrl=${encodeURIComponent(returnUrl)}`);
     }
   }, [status, session, router, returnUrl, authStore]);
 
+  // Show different message for new users
+  const isNewUser = status === "authenticated" && session ? session.isNewUser : false;
+  const loadingMessage = isNewUser 
+    ? "Setting up your account..." 
+    : "Completing sign-in...";
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
         <Spinner size="lg" />
         <p className="mt-4 text-sm text-[var(--color-text-secondary)]">
-          Completing sign-in...
+          {loadingMessage}
         </p>
       </div>
     </div>
