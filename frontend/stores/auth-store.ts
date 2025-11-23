@@ -42,6 +42,8 @@ interface AuthState {
   session: Session | null;
   error: string | null;
   _hasHydrated: boolean;
+  isRefreshing: boolean;
+  lastRefreshAt: string | null;
 }
 
 /**
@@ -55,6 +57,8 @@ interface AuthActions {
   signIn: (user: User, session: Session) => void;
   signOut: () => void;
   clearError: () => void;
+  setRefreshing: (isRefreshing: boolean) => void;
+  setLastRefreshAt: (timestamp: string | null) => void;
 }
 
 /**
@@ -71,6 +75,8 @@ const defaultState: AuthState = {
   session: null,
   error: null,
   _hasHydrated: false,
+  isRefreshing: false,
+  lastRefreshAt: null,
 };
 
 /**
@@ -88,7 +94,7 @@ const defaultState: AuthState = {
 export const useAuthStore = create<AuthStore>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         ...defaultState,
         setStatus: (status) => set({ status }),
         setUser: (user) => set({ user }),
@@ -102,6 +108,8 @@ export const useAuthStore = create<AuthStore>()(
             { ...defaultState, _hasHydrated: true }
           ),
         clearError: () => set({ error: null }),
+        setRefreshing: (isRefreshing) => set({ isRefreshing }),
+        setLastRefreshAt: (timestamp) => set({ lastRefreshAt: timestamp }),
       }),
       {
         name: "krawl:auth:v1",
@@ -114,6 +122,31 @@ export const useAuthStore = create<AuthStore>()(
         onRehydrateStorage: () => (state) => {
           if (state) {
             state._hasHydrated = true;
+            
+            // Set up multi-tab sync via storage events
+            if (typeof window !== 'undefined') {
+              window.addEventListener('storage', (e) => {
+                if (e.key === 'krawl:auth:v1' && e.newValue) {
+                  try {
+                    const newState = JSON.parse(e.newValue);
+                    // Update store with new state from other tab
+                    if (newState.state) {
+                      state.setUser(newState.state.user || null);
+                      state.setSession(newState.state.session || null);
+                      state.setStatus(newState.state.status || 'idle');
+                    }
+                  } catch (error) {
+                    console.error('[AuthStore] Failed to sync from storage:', error);
+                  }
+                }
+              });
+
+              // Sync on window focus
+              window.addEventListener('focus', () => {
+                // Trigger re-sync from NextAuth.js session
+                // This will be handled by useSessionRefresh hook
+              });
+            }
           }
         },
       }

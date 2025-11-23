@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import { ROUTES, PROTECTED_ROUTES } from "@/lib/routes";
+import { isSessionExpired } from "@/lib/session-utils";
 
 /**
  * NextAuth.js Middleware for Route Protection
  * 
  * Protects routes by validating NextAuth.js session before page load.
  * Redirects unauthenticated users to sign-in page with return URL.
+ * Checks for session expiration and handles expired sessions gracefully.
  * 
  * Uses NextAuth.js v5 `auth()` function to properly validate sessions,
  * ensuring expired or invalid sessions are rejected.
@@ -36,6 +38,15 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     const signInUrl = new URL(ROUTES.SIGN_IN, request.url);
     signInUrl.searchParams.set("returnUrl", pathname);
+    signInUrl.searchParams.set("reason", "no-session");
+    return NextResponse.redirect(signInUrl);
+  }
+
+  // Check if session is expired
+  if (session.expires && isSessionExpired(session.expires)) {
+    const signInUrl = new URL(ROUTES.SIGN_IN, request.url);
+    signInUrl.searchParams.set("returnUrl", pathname);
+    signInUrl.searchParams.set("reason", "expired");
     return NextResponse.redirect(signInUrl);
   }
 
