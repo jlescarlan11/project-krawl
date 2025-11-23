@@ -6,6 +6,7 @@
  */
 
 import type { Session } from "next-auth";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Type definition for AuthStore interface to avoid circular dependencies.
@@ -126,6 +127,37 @@ export async function exchangeToken(
   }
 
   throw lastError || new Error("Token exchange failed after retries");
+}
+
+/**
+ * Refresh NextAuth.js session
+ * 
+ * Triggers NextAuth.js session update, which will call JWT callback
+ * with trigger='update' to refresh the session.
+ * 
+ * @param updateFn - NextAuth.js update function from useSession()
+ * @returns Promise resolving when refresh completes
+ */
+export async function refreshSession(
+  updateFn: () => Promise<Session | null>
+): Promise<Session | null> {
+  try {
+    const session = await updateFn();
+    return session;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("[Session Refresh] Failed:", errorMessage);
+    
+    // Log to Sentry in production
+    if (process.env.NODE_ENV === "production") {
+      Sentry.captureException(error instanceof Error ? error : new Error(errorMessage), {
+        tags: { component: "session-refresh" },
+        level: "error",
+      });
+    }
+    
+    throw error;
+  }
 }
 
 /**

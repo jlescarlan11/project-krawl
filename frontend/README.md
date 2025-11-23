@@ -205,9 +205,13 @@ frontend/
   - `/app/auth/signout` - Sign-out page
 - **`/components`** - Reusable React components (UI library)
   - `/components/auth` - Authentication components (GoogleSignInButton, AuthErrorDisplay)
+  - `/components/system` - System components (SessionRefreshProvider, CookieWarningBanner, etc.)
 - **`/hooks`** - Custom React hooks (reusable logic)
+  - `/hooks/useSessionRefresh.ts` - Automatic session refresh hook
 - **`/lib`** - Utility functions, helpers, and shared logic
   - `/lib/auth.ts` - Authentication utilities (token exchange, session sync)
+  - `/lib/session-utils.ts` - Session expiration and time utilities
+  - `/lib/cookie-utils.ts` - Cookie detection and browser compatibility
 - **`/stores`** - Zustand state management stores
 - **`/types`** - Shared TypeScript type definitions
   - `/types/next-auth.d.ts` - NextAuth.js type extensions
@@ -489,9 +493,15 @@ Krawl uses [NextAuth.js v5 (Auth.js)](https://authjs.dev/) for Google OAuth 2.0 
 
 - ✅ **Google OAuth 2.0** - Social login via Google Identity Platform
 - ✅ **Session Management** - HTTP-only cookies for secure session storage
-- ✅ **Route Protection** - Middleware-based route protection
+- ✅ **Session Persistence** - Sessions persist across browser restarts and tabs
+- ✅ **Automatic Session Refresh** - Proactive refresh before expiration
+- ✅ **Session Expiration Handling** - Graceful handling of expired sessions
+- ✅ **Cookie Security** - Secure cookie flags (HttpOnly, Secure, SameSite)
+- ✅ **Route Protection** - Middleware-based route protection with expiration checks
 - ✅ **Backend Integration** - Token exchange with Spring Boot backend
 - ✅ **Zustand Sync** - Backward compatibility with existing Zustand auth store
+- ✅ **Multi-Tab Synchronization** - Session sync across browser tabs
+- ✅ **Cookie Detection** - Browser compatibility checking and warnings
 - ✅ **Error Handling** - Comprehensive error handling with retry logic
 - ✅ **Type Safety** - Full TypeScript support with type extensions
 
@@ -516,6 +526,14 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 # NextAuth.js Configuration
 AUTH_SECRET=your-nextauth-secret-key  # or NEXTAUTH_SECRET
+NEXTAUTH_URL=http://localhost:3000  # Development
+NEXTAUTH_URL=https://yourdomain.com  # Production
+
+# Session Management (Optional)
+NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS=300000  # Refresh check interval (default: 5 minutes)
+COOKIE_DOMAIN=.yourdomain.com  # Optional: Cookie domain for production
+
+# Backend API
 NEXT_PUBLIC_API_URL=http://localhost:8080  # Backend API URL
 ```
 
@@ -648,7 +666,9 @@ NextAuth.js API route handler that manages:
 
 The `middleware.ts` file protects routes by:
 - Validating NextAuth.js session
-- Redirecting unauthenticated users to sign-in
+- Checking session expiration before allowing access
+- Redirecting unauthenticated users to sign-in with `reason=no-session`
+- Redirecting expired sessions to sign-in with `reason=expired`
 - Preserving return URL for post-authentication redirect
 
 ### Type Extensions
@@ -684,10 +704,197 @@ The backend JWT is stored in the NextAuth.js session and used for API authentica
 - Check that protected routes are listed in `PROTECTED_ROUTES`
 - Ensure `SessionProvider` wraps the app in `layout.tsx`
 
+## Session Management
+
+Krawl implements comprehensive session management with automatic refresh, expiration handling, and multi-tab synchronization. Sessions are stored securely in HTTP-only cookies and automatically refreshed before expiration.
+
+### Session Features
+
+- ✅ **Secure Storage** - HTTP-only cookies with Secure and SameSite flags
+- ✅ **Automatic Refresh** - Proactive refresh before expiration (1 hour threshold)
+- ✅ **Persistence** - Sessions persist across browser restarts and tabs
+- ✅ **Expiration Handling** - Graceful redirect on expiration with return URL
+- ✅ **Multi-Tab Sync** - Automatic synchronization across browser tabs
+- ✅ **Cookie Detection** - Browser compatibility checking and user warnings
+
+### Session Lifecycle
+
+1. **Session Creation** - Created on successful Google OAuth sign-in
+2. **Session Storage** - Stored in HTTP-only cookie (secure, not accessible to JavaScript)
+3. **Session Refresh** - Automatically refreshed when expiring within 1 hour
+4. **Session Expiration** - Redirects to sign-in with "Session expired" message
+5. **Session Sync** - Synced to Zustand store for backward compatibility
+
+### Session Configuration
+
+Sessions are configured with:
+- **Expiration:** 24 hours (configurable in NextAuth.js config)
+- **Refresh Threshold:** 1 hour before expiration
+- **Refresh Interval:** 5 minutes (configurable via `NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS`)
+- **Cookie Security:** HttpOnly, Secure (production), SameSite: 'lax'
+
+### Session Utilities
+
+#### Session Utilities (`lib/session-utils.ts`)
+
+Utility functions for session expiration management:
+
+```typescript
+import {
+  isSessionExpired,
+  getTimeUntilExpiration,
+  isSessionExpiringSoon,
+  formatTimeUntilExpiration,
+} from "@/lib/session-utils";
+
+// Check if session is expired
+const expired = isSessionExpired(session.expires);
+
+// Get time until expiration
+const timeUntil = getTimeUntilExpiration(session.expires);
+
+// Check if expiring soon (within 1 hour)
+const expiringSoon = isSessionExpiringSoon(session.expires);
+
+// Format as human-readable string
+const formatted = formatTimeUntilExpiration(session.expires);
+// Returns: "2 hours 30 minutes" or "Expired"
+```
+
+#### Cookie Utilities (`lib/cookie-utils.ts`)
+
+Utility functions for cookie detection and browser compatibility:
+
+```typescript
+import {
+  areCookiesEnabled,
+  areCookiesBlocked,
+  getCookieWarningMessage,
+  supportsRequiredCookieFeatures,
+} from "@/lib/cookie-utils";
+
+// Check if cookies are enabled
+const enabled = areCookiesEnabled();
+
+// Check if cookies are blocked
+const blocked = areCookiesBlocked();
+
+// Get warning message
+const warning = getCookieWarningMessage();
+// Returns: "Cookies are disabled..." or null
+
+// Check browser support
+const support = supportsRequiredCookieFeatures();
+// Returns: { supported: boolean, issues: string[] }
+```
+
+### Session Refresh Hook
+
+The `useSessionRefresh` hook automatically monitors and refreshes sessions:
+
+```typescript
+import { useSessionRefresh } from "@/hooks/useSessionRefresh";
+
+// Automatically refreshes session before expiration
+// Monitors every 5 minutes (configurable)
+// Syncs to Zustand store on changes
+function MyComponent() {
+  useSessionRefresh(); // No parameters needed
+  // Hook handles everything automatically
+}
+```
+
+**Features:**
+- Monitors session expiration every 5 minutes (configurable)
+- Triggers refresh when expiring within 1 hour
+- Prevents concurrent refresh attempts
+- Syncs session to Zustand store on changes
+- Handles errors gracefully
+
+**Configuration:**
+- Set `NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS` to customize check interval
+- Default: 300000ms (5 minutes)
+
+### Session Refresh Provider
+
+The `SessionRefreshProvider` component wraps the app to enable automatic session refresh:
+
+```tsx
+import { SessionRefreshProvider } from "@/components/system/SessionRefreshProvider";
+
+// In layout.tsx
+<SessionProvider>
+  <SessionRefreshProvider>
+    {children}
+  </SessionRefreshProvider>
+</SessionProvider>
+```
+
+**Note:** The provider is already integrated in `app/layout.tsx`. No additional setup required.
+
+### Cookie Security
+
+Sessions use secure cookie configuration:
+
+- **HttpOnly:** Prevents JavaScript access (XSS protection)
+- **Secure:** Enabled in production only (requires HTTPS)
+- **SameSite:** 'lax' (CSRF protection while allowing navigation)
+- **Cookie Prefixes:** `__Secure-` and `__Host-` prefixes in production
+
+**Cookie Names:**
+- Session token: `__Secure-next-auth.session-token` (production)
+- Callback URL: `__Secure-next-auth.callback-url` (production)
+- CSRF token: `__Host-next-auth.csrf-token` (production)
+
+### Session Expiration Handling
+
+When a session expires:
+
+1. **Middleware Detection** - Middleware checks expiration on protected route access
+2. **Redirect** - Redirects to sign-in with `reason=expired` parameter
+3. **Return URL** - Preserves original URL for post-sign-in redirect
+4. **User Message** - Sign-in page can display "Session expired" message
+
+### Multi-Tab Synchronization
+
+Sessions automatically sync across browser tabs:
+
+- **NextAuth.js Native** - Automatic session sync via cookies
+- **Zustand Store** - Storage event listeners for cross-tab sync
+- **Window Focus** - Sync on window focus/visibility change
+- **Real-time Updates** - Changes in one tab reflect in others immediately
+
+### Troubleshooting
+
+**Session not persisting:**
+- Check that `AUTH_SECRET` is set correctly
+- Verify cookies are enabled in browser
+- Check browser console for cookie errors
+- Verify cookie security settings match environment
+
+**Session refresh not working:**
+- Check `NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS` is set correctly
+- Verify `SessionRefreshProvider` is in layout
+- Check browser console for refresh errors
+- Verify session expiration is set correctly
+
+**Session expires unexpectedly:**
+- Check session expiration time (24 hours default)
+- Verify refresh threshold (1 hour default)
+- Check refresh interval (5 minutes default)
+- Verify backend JWT expiration matches frontend
+
+**Multi-tab sync not working:**
+- Verify cookies are enabled
+- Check localStorage is available
+- Verify storage events are firing
+- Check browser console for errors
+
 For more details, see:
 - [NextAuth.js Documentation](https://authjs.dev/)
-- [TASK-040 Implementation Summary](../../TASK-040_IMPLEMENTATION_SUMMARY.md)
-- [TASK-040 Solution Design](../../TASK-040_SOLUTION_DESIGN.md)
+- [TASK-040 Implementation Summary](../../TASK-040_IMPLEMENTATION_SUMMARY.md) - Initial authentication implementation
+- [TASK-042 Implementation Summary](../../TASK-042_IMPLEMENTATION_SUMMARY.md) - Session management implementation
+- [TASK-042 Solution Design](../../TASK-042_SOLUTION_DESIGN.md) - Session management design
 
 ## Error Tracking & Monitoring (Sentry)
 

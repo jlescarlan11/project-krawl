@@ -19,6 +19,8 @@ export {
   useIsLargeDesktop,
 } from "@/lib/breakpoints";
 
-// Future hooks can be added here:
-// export { useAuth } from './useAuth';
-// export { useToast } from './useToast';
+// Session management hooks
+export { useSessionRefresh } from "./useSessionRefresh";
+
+// Service worker hooks
+export { useServiceWorkerUpdates } from "./useServiceWorkerUpdates";

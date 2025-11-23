@@ -7,6 +7,8 @@ import { ServiceWorkerUpdateToast } from "@/components/system/ServiceWorkerUpdat
 import { ServiceWorkerRegistration } from "@/components/system/ServiceWorkerRegistration";
 import { SentryErrorBoundary } from "@/components/system/SentryErrorBoundary";
 import { SentryUserContextSync } from "@/components/system/SentryUserContextSync";
+import { SessionRefreshProvider } from "@/components/system/SessionRefreshProvider";
+import { CookieWarningBanner } from "@/components/system/CookieWarningBanner";
 import {
   Header,
   Footer,
@@ -85,9 +87,10 @@ export default function RootLayout({
           refetchInterval={5 * 60} // Refetch session every 5 minutes
           refetchOnWindowFocus={true}
         >
-          <SentryErrorBoundary>
-            <SentryUserContextSync />
-            <ServiceWorkerRegistration />
+          <SessionRefreshProvider>
+            <SentryErrorBoundary>
+              <SentryUserContextSync />
+              <ServiceWorkerRegistration />
             <ToastProvider>
               <div className="flex min-h-screen flex-col">
                 <Header />
@@ -97,8 +100,10 @@ export default function RootLayout({
                 <BottomNav />
               </div>
               <ServiceWorkerUpdateToast />
+              <CookieWarningBanner />
             </ToastProvider>
           </SentryErrorBoundary>
+          </SessionRefreshProvider>
         </SessionProvider>
       </body>
     </html>
