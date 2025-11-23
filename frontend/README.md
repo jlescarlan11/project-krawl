@@ -199,11 +199,18 @@ frontend/
 ### Directory Organization
 
 - **`/app`** - Next.js App Router pages, layouts, and route handlers
+  - `/app/api/auth/[...nextauth]` - NextAuth.js authentication API route
+  - `/app/auth/sign-in` - Sign-in page with Google OAuth
+  - `/app/auth/callback` - OAuth callback handler
+  - `/app/auth/signout` - Sign-out page
 - **`/components`** - Reusable React components (UI library)
+  - `/components/auth` - Authentication components (GoogleSignInButton, AuthErrorDisplay)
 - **`/hooks`** - Custom React hooks (reusable logic)
 - **`/lib`** - Utility functions, helpers, and shared logic
+  - `/lib/auth.ts` - Authentication utilities (token exchange, session sync)
 - **`/stores`** - Zustand state management stores
 - **`/types`** - Shared TypeScript type definitions
+  - `/types/next-auth.d.ts` - NextAuth.js type extensions
 - **`/public`** - Static assets (images, icons, etc.)
 
 **Note:** Component-specific types and hooks can remain co-located with their components for better organization.
@@ -473,6 +480,214 @@ function MyComponent() {
 - **Selectors:** `useMapCenter()`, `useMapZoom()`, `useSelectedMarker()`, `useMapFilters()`
 
 For complete store documentation, see the store files in `stores/` directory.
+
+## Authentication (NextAuth.js v5)
+
+Krawl uses [NextAuth.js v5 (Auth.js)](https://authjs.dev/) for Google OAuth 2.0 authentication. The implementation provides secure session management with HTTP-only cookies and seamless integration with the backend API.
+
+### Features
+
+- ✅ **Google OAuth 2.0** - Social login via Google Identity Platform
+- ✅ **Session Management** - HTTP-only cookies for secure session storage
+- ✅ **Route Protection** - Middleware-based route protection
+- ✅ **Backend Integration** - Token exchange with Spring Boot backend
+- ✅ **Zustand Sync** - Backward compatibility with existing Zustand auth store
+- ✅ **Error Handling** - Comprehensive error handling with retry logic
+- ✅ **Type Safety** - Full TypeScript support with type extensions
+
+### Authentication Flow
+
+1. **User initiates sign-in** - Clicks "Sign in with Google" button
+2. **OAuth redirect** - NextAuth.js redirects to Google OAuth consent screen
+3. **User authentication** - User authenticates with Google and grants permissions
+4. **Token exchange** - Frontend exchanges Google token for backend JWT via `/api/auth/google`
+5. **Session creation** - NextAuth.js creates session with backend JWT stored securely
+6. **Session sync** - Session synchronized to Zustand store for backward compatibility
+7. **Protected routes** - Middleware validates session before allowing access
+
+### Configuration
+
+Authentication requires the following environment variables:
+
+```bash
+# Google OAuth Credentials
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# NextAuth.js Configuration
+AUTH_SECRET=your-nextauth-secret-key  # or NEXTAUTH_SECRET
+NEXT_PUBLIC_API_URL=http://localhost:8080  # Backend API URL
+```
+
+### Usage
+
+#### Sign In
+
+```tsx
+import { signIn } from "next-auth/react";
+
+function SignInButton() {
+  const handleSignIn = async () => {
+    await signIn("google", {
+      callbackUrl: "/auth/callback",
+    });
+  };
+
+  return <button onClick={handleSignIn}>Sign in with Google</button>;
+}
+```
+
+#### Access Session
+
+```tsx
+import { useSession } from "next-auth/react";
+
+function UserProfile() {
+  const { data: session, status } = useSession();
+
+  if (status === "loading") return <div>Loading...</div>;
+  if (status === "unauthenticated") return <div>Not signed in</div>;
+
+  return (
+    <div>
+      <p>Signed in as {session?.user?.email}</p>
+      <p>User ID: {session?.user?.id}</p>
+    </div>
+  );
+}
+```
+
+#### Sign Out
+
+```tsx
+import { signOut } from "next-auth/react";
+
+function SignOutButton() {
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" });
+  };
+
+  return <button onClick={handleSignOut}>Sign out</button>;
+}
+```
+
+#### Protected Routes
+
+Routes are automatically protected by middleware. To protect a page component:
+
+```tsx
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function ProtectedPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/sign-in");
+    }
+  }, [status, router]);
+
+  if (status === "loading") return <div>Loading...</div>;
+  if (!session) return null;
+
+  return <div>Protected content</div>;
+}
+```
+
+### Components
+
+#### GoogleSignInButton
+
+Reusable button component for Google OAuth sign-in:
+
+```tsx
+import { GoogleSignInButton } from "@/components/auth";
+
+function SignInPage() {
+  const handleSignIn = async () => {
+    await signIn("google");
+  };
+
+  return <GoogleSignInButton onClick={handleSignIn} loading={false} />;
+}
+```
+
+#### AuthErrorDisplay
+
+Component for displaying authentication errors:
+
+```tsx
+import { AuthErrorDisplay } from "@/components/auth";
+
+function SignInPage() {
+  const error = searchParams.get("error");
+
+  return (
+    <div>
+      {error && <AuthErrorDisplay error={error} />}
+      {/* Sign-in form */}
+    </div>
+  );
+}
+```
+
+### API Routes
+
+#### `/api/auth/[...nextauth]`
+
+NextAuth.js API route handler that manages:
+- OAuth provider configuration
+- Session management
+- Token exchange with backend
+- Callback handling
+
+### Middleware
+
+The `middleware.ts` file protects routes by:
+- Validating NextAuth.js session
+- Redirecting unauthenticated users to sign-in
+- Preserving return URL for post-authentication redirect
+
+### Type Extensions
+
+NextAuth.js types are extended in `types/next-auth.d.ts` to include:
+- Backend JWT token in session
+- Custom user fields (id, email, name, picture)
+- Session expiration handling
+
+### Backend Integration
+
+The frontend exchanges Google OAuth tokens for backend JWT tokens via:
+- **Endpoint:** `POST /api/auth/google`
+- **Request:** `{ token: string }` (Google access token)
+- **Response:** `{ token: string, user: {...} }` (Backend JWT and user data)
+
+The backend JWT is stored in the NextAuth.js session and used for API authentication.
+
+### Troubleshooting
+
+**Session not persisting:**
+- Check that `AUTH_SECRET` is set correctly
+- Verify cookies are enabled in browser
+- Check browser console for cookie errors
+
+**OAuth callback fails:**
+- Verify Google OAuth credentials are correct
+- Check callback URL is configured in Google Console
+- Ensure `NEXT_PUBLIC_API_URL` points to running backend
+
+**Protected routes not working:**
+- Verify middleware is configured correctly
+- Check that protected routes are listed in `PROTECTED_ROUTES`
+- Ensure `SessionProvider` wraps the app in `layout.tsx`
+
+For more details, see:
+- [NextAuth.js Documentation](https://authjs.dev/)
+- [TASK-040 Implementation Summary](../../TASK-040_IMPLEMENTATION_SUMMARY.md)
+- [TASK-040 Solution Design](../../TASK-040_SOLUTION_DESIGN.md)
 
 ## Error Tracking & Monitoring (Sentry)
 

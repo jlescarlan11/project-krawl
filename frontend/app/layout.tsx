@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 
 import { ToastProvider } from "@/components";
 import { ServiceWorkerUpdateToast } from "@/components/system/ServiceWorkerUpdateToast";
@@ -80,20 +81,25 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <body className={`${inter.className} antialiased`}>
-        <SentryErrorBoundary>
-          <SentryUserContextSync />
-          <ServiceWorkerRegistration />
-        <ToastProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <MobileMenu />
-            <main className="flex-1 pb-16 lg:pb-0">{children}</main>
-            <Footer />
-            <BottomNav />
-          </div>
-          <ServiceWorkerUpdateToast />
-        </ToastProvider>
-        </SentryErrorBoundary>
+        <SessionProvider
+          refetchInterval={5 * 60} // Refetch session every 5 minutes
+          refetchOnWindowFocus={true}
+        >
+          <SentryErrorBoundary>
+            <SentryUserContextSync />
+            <ServiceWorkerRegistration />
+            <ToastProvider>
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <MobileMenu />
+                <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+                <Footer />
+                <BottomNav />
+              </div>
+              <ServiceWorkerUpdateToast />
+            </ToastProvider>
+          </SentryErrorBoundary>
+        </SessionProvider>
       </body>
     </html>
   );

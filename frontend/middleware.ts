@@ -1,54 +1,42 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-import { PROTECTED_ROUTES } from "@/lib/routes";
-
-/**
- * Check if a path matches a protected route pattern
- */
-function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
-}
+import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { ROUTES, PROTECTED_ROUTES } from "@/lib/routes";
 
 /**
- * Get authentication token from cookie
- * Note: This is a placeholder - actual implementation will depend on
- * how authentication is handled (cookies, headers, etc.)
- * For now, we check for a session cookie that will be set by the auth system
+ * NextAuth.js Middleware for Route Protection
+ * 
+ * Protects routes by validating NextAuth.js session before page load.
+ * Redirects unauthenticated users to sign-in page with return URL.
+ * 
+ * Uses NextAuth.js v5 `auth()` function to properly validate sessions,
+ * ensuring expired or invalid sessions are rejected.
+ * 
+ * Protected routes are defined in @/lib/routes (PROTECTED_ROUTES).
  */
-function getAuthToken(request: NextRequest): string | null {
-  // Check for session cookie (will be implemented in TASK-040)
-  return (
-    request.cookies.get("auth-session")?.value ||
-    request.cookies.get("next-auth.session-token")?.value ||
-    null
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Check if route is protected
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+    pathname.startsWith(route)
   );
-}
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Skip middleware for static files and API routes
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/icons") ||
-    pathname.startsWith("/favicon") ||
-    pathname.match(/\.(ico|png|jpg|jpeg|svg|webp)$/)
-  ) {
+  // If not a protected route, allow access
+  if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
-  // Check if route is protected
-  if (isProtectedRoute(pathname)) {
-    const token = getAuthToken(request);
+  // For protected routes, validate session using NextAuth.js auth() function
+  // In NextAuth.js v5, auth() automatically reads from the request context in middleware
+  // This properly validates the session, not just checks cookie presence
+  const session = await auth();
 
-    // If no token, redirect to sign-in with return URL
-    if (!token) {
-      const signInUrl = new URL("/auth/sign-in", request.url);
-      signInUrl.searchParams.set("returnUrl", pathname);
-      return NextResponse.redirect(signInUrl);
-    }
+  // If no valid session, redirect to sign-in
+  if (!session) {
+    const signInUrl = new URL(ROUTES.SIGN_IN, request.url);
+    signInUrl.searchParams.set("returnUrl", pathname);
+    return NextResponse.redirect(signInUrl);
   }
 
   return NextResponse.next();
@@ -63,6 +51,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - icons folder
      */
     "/((?!api|_next/static|_next/image|favicon.ico|icons|.*\\.(?:ico|png|jpg|jpeg|svg|webp)$).*)",
   ],
