@@ -2,6 +2,7 @@ package com.krawl.security;
 
 import com.krawl.exception.AuthException;
 import com.krawl.service.JwtTokenService;
+import com.krawl.service.TokenBlacklistService;
 import com.krawl.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -35,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     
     private final JwtTokenService jwtTokenService;
     private final UserDetailsServiceImpl userDetailsService;
+    private final TokenBlacklistService tokenBlacklistService;
     
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -58,6 +60,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             
             if (StringUtils.hasText(jwt)) {
                 try {
+                    // Check blacklist first (fast fail)
+                    if (tokenBlacklistService.isBlacklisted(jwt)) {
+                        log.debug("JWT token is blacklisted");
+                        SecurityContextHolder.clearContext();
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                    
                     // Validate token and extract claims in one call
                     Claims claims = jwtTokenService.validateToken(jwt);
                     String userId = claims.getSubject();

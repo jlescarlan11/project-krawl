@@ -36,7 +36,9 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 10000; // 10 seconds
  * Backend authentication response structure
  */
 export interface AuthResponse {
-  token: string; // Backend JWT token
+  jwt: string; // Backend JWT access token
+  refreshToken: string; // Backend refresh token
+  token?: string; // Legacy field for backward compatibility (same as jwt)
   user: {
     id: string;
     email: string;
@@ -95,8 +97,15 @@ export async function exchangeToken(
           );
         }
 
-        const data: AuthResponse = await response.json();
-        return data;
+        const data = await response.json();
+        // Map backend response to frontend format
+        return {
+          jwt: data.jwt,
+          refreshToken: data.refreshToken,
+          token: data.jwt, // Keep for backward compatibility
+          user: data.user,
+          isNewUser: data.isNewUser,
+        };
       } catch (fetchError) {
         clearTimeout(timeoutId);
         throw fetchError;

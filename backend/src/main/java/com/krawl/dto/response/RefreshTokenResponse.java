@@ -5,14 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Response DTO for token refresh endpoint.
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthResponse {
-    private String jwt; // Access token
-    private String refreshToken; // Refresh token
-    private UserResponse user;
-    private boolean isNewUser;
+public class RefreshTokenResponse {
+    private String accessToken;
+    private String refreshToken;
 }
 

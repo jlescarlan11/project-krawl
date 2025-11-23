@@ -55,6 +55,8 @@ krawl:
     jwt:
       secret: ${JWT_SECRET:}
       expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000}  # 30 days in milliseconds
+      clock-skew-seconds: ${JWT_CLOCK_SKEW_SECONDS:300}  # 5 minutes
     oauth2:
       google:
         client-id: ${GOOGLE_CLIENT_ID:}
