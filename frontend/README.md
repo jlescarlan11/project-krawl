@@ -146,6 +146,13 @@ Navigation is handled by components in `components/navigation/`:
 
 For complete navigation documentation, see [`components/navigation/README.md`](./components/navigation/README.md).
 
+### Brand Components
+
+Brand components provide consistent branding across the application:
+- `Logo` – Krawl logo component with multiple variants (full-color, white, black-white, monochrome-green) and sizes (sm, md, lg, xl)
+
+For complete brand components documentation, see [`components/brand/README.md`](./components/brand/README.md).
+
 ### Route Constants
 
 Use centralized route constants for type safety:
