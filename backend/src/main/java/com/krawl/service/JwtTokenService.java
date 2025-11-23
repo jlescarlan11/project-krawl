@@ -32,6 +32,12 @@ public class JwtTokenService {
     @Value("${krawl.security.jwt.expiration:86400000}")
     private long jwtExpiration;
     
+    @Value("${krawl.security.jwt.refresh-expiration:2592000000}") // 30 days
+    private long refreshTokenExpiration;
+    
+    @Value("${krawl.security.jwt.clock-skew-seconds:300}") // 5 minutes
+    private long clockSkewSeconds;
+    
     private SecretKey signingKey;
     
     /**
@@ -69,8 +75,20 @@ public class JwtTokenService {
         claims.put("email", email);
         claims.put("roles", roles);
         
+        return buildToken(claims, jwtExpiration);
+    }
+    
+    /**
+     * Builds a JWT token with the given claims and expiration time.
+     * Common logic for both access and refresh token generation.
+     * 
+     * @param claims Token claims to include
+     * @param expirationMs Expiration time in milliseconds
+     * @return JWT token string
+     */
+    private String buildToken(Map<String, Object> claims, long expirationMs) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + jwtExpiration);
+        Date expiration = new Date(now.getTime() + expirationMs);
         
         return Jwts.builder()
             .claims(claims)
@@ -90,15 +108,24 @@ public class JwtTokenService {
     public Claims validateToken(String token) {
         try {
             Claims claims = Jwts.parser()
+                .clockSkewSeconds(clockSkewSeconds) // Add clock skew tolerance
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
             
-            // Check expiration
-            if (claims.getExpiration() != null && claims.getExpiration().before(new Date())) {
-                log.warn("JWT token expired");
-                throw new AuthException("Token expired", HttpStatus.UNAUTHORIZED);
+            // Check expiration (with clock skew tolerance)
+            Date now = new Date();
+            Date expiration = claims.getExpiration();
+            if (expiration != null) {
+                long expirationTime = expiration.getTime();
+                long currentTime = now.getTime();
+                long skewMillis = clockSkewSeconds * 1000;
+                
+                if (expirationTime < (currentTime - skewMillis)) {
+                    log.warn("JWT token expired");
+                    throw new AuthException("Token expired", HttpStatus.UNAUTHORIZED);
+                }
             }
             
             return claims;
@@ -132,6 +159,43 @@ public class JwtTokenService {
      */
     public Claims getClaimsFromToken(String token) {
         return validateToken(token);
+    }
+    
+    /**
+     * Generates a refresh token for a user.
+     * Refresh tokens have longer expiration (30 days) and include token type claim.
+     * 
+     * @param userId User ID (UUID as string)
+     * @param email User email address
+     * @return Refresh token string
+     */
+    public String generateRefreshToken(String userId, String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", userId);
+        claims.put("email", email);
+        claims.put("type", "refresh"); // Distinguish from access tokens
+        
+        return buildToken(claims, refreshTokenExpiration);
+    }
+    
+    /**
+     * Validates a refresh token and returns its claims.
+     * 
+     * @param token Refresh token to validate
+     * @return Claims from the token
+     * @throws AuthException if token is invalid, expired, or not a refresh token
+     */
+    public Claims validateRefreshToken(String token) {
+        Claims claims = validateToken(token); // Reuse existing validation
+        
+        // Verify this is a refresh token
+        String tokenType = claims.get("type", String.class);
+        if (!"refresh".equals(tokenType)) {
+            log.warn("Token is not a refresh token");
+            throw new AuthException("Invalid token type", HttpStatus.UNAUTHORIZED);
+        }
+        
+        return claims;
     }
 }
 

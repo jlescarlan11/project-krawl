@@ -8,6 +8,8 @@ import type {
 import type { JWT } from "@auth/core/jwt";
 import * as Sentry from "@sentry/nextjs";
 import { exchangeToken } from "@/lib/auth";
+import { refreshTokens } from "@/lib/token-refresh";
+import { revokeTokens } from "@/lib/token-revoke";
 
 /**
  * Validates required environment variables for NextAuth.js configuration.
@@ -140,14 +142,16 @@ const authConfig: NextAuthConfig = {
           // Exchange Google token for backend JWT
           const authResponse = await exchangeToken(account.access_token);
 
-          // Store JWT, user ID, and isNewUser flag in account for jwt callback
+          // Store JWT, refresh token, user ID, and isNewUser flag in account for jwt callback
           // Type assertion needed for account extension
           const extendedAccount = account as Account & { 
-            jwt?: string; 
+            jwt?: string;
+            refreshToken?: string;
             userId?: string; 
             isNewUser?: boolean 
           };
-          extendedAccount.jwt = authResponse.token;
+          extendedAccount.jwt = authResponse.jwt || authResponse.token; // Support both formats
+          extendedAccount.refreshToken = authResponse.refreshToken;
           extendedAccount.userId = authResponse.user.id;
           extendedAccount.isNewUser = authResponse.isNewUser;
 
@@ -181,6 +185,7 @@ const authConfig: NextAuthConfig = {
       if (account && user) {
         const extendedAccount = account as Account & {
           jwt?: string;
+          refreshToken?: string;
           userId?: string;
           isNewUser?: boolean;
         };
@@ -188,7 +193,8 @@ const authConfig: NextAuthConfig = {
         token.email = user.email || "";
         token.name = user.name || "";
         token.picture = user.image || "";
-        token.jwt = extendedAccount.jwt; // Backend JWT token
+        token.jwt = extendedAccount.jwt; // Backend JWT access token
+        token.refreshToken = extendedAccount.refreshToken; // Backend refresh token
         token.isNewUser = extendedAccount.isNewUser ?? false; // Flag for new user
         
         // Set expiration timestamp (24 hours from now)
@@ -209,23 +215,49 @@ const authConfig: NextAuthConfig = {
           const oneHour = 60 * 60;
 
           if (expiresIn < oneHour) {
-            // Token expiring soon, refresh frontend session expiration
-            // 
-            // IMPORTANT: This extends the NextAuth.js session expiration (frontend),
-            // but does NOT refresh the backend JWT token expiration. The backend JWT
-            // remains valid until its original expiration time (24 hours from creation).
-            // This is acceptable for stateless JWT design - the backend JWT will be
-            // re-issued on the next sign-in if needed.
-            //
-            // In the future, we could implement a backend refresh endpoint to issue
-            // a new JWT with extended expiration, but this is not required for MVP.
-            const newExpiresAt = new Date();
-            newExpiresAt.setHours(newExpiresAt.getHours() + 24);
-            token.exp = Math.floor(newExpiresAt.getTime() / 1000);
+            // Token expiring soon, refresh via backend
+            const refreshToken = token.refreshToken as string | undefined;
             
-            // Log refresh for monitoring
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[Session] Token refreshed, new expiration:', newExpiresAt);
+            if (refreshToken) {
+              try {
+                // Call backend refresh endpoint
+                const newTokens = await refreshTokens(refreshToken);
+                
+                // Update token with new values
+                token.jwt = newTokens.accessToken;
+                token.refreshToken = newTokens.refreshToken;
+                
+                // Update expiration
+                const newExpiresAt = new Date();
+                newExpiresAt.setHours(newExpiresAt.getHours() + 24);
+                token.exp = Math.floor(newExpiresAt.getTime() / 1000);
+                
+                // Log refresh for monitoring
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('[Session] Backend token refreshed, new expiration:', newExpiresAt);
+                }
+              } catch (error) {
+                // Backend refresh failed, fallback to frontend-only refresh
+                console.error('[Session] Backend token refresh failed:', error);
+                
+                // Extend frontend session expiration only
+                const newExpiresAt = new Date();
+                newExpiresAt.setHours(newExpiresAt.getHours() + 24);
+                token.exp = Math.floor(newExpiresAt.getTime() / 1000);
+                
+                // Log to Sentry in production
+                if (process.env.NODE_ENV === "production") {
+                  Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+                    tags: { component: "token-refresh" },
+                    level: "warning",
+                  });
+                }
+              }
+            } else {
+              // No refresh token available, extend frontend session only
+              const newExpiresAt = new Date();
+              newExpiresAt.setHours(newExpiresAt.getHours() + 24);
+              token.exp = Math.floor(newExpiresAt.getTime() / 1000);
             }
           }
         } else {
@@ -282,8 +314,27 @@ const authConfig: NextAuthConfig = {
     error: "/auth/sign-in", // Error page redirects to sign-in
   },
   events: {
-    async signOut() {
-      // Cleanup on sign-out (if needed)
+    async signOut({ token }: { token: JWT | null }) {
+      // Revoke tokens on sign-out
+      if (token?.jwt) {
+        try {
+          await revokeTokens(
+            token.jwt as string,
+            (token as JWT & { refreshToken?: string }).refreshToken
+          );
+        } catch (error) {
+          // Log error but don't throw (sign-out should succeed even if revocation fails)
+          console.error("[SignOut] Token revocation failed:", error);
+          
+          // Log to Sentry in production
+          if (process.env.NODE_ENV === "production") {
+            Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+              tags: { component: "token-revoke" },
+              level: "warning",
+            });
+          }
+        }
+      }
       // Session cookies are automatically cleared by NextAuth.js
     },
   },
