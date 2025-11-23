@@ -42,6 +42,7 @@ export interface AuthResponse {
     displayName: string;
     avatarUrl?: string;
   };
+  isNewUser: boolean; // Flag indicating if user was just created
 }
 
 /**

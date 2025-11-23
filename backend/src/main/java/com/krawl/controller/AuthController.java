@@ -46,8 +46,10 @@ public class AuthController {
         // Validate Google token and get user info
         var googleUserInfo = googleTokenValidator.validateToken(token);
         
-        // Create or update user
-        User user = userService.createOrUpdateUser(googleUserInfo);
+        // Create or update user (returns result with isNewUser flag)
+        UserService.UserCreationResult result = userService.createOrUpdateUser(googleUserInfo);
+        User user = result.getUser();
+        boolean isNewUser = result.isNewUser();
         
         // Generate JWT token
         String jwt = jwtTokenService.generateToken(
@@ -67,6 +69,7 @@ public class AuthController {
         AuthResponse response = AuthResponse.builder()
             .jwt(jwt)
             .user(userResponse)
+            .isNewUser(isNewUser)
             .build();
         
         return ResponseEntity.ok(response);
