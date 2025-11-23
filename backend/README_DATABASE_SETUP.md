@@ -67,6 +67,8 @@ This guide provides a quick reference for setting up the Aiven PostgreSQL databa
 
 ## Environment Variables
 
+### Database Configuration
+
 Required environment variables (set in `.env` file):
 
 - `DB_HOST` - Database hostname
@@ -75,6 +77,19 @@ Required environment variables (set in `.env` file):
 - `DB_USERNAME` - Database username (usually `avnadmin`)
 - `DB_PASSWORD` - Database password
 - `DB_SSL_MODE` - SSL mode (use `require` for Aiven)
+
+### Authentication Configuration
+
+Required for Google OAuth 2.0 authentication:
+
+- `JWT_SECRET` - Secret key for JWT token signing (minimum 32 characters, recommended: 64+ characters)
+- `GOOGLE_CLIENT_ID` - Google OAuth 2.0 client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth 2.0 client secret
+
+Optional authentication variables:
+
+- `JWT_EXPIRATION` - JWT token expiration in milliseconds (default: 86400000 = 24 hours)
+- `CORS_ALLOWED_ORIGINS` - Comma-separated list of allowed CORS origins (default: `http://localhost:3000`)
 
 Optional connection pool variables:
 

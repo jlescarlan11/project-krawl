@@ -1,0 +1,66 @@
+package com.krawl.exception;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+/**
+ * Global exception handler for REST controllers.
+ * Handles all exceptions and returns appropriate HTTP responses.
+ */
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+    
+    /**
+     * Handles authentication-related exceptions.
+     * 
+     * @param e AuthException
+     * @return Error response with appropriate HTTP status
+     */
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuthException(AuthException e) {
+        log.error("Authentication error: {}", e.getMessage());
+        ErrorResponse error = ErrorResponse.builder()
+            .error(e.getClass().getSimpleName())
+            .message(e.getMessage())
+            .build();
+        HttpStatus status = e.getStatus();
+        return ResponseEntity.status(status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+    
+    /**
+     * Handles validation errors (IllegalArgumentException).
+     * 
+     * @param e IllegalArgumentException
+     * @return Error response with 400 Bad Request status
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
+        log.error("Validation error: {}", e.getMessage());
+        ErrorResponse error = ErrorResponse.builder()
+            .error("VALIDATION_ERROR")
+            .message(e.getMessage())
+            .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+    
+    /**
+     * Handles all other unhandled exceptions.
+     * 
+     * @param e Exception
+     * @return Error response with 500 Internal Server Error status
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
+        log.error("Unexpected error", e);
+        ErrorResponse error = ErrorResponse.builder()
+            .error("INTERNAL_ERROR")
+            .message("An unexpected error occurred")
+            .build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+}
+
