@@ -7,6 +7,12 @@
 
 import type { Session } from "next-auth";
 import * as Sentry from "@sentry/nextjs";
+import { handleApiError, type ApiError } from "./api-error-handler";
+import {
+  mapBackendErrorToAuthError,
+  extractUserFriendlyMessage,
+  type AuthError,
+} from "./auth-error-handler";
 
 /**
  * Type definition for AuthStore interface to avoid circular dependencies.
@@ -91,10 +97,32 @@ export async function exchangeToken(
         clearTimeout(timeoutId);
 
         if (!response.ok) {
+          // Parse backend error
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.message || `Backend authentication failed: ${response.status}`
-          );
+
+          // Map to ApiError format
+          const apiError: ApiError = {
+            code:
+              errorData.error?.code ||
+              errorData.code ||
+              `HTTP_${response.status}`,
+            message:
+              errorData.error?.message ||
+              errorData.message ||
+              response.statusText,
+            statusCode: response.status,
+            details: errorData.error?.details || errorData.details,
+          };
+
+          // Map to auth error code
+          const authErrorCode = mapBackendErrorToAuthError(apiError);
+
+          // Create error with auth error code
+          const error = new Error(extractUserFriendlyMessage(apiError)) as AuthError;
+          error.authErrorCode = authErrorCode;
+          error.apiError = apiError;
+
+          throw error;
         }
 
         const data = await response.json();

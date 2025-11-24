@@ -10,6 +10,7 @@ import * as Sentry from "@sentry/nextjs";
 import { exchangeToken } from "@/lib/auth";
 import { refreshTokens } from "@/lib/token-refresh";
 import { revokeTokens } from "@/lib/token-revoke";
+import type { AuthError } from "@/lib/auth-error-handler";
 
 /**
  * Validates required environment variables for NextAuth.js configuration.
@@ -157,19 +158,31 @@ const authConfig: NextAuthConfig = {
 
           return true;
         } catch (error) {
-          // Log error to Sentry with context
-          Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-            tags: {
-              component: "nextauth-signin",
-              provider: "google",
-            },
-            extra: {
-              hasAccessToken: !!account?.access_token,
-              provider: account?.provider,
-            },
-            level: "error",
-          });
+          // Extract auth error code if available
+          const authError = error as AuthError;
+          const authErrorCode = authError?.authErrorCode || "Verification";
+
+          // Log with auth error code
+          Sentry.captureException(
+            error instanceof Error ? error : new Error(String(error)),
+            {
+              tags: {
+                component: "nextauth-signin",
+                provider: "google",
+                authErrorCode,
+              },
+              extra: {
+                hasAccessToken: !!account?.access_token,
+                provider: account?.provider,
+                authErrorCode,
+                apiError: authError?.apiError,
+              },
+              level: "error",
+            }
+          );
+
           // Sign-in fails if token exchange fails
+          // Error code will be passed via NextAuth error page redirect
           return false;
         }
       }
@@ -314,8 +327,9 @@ const authConfig: NextAuthConfig = {
     error: "/auth/sign-in", // Error page redirects to sign-in
   },
   events: {
-    async signOut({ token }: { token: JWT | null }) {
+    async signOut(message: { token?: JWT | null; session?: unknown }) {
       // Revoke tokens on sign-out
+      const token = message.token;
       if (token?.jwt) {
         try {
           await revokeTokens(

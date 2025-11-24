@@ -9,6 +9,7 @@ The component library includes:
 - **Layout Components:** Container, Section, and PageLayout for consistent page structure
 - **Navigation Components:** Header, Footer, MobileMenu, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
 - **Brand Components:** Logo component with multiple variants and sizes
+- **Authentication Components:** GoogleSignInButton, AuthErrorDisplay for authentication flows
 - **Buttons:** Primary, secondary, outline, text, and accent variants
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
@@ -40,6 +41,75 @@ import { Button, Card, Input } from "@/components";
 // Or import from specific files
 import { Button } from "@/components/ui/button";
 ```
+
+### Authentication Components
+
+**Components:** `AuthErrorDisplay`, `GoogleSignInButton`
+
+#### AuthErrorDisplay
+
+Displays user-friendly error messages for authentication errors with retry and dismiss functionality.
+
+```tsx
+import { AuthErrorDisplay } from '@/components/auth'
+
+// Basic usage
+<AuthErrorDisplay 
+  error="NetworkError" 
+  onRetry={handleRetry}
+  onDismiss={handleDismiss}
+/>
+
+// With custom styling
+<AuthErrorDisplay 
+  error="AccessDenied"
+  onRetry={handleRetry}
+  className="mt-4"
+/>
+```
+
+**Props:**
+
+- `error: string` - Authentication error code (required)
+- `onRetry?: () => void` - Callback when user clicks "Try Again"
+- `onDismiss?: () => void` - Callback when user clicks "Dismiss"
+- `showRetry?: boolean` - Show retry/dismiss buttons (default: true)
+- `className?: string` - Additional CSS classes
+
+**Supported Error Codes:**
+- NextAuth.js: `Configuration`, `AccessDenied`, `Verification`, `Default`
+- Application: `NetworkError`, `TokenValidationFailed`, `SessionCreationFailed`, `AccountCreationFailed`, `InvalidCredentials`, `PopupBlocked`, `CookieBlocked`, `CorsError`, `RateLimited`, `BackendError`
+
+**Features:**
+- User-friendly error messages
+- Actionable guidance for resolving errors
+- Retry functionality for transient errors
+- Accessibility support (ARIA labels, role="alert")
+- Responsive design
+
+See [`auth/README.md`](./auth/README.md) for complete documentation.
+
+#### GoogleSignInButton
+
+Button component for initiating Google OAuth sign-in flow.
+
+```tsx
+import { GoogleSignInButton } from '@/components/auth'
+
+<GoogleSignInButton 
+  onClick={handleSignIn} 
+  loading={isLoading}
+/>
+```
+
+**Props:**
+
+- `onClick: () => void` - Callback when button is clicked (required)
+- `loading?: boolean` - Whether sign-in is in progress
+- `disabled?: boolean` - Whether button is disabled
+- `className?: string` - Additional CSS classes
+
+See [`auth/README.md`](./auth/README.md) for complete documentation.
 
 ### Button Component
 
@@ -801,6 +871,7 @@ components/
 - **Layout Components:** [`layout/README.md`](./layout/README.md) - Container, Section, PageLayout
 - **Navigation Components:** [`navigation/README.md`](./navigation/README.md) - Header, Footer, Breadcrumbs, etc.
 - **Brand Components:** [`brand/README.md`](./brand/README.md) - Logo component
+- **Authentication Components:** [`auth/README.md`](./auth/README.md) - GoogleSignInButton, AuthErrorDisplay
 
 ## References
 
@@ -811,5 +882,5 @@ components/
 
 ---
 
-**Last Updated:** 2025-11-22  
-**Version:** 1.2.0
+**Last Updated:** 2025-01-27  
+**Version:** 1.3.0
