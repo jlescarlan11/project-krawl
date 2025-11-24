@@ -1,18 +1,22 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 type ProgressDotsProps = {
   total: number;
   currentIndex: number;
   onSelect?: (index: number) => void;
+  className?: string;
 };
 
 export function ProgressDots({
   total,
   currentIndex,
   onSelect,
+  className,
 }: ProgressDotsProps) {
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className={cn("flex items-center justify-center gap-2", className)}>
       {Array.from({ length: total }).map((_, index) => {
         const isActive = index === currentIndex;
         const isInteractive = !!onSelect && index !== currentIndex;

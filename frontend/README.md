@@ -99,7 +99,7 @@ Krawl uses Next.js 16 App Router with a comprehensive routing structure. All rou
 - `/krawls/[id]` – Krawl detail page (dynamic route)
 - `/krawls/[id]/mode` – Krawl mode page (dynamic route)
 - `/users/[id]` – User profile page (dynamic route)
-- `/onboarding` – 5-step onboarding flow (TASK-029)
+- `/onboarding` – 5-step onboarding flow ✅ **Implemented** (TASK-046)
 - `/auth/sign-in` – Sign in page
 - `/auth/signout` – Sign out page
 - `/auth/callback` – OAuth callback handler
