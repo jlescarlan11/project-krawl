@@ -10,11 +10,9 @@ import { SentryUserContextSync } from "@/components/system/SentryUserContextSync
 import { SessionRefreshProvider } from "@/components/system/SessionRefreshProvider";
 import { CookieWarningBanner } from "@/components/system/CookieWarningBanner";
 import {
-  Header,
-  Footer,
-  MobileMenu,
-  BottomNav,
-} from "@/components/navigation";
+  NavigationWrapper,
+  NavigationFooter,
+} from "@/components/navigation/NavigationWrapper";
 
 import "./globals.css";
 
@@ -93,11 +91,9 @@ export default function RootLayout({
               <ServiceWorkerRegistration />
             <ToastProvider>
               <div className="flex min-h-screen flex-col">
-                <Header />
-                <MobileMenu />
+                <NavigationWrapper />
                 <main className="flex-1 pb-16 lg:pb-0">{children}</main>
-                <Footer />
-                <BottomNav />
+                <NavigationFooter />
               </div>
               <ServiceWorkerUpdateToast />
               <CookieWarningBanner />

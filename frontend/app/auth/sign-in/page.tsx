@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthErrorDisplay } from "@/components/auth/AuthErrorDisplay";
@@ -28,20 +29,20 @@ import { handleAuthError } from "@/lib/auth-error-handler";
 function GuestLimitations() {
   return (
     <div className="mt-6 rounded-lg bg-[var(--color-bg-light)] p-4 text-left">
-      <p className="mb-2 text-sm font-medium text-[var(--color-text-primary)]">
+      <p className="mb-3 text-sm font-medium text-[var(--color-text-primary)]">
         Guest mode limitations:
       </p>
-      <ul className="space-y-1 text-sm text-[var(--color-text-secondary)]">
-        <li className="flex items-start gap-2">
-          <span className="mt-1 text-[var(--color-text-tertiary)]">•</span>
+      <ul className="space-y-2.5 text-sm text-[var(--color-text-secondary)]">
+        <li className="flex items-start gap-3">
+          <span className="mt-0.5 w-2 h-2 rounded-full bg-[var(--color-primary-green)] flex-shrink-0" aria-hidden="true" />
           <span>Can view Gems and Krawls</span>
         </li>
-        <li className="flex items-start gap-2">
-          <span className="mt-1 text-[var(--color-text-tertiary)]">•</span>
+        <li className="flex items-start gap-3">
+          <span className="mt-0.5 w-2 h-2 rounded-full bg-[var(--color-bg-medium)] flex-shrink-0" aria-hidden="true" />
           <span>Cannot create content</span>
         </li>
-        <li className="flex items-start gap-2">
-          <span className="mt-1 text-[var(--color-text-tertiary)]">•</span>
+        <li className="flex items-start gap-3">
+          <span className="mt-0.5 w-2 h-2 rounded-full bg-[var(--color-bg-medium)] flex-shrink-0" aria-hidden="true" />
           <span>Cannot vouch or comment</span>
         </li>
       </ul>
@@ -56,18 +57,18 @@ function GuestLimitations() {
  */
 function LegalLinks() {
   return (
-    <p className="mt-6 text-sm text-[var(--color-text-secondary)]">
+    <p className="mt-6 text-sm text-center lg:text-left text-[var(--color-text-secondary)]">
       By signing in, you agree to our{" "}
       <Link
         href={ROUTES.TERMS}
-        className="font-medium text-[var(--color-primary-green)] hover:underline focus:outline-2 focus:outline-accent-orange focus:outline-offset-2 focus:rounded"
+        className="font-medium text-[var(--color-primary-green)] underline hover:no-underline focus:outline-2 focus:outline-accent-orange focus:outline-offset-2 focus:rounded"
       >
-        Terms of Service
+        Terms
       </Link>{" "}
       and{" "}
       <Link
         href={ROUTES.PRIVACY}
-        className="font-medium text-[var(--color-primary-green)] hover:underline focus:outline-2 focus:outline-accent-orange focus:outline-offset-2 focus:rounded"
+        className="font-medium text-[var(--color-primary-green)] underline hover:no-underline focus:outline-2 focus:outline-accent-orange focus:outline-offset-2 focus:rounded"
       >
         Privacy Policy
       </Link>
@@ -211,10 +212,14 @@ function SignInContent() {
     }
   }, [status, session, returnUrl, router]);
 
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
   // Show loading state while checking session
   if (status === "loading") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[var(--color-bg-light)] px-4 py-12">
+      <main className="flex min-h-screen items-center justify-center bg-white px-4 py-12">
         <div className="text-center">
           <Spinner size="lg" />
         </div>
@@ -228,65 +233,122 @@ function SignInContent() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--color-bg-light)] px-4 py-12">
-      <section className="w-full max-w-md rounded-[var(--radius-lg)] bg-white p-8 text-center shadow-[var(--shadow-elevation-2)]">
-        {/* Logo */}
-        <div className="mb-6 flex justify-center">
-          <Logo variant="full-color" size="lg" />
-        </div>
+    <main className="flex min-h-screen flex-col bg-white lg:flex-row">
+      {/* Back Button - Mobile */}
+      <div className="absolute top-4 left-1 z-10 lg:hidden">
+        <button
+          onClick={handleBack}
+          className="flex items-center justify-center w-11 h-11 rounded-lg text-[var(--color-text-primary)] hover:bg-[var(--color-bg-light)] transition-colors focus:outline-2 focus:outline-accent-orange focus:outline-offset-2"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Welcome Heading */}
-        <h1 className="text-3xl font-semibold text-[var(--color-text-primary)]">
-          Welcome to Krawl
-        </h1>
-
-        {/* Subheading */}
-        <p className="mt-2 text-lg text-[var(--color-text-secondary)]">
-          The Living Map of Filipino Culture
-        </p>
-
-        {/* Value Proposition */}
-        <p className="mt-4 text-base text-[var(--color-text-secondary)]">
-          Sign in to explore and create Gems and Krawls that celebrate Cebu City's
-          rich cultural heritage.
-        </p>
-
-        {/* Error Display */}
-        {displayError && (
-          <div className="mt-6">
-            <AuthErrorDisplay
-              error={displayError}
-              onRetry={handleRetry}
-              onDismiss={handleDismiss}
-              showRetry={true}
-            />
-          </div>
-        )}
-
-        {/* Google Sign-In Button */}
-        <div className="mt-8">
-          <GoogleSignInButton onClick={handleSignIn} loading={isLoading} />
-        </div>
-
-        {/* Continue as Guest Link */}
-        <div className="mt-6">
-          <Button
-            variant="outline"
-            size="md"
-            onClick={handleContinueAsGuest}
-            fullWidth
-            className="border-[var(--color-primary-green)] text-[var(--color-primary-green)] hover:bg-[var(--color-light-green)]/10"
+      {/* Left Panel - Desktop Only */}
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:bg-[var(--color-bg-light)] lg:relative">
+        {/* Back Button - Desktop */}
+        <div className="absolute top-4 left-12 z-10">
+          <button
+            onClick={handleBack}
+            className="flex items-center justify-center w-11 h-11 rounded-lg text-[var(--color-text-primary)] hover:bg-white/50 transition-colors focus:outline-2 focus:outline-accent-orange focus:outline-offset-2"
+            aria-label="Go back"
           >
-            Continue as Guest
-          </Button>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Guest Limitations */}
-        <GuestLimitations />
+        {/* Left Panel Content - Centered Vertically */}
+        <div className="flex flex-1 flex-col justify-center items-start px-16 py-16">
+          <div className="w-full">
+            {/* Logo */}
+            <div className="mb-12 flex justify-start">
+              <Logo variant="full-color" size="lg" />
+            </div>
 
-        {/* Legal Links */}
-        <LegalLinks />
-      </section>
+            {/* Welcome Heading */}
+            <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-4">
+              Welcome to Krawl
+            </h1>
+
+            {/* Subheading */}
+            <p className="text-xl text-[var(--color-text-secondary)] mb-8">
+              The Living Map of Filipino Culture
+            </p>
+
+            {/* Description */}
+            <p className="text-base text-[var(--color-text-secondary)] leading-relaxed max-w-md">
+              Discover, explore, and share the rich tapestry of Filipino culture through an interactive mapping experience.
+            </p>
+          </div>
+
+          {/* Copyright - With gap from content */}
+          <p className="text-sm text-[var(--color-text-tertiary)] mt-20">
+            © 2025 Krawl. All rights reserved.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Panel / Mobile Content */}
+      <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 lg:px-16 lg:py-16 lg:bg-white">
+        <div className="w-full max-w-md lg:max-w-lg">
+          {/* Mobile: Logo and Welcome */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="mb-8 flex justify-center">
+              <Logo variant="full-color" size="lg" />
+            </div>
+            <h1 className="text-4xl font-bold text-[var(--color-text-primary)]">
+              Welcome to Krawl
+            </h1>
+            <p className="mt-2 text-lg text-[var(--color-text-secondary)]">
+              The Living Map of Filipino Culture
+            </p>
+          </div>
+
+          {/* Desktop: Sign in heading */}
+          <div className="hidden lg:block mb-2">
+            <h2 className="text-4xl font-bold text-[var(--color-text-primary)]">
+              Sign in to continue
+            </h2>
+            <p className="mt-2 text-lg text-[var(--color-text-secondary)]">
+              Choose your preferred method to access Krawl
+            </p>
+          </div>
+
+          {/* Error Display */}
+          {displayError && (
+            <div className="mt-6 lg:mt-8">
+              <AuthErrorDisplay
+                error={displayError}
+                onRetry={handleRetry}
+                onDismiss={handleDismiss}
+                showRetry={true}
+              />
+            </div>
+          )}
+
+          {/* Google Sign-In Button */}
+          <div className="mt-8 lg:mt-10">
+            <GoogleSignInButton onClick={handleSignIn} loading={isLoading} />
+          </div>
+
+          {/* Continue as Guest Button */}
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={handleContinueAsGuest}
+              fullWidth
+              className="bg-white border-[var(--color-bg-medium)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-light)]"
+            >
+              Continue as Guest
+            </Button>
+          </div>
+
+          {/* Legal Links */}
+          <LegalLinks />
+        </div>
+      </div>
     </main>
   );
 }
