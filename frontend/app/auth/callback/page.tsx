@@ -4,10 +4,12 @@ import { Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { syncSessionToZustand } from "@/lib/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
+import { getReturnUrl } from "@/lib/route-utils";
 
 /**
  * OAuth Callback Page Content
@@ -21,7 +23,8 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const authStore = useAuthStore();
 
-  const returnUrl = searchParams.get("returnUrl") || ROUTES.HOME;
+  // Validate returnUrl to prevent open redirect vulnerabilities
+  const returnUrl = getReturnUrl(searchParams);
 
   useEffect(() => {
     // Wait for session to load
@@ -41,8 +44,27 @@ function AuthCallbackContent() {
         router.push(returnUrl);
       }
     } else if (status === "unauthenticated") {
-      // Authentication failed, redirect to sign-in with error
-      router.push(`${ROUTES.SIGN_IN}?error=Verification&returnUrl=${encodeURIComponent(returnUrl)}`);
+      // Check for specific error in URL
+      const errorParam = searchParams.get("error");
+      const errorCode = errorParam || "Verification";
+
+      // Log callback failure
+      Sentry.captureException(new Error("Authentication callback failed"), {
+        tags: {
+          component: "auth-callback",
+          errorCode,
+        },
+        extra: {
+          returnUrl,
+          errorCode,
+        },
+        level: "error",
+      });
+
+      // Redirect with specific error code
+      router.push(
+        `${ROUTES.SIGN_IN}?error=${encodeURIComponent(errorCode)}&returnUrl=${encodeURIComponent(returnUrl)}`
+      );
     }
   }, [status, session, router, returnUrl, authStore]);
 
