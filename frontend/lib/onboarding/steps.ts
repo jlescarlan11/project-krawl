@@ -39,12 +39,12 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     id: "permissions",
-    title: "Ready to Explore?",
+    title: "Almost There!",
     description:
-      "Allow location to show nearby Gems and guide you through Krawls. Notifications are optional for cultural updates.",
+      "To give you the best experience, you need to enable your location. You can always change these later in settings.",
     illustration: "location-permission",
     type: "permissions",
-    ctaLabel: "Allow Permissions",
+    ctaLabel: "Allow Location",
   },
 ];
 

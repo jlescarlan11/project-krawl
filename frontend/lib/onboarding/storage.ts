@@ -44,13 +44,37 @@ function writeState(state: Partial<OnboardingStorageState>) {
     ...state,
   };
   cachedState = nextState;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+  } catch (error) {
+    // Handle quota exceeded or disabled localStorage
+    // State is still cached in memory, so flow continues
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Failed to save onboarding state:", error);
+    }
+  }
 }
 
+/**
+ * Marks a specific onboarding step as completed.
+ * Updates the last completed step in localStorage.
+ * 
+ * @param step - The step ID to mark as completed
+ * @example
+ * markStepCompleted("welcome");
+ */
 export function markStepCompleted(step: StepId) {
   writeState({ lastCompletedStep: step });
 }
 
+/**
+ * Marks the entire onboarding flow as completed.
+ * 
+ * @param options - Completion options
+ * @param options.skipped - Whether the user skipped the onboarding
+ * @example
+ * markOnboardingCompleted({ skipped: false });
+ */
 export function markOnboardingCompleted({ skipped }: { skipped: boolean }) {
   writeState({
     skipped,
@@ -58,12 +82,65 @@ export function markOnboardingCompleted({ skipped }: { skipped: boolean }) {
   });
 }
 
+/**
+ * Resets the onboarding state, clearing localStorage.
+ * Useful for testing or allowing users to restart onboarding.
+ * 
+ * @example
+ * resetOnboardingState();
+ */
 export function resetOnboardingState() {
   if (!isBrowser) return;
   cachedState = null;
   window.localStorage.removeItem(STORAGE_KEY);
 }
 
+/**
+ * Gets the current onboarding state from localStorage.
+ * 
+ * @returns The current onboarding state
+ * @example
+ * const state = getOnboardingState();
+ * console.log(state.lastCompletedStep);
+ */
 export function getOnboardingState() {
   return readState();
+}
+
+/**
+ * Subscribe to onboarding state changes across tabs
+ *
+ * Listens to localStorage 'storage' events to synchronize state
+ * when onboarding is completed or modified in another tab.
+ *
+ * @param listener - Callback function called when state changes
+ * @returns Unsubscribe function
+ */
+export function subscribeToOnboardingState(
+  listener: (state: OnboardingStorageState) => void
+): () => void {
+  if (!isBrowser) {
+    return () => {};
+  }
+
+  const handleStorageChange = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY && e.newValue) {
+      try {
+        const newState = JSON.parse(e.newValue) as OnboardingStorageState;
+        // Update cached state
+        cachedState = newState.version === VERSION ? newState : defaultState;
+        // Notify listener
+        listener(cachedState);
+      } catch {
+        // Ignore parse errors
+      }
+    }
+  };
+
+  window.addEventListener("storage", handleStorageChange);
+
+  // Return unsubscribe function
+  return () => {
+    window.removeEventListener("storage", handleStorageChange);
+  };
 }

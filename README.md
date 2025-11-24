@@ -18,7 +18,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - 🧭 **Krawl Mode** - Interactive, location-aware guided experience
 - 📴 **Offline-First** - Downloadable Krawls for areas with inconsistent connectivity
 - 👥 **Community-Curated** - User-driven content with quality control mechanisms
-- 🎓 **Guided Onboarding** - Optional 5-step intro that explains value props, permissions, and quick-start paths
+- 🎓 **Guided Onboarding** - Optional 5-step intro that explains value props, permissions, and quick-start paths ✅ **Implemented** (TASK-046)
 - 🇵🇭 **Hyperlocal Focus** - Authentic, non-commercial Filipino cultural experiences
 
 ### Launch Area
