@@ -49,7 +49,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       primary:
-        "bg-primary-green text-white hover:bg-dark-green active:scale-[0.98]",
+        "bg-primary-green text-white hover:bg-dark-green active:scale-[0.98] ",
       secondary:
         "bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10",
       outline:

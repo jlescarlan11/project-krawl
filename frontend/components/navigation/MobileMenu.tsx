@@ -9,9 +9,11 @@ import { useUIStore } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
 import { Button } from "@/components";
-import { SignInPrompt } from "@/components/auth";
 import { cn } from "@/lib/utils";
-import { useGuestMode } from "@/hooks/useGuestMode";
+import {
+  ProtectedActionGate,
+  ProtectedFeatureBadge,
+} from "@/components/guest";
 
 /**
  * MobileMenu component
@@ -24,7 +26,6 @@ export function MobileMenu() {
   const isAuthenticated = useIsAuthenticated();
   const user = useAuthUser();
   const { sidebars, closeSidebar } = useUIStore();
-  const { navigateToSignIn } = useGuestMode();
   const isOpen = sidebars.left;
 
   // Close menu on route change
@@ -109,68 +110,93 @@ export function MobileMenu() {
                 onClick={() => closeSidebar("left")}
               />
 
-              {isAuthenticated ? (
-                <div className="border-t border-border-default my-2 pt-2">
-                  <NavLink
-                    href={ROUTES.GEM_CREATE}
-                    label="Create Gem"
-                    icon={Plus}
-                    onClick={() => closeSidebar("left")}
-                  />
-                  <NavLink
-                    href={ROUTES.KRAWL_CREATE}
-                    label="Create Krawl"
-                    icon={Plus}
-                    onClick={() => closeSidebar("left")}
-                  />
-                </div>
-              ) : (
-                <div className="border-t border-border-default my-4 pt-4">
-                  <SignInPrompt
-                    context="create"
-                    variant="inline"
-                    fullWidth
-                    returnUrl={ROUTES.GEM_CREATE}
-                    onBeforeNavigate={() => closeSidebar("left")}
-                  />
-                </div>
-              )}
+              <ProtectedActionGate
+                context="create"
+                promptOptions={{ redirectTo: ROUTES.GEM_CREATE, preserveFilters: false }}
+              >
+                {({ isGuest, requestSignIn, promptId, Prompt }) =>
+                  isGuest ? (
+                  <div className="border-t border-border-default my-4 pt-4 space-y-2">
+                      <Button
+                        variant="primary"
+                        fullWidth
+                        onClick={() => {
+                          closeSidebar("left");
+                          requestSignIn();
+                        }}
+                        aria-describedby={promptId}
+                        icon={<Plus className="w-4 h-4" />}
+                      >
+                        Sign in to create
+                      </Button>
+                      {Prompt}
+                      <ProtectedFeatureBadge
+                        context="create"
+                        message="Create Gems and Krawls to guide the community."
+                      />
+                    </div>
+                  ) : (
+                    <div className="border-t border-border-default my-2 pt-2 space-y-1">
+                      <NavLink
+                        href={ROUTES.GEM_CREATE}
+                        label="Create Gem"
+                        icon={Plus}
+                        onClick={() => closeSidebar("left")}
+                      />
+                      <NavLink
+                        href={ROUTES.KRAWL_CREATE}
+                        label="Create Krawl"
+                        icon={Plus}
+                        onClick={() => closeSidebar("left")}
+                      />
+                    </div>
+                  )
+                }
+              </ProtectedActionGate>
             </div>
           </nav>
 
           {/* User Section */}
           <div className="p-4 border-t border-border-default">
-            {isAuthenticated ? (
-              <div className="flex flex-col gap-2">
-                <Link
-                  href={ROUTES.USER_PROFILE(user?.id || "")}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-light-green/10"
-                  onClick={() => closeSidebar("left")}
-                >
-                  <User className="w-5 h-5" />
-                  <span>{user?.name || "Profile"}</span>
-                </Link>
-                <Link
-                  href={ROUTES.USER_SETTINGS}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-light-green/10"
-                  onClick={() => closeSidebar("left")}
-                >
-                  <Settings className="w-5 h-5" />
-                  <span>Settings</span>
-                </Link>
-              </div>
-            ) : (
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={() => {
-                  closeSidebar("left");
-                  navigateToSignIn();
-                }}
-              >
-                Sign In
-              </Button>
-            )}
+            <ProtectedActionGate context="profile">
+              {({ isGuest, requestSignIn, promptId, Prompt }) =>
+                isGuest ? (
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => {
+                        closeSidebar("left");
+                        requestSignIn();
+                      }}
+                      aria-describedby={promptId}
+                    >
+                      Sign In
+                    </Button>
+                    {Prompt}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href={ROUTES.USER_PROFILE(user?.id || "")}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-light-green/10"
+                      onClick={() => closeSidebar("left")}
+                    >
+                      <User className="w-5 h-5" />
+                      <span>{user?.name || "Profile"}</span>
+                    </Link>
+                    <Link
+                      href={ROUTES.USER_SETTINGS}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-light-green/10"
+                      onClick={() => closeSidebar("left")}
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span>Settings</span>
+                    </Link>
+                  </div>
+                )
+              }
+            </ProtectedActionGate>
           </div>
         </div>
       </aside>

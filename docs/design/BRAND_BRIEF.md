@@ -22,7 +22,7 @@ This Brand Brief provides a comprehensive guide for Krawl's brand communication,
 | 1.0.0 | 2025-11-14 | Development Team | Initial version |
 
 **Current Version:** 1.0.0  
-**Last Updated:** 2025-11-15  
+**Last Updated:** 2025-11-23  
 **Status:** Draft
 
 ---

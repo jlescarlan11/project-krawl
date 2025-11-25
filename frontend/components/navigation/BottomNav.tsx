@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Map, Search, Plus, User } from "lucide-react";
-import { useIsAuthenticated } from "@/stores";
 import { useUIStore } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-import { useGuestMode } from "@/hooks/useGuestMode";
+import { ProtectedActionGate } from "@/components/guest";
 
 /**
  * BottomNav component
@@ -17,9 +16,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
  */
 export function BottomNav() {
   const pathname = usePathname();
-  const isAuthenticated = useIsAuthenticated();
   const { openSidebar } = useUIStore();
-  const { navigateToSignIn } = useGuestMode();
 
   const navItems = [
     {
@@ -70,46 +67,53 @@ export function BottomNav() {
           );
         })}
 
-        {/* Create FAB (if authenticated) */}
-        {isAuthenticated ? (
-          <Link
-            href={ROUTES.GEM_CREATE}
-            className={cn(
-              "flex flex-col items-center justify-center",
-              "w-14 h-14 rounded-full",
-              "bg-primary-green text-white",
-              "shadow-elevation-2 hover:shadow-elevation-3",
-              "transition-all",
-              pathname.startsWith(ROUTES.GEM_CREATE) ||
-                pathname.startsWith(ROUTES.KRAWL_CREATE)
-                ? "scale-110"
-                : ""
-            )}
-            aria-label="Create"
-          >
-            <Plus className="w-6 h-6" aria-hidden="true" />
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() =>
-              navigateToSignIn("create", {
-                redirectTo: ROUTES.GEM_CREATE,
-                preserveFilters: false,
-              })
-            }
-            className={cn(
-              "flex flex-col items-center justify-center",
-              "w-14 h-14 rounded-full",
-              "bg-primary-green text-white",
-              "shadow-elevation-2 hover:shadow-elevation-3",
-              "transition-all"
-            )}
-            aria-label="Sign in to create"
-          >
-            <Plus className="w-6 h-6" aria-hidden="true" />
-          </button>
-        )}
+        <ProtectedActionGate
+          context="create"
+          promptOptions={{ redirectTo: ROUTES.GEM_CREATE, preserveFilters: false }}
+        >
+          {({ isGuest, requestSignIn, promptId, Prompt }) =>
+            isGuest ? (
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  type="button"
+                  disabled
+                  onClick={requestSignIn}
+                  aria-describedby={promptId}
+                  className={cn(
+                    "flex flex-col items-center justify-center",
+                    "w-14 h-14 rounded-full",
+                    "bg-primary-green text-white",
+                    "shadow-elevation-2",
+                    "transition-all",
+                    "opacity-70"
+                  )}
+                  aria-label="Sign in to create"
+                >
+                  <Plus className="w-6 h-6" aria-hidden="true" />
+                </button>
+                <div className="w-full text-center">{Prompt}</div>
+              </div>
+            ) : (
+              <Link
+                href={ROUTES.GEM_CREATE}
+                className={cn(
+                  "flex flex-col items-center justify-center",
+                  "w-14 h-14 rounded-full",
+                  "bg-primary-green text-white",
+                  "shadow-elevation-2 hover:shadow-elevation-3",
+                  "transition-all",
+                  pathname.startsWith(ROUTES.GEM_CREATE) ||
+                    pathname.startsWith(ROUTES.KRAWL_CREATE)
+                    ? "scale-110"
+                    : ""
+                )}
+                aria-label="Create"
+              >
+                <Plus className="w-6 h-6" aria-hidden="true" />
+              </Link>
+            )
+          }
+        </ProtectedActionGate>
 
         {/* Profile / Menu */}
         <button

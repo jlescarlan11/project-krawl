@@ -207,6 +207,7 @@ import { SignInPrompt } from "@/components/auth";
 - Preserves filters/scroll when `returnUrl` not provided
 - Supports CTA-specific redirects (create Gem/Krawl)
 - Provides consistent messaging via `GuestFeatureContext`
+- `badge` variant powers `ProtectedFeatureBadge` for inline “Sign in to unlock” chips
 
 ### GuestModeBanner
 
@@ -228,6 +229,11 @@ import { GuestModeBanner } from "@/components/auth";
 - Includes primary "Sign In" CTA wired through `useGuestMode`
 
 > **Tip:** Use the `useGuestMode` hook from `@/hooks` to gate any new protected feature and surface `SignInPrompt` on demand.
+
+### Related Guest Components
+
+- [`ProtectedActionGate`](../guest/ProtectedActionGate.tsx) – render-prop helper for protected CTAs
+- [`ProtectedFeatureBadge`](../guest/ProtectedFeatureBadge.tsx) – pill/banner indicator backed by `SignInPrompt`
 
 ---
 

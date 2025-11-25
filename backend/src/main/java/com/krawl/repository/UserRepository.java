@@ -15,3 +15,4 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByGoogleId(String googleId);
 }
 
+

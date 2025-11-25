@@ -6,7 +6,7 @@ This document provides a comprehensive visual sitemap of the Krawl Progressive W
 
 **Project Overview:** Krawl is a community-driven PWA that maps authentic Filipino culture through user-curated points of interest ("Gems") and guided trails ("Krawls"). The initial launch is limited to Cebu City, Philippines.
 
-**Current Date:** November 14, 2025
+**Current Date:** November 23, 2025
 
 ---
 
@@ -17,7 +17,7 @@ This document provides a comprehensive visual sitemap of the Krawl Progressive W
 | 1.0.0 | 2025-11-14 | Development Team | Initial sitemap version |
 
 **Current Version:** 1.0.0  
-**Last Updated:** 2025-11-15  
+**Last Updated:** 2025-11-23  
 **Status:** Draft
 
 ---

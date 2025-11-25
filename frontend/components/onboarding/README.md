@@ -121,6 +121,10 @@ The final onboarding step includes an inline permission request for location acc
 
 The permission request is implemented as an inline link within the step description, maintaining consistency with the rest of the step content and animations.
 
+### `GuestActionShowcase.tsx`
+
+Highlights guest mode limitations on the "Create & Share" step. Renders dismissible indicators (badges, tooltips, disabled CTAs) that explain which actions require authentication. Automatically hides when the viewer is authenticated and reuses `ProtectedFeatureBadge` so copy stays aligned with the rest of TASK-049 surfaces.
+
 ## Utilities
 
 ### `lib/onboarding/storage.ts`

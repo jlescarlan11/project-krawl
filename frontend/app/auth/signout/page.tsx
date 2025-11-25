@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signOut as nextAuthSignOut } from "next-auth/react";
 import { useAuthStore } from "@/stores";
@@ -16,8 +16,15 @@ import { Spinner } from "@/components";
 export default function SignOutPage() {
   const router = useRouter();
   const authStore = useAuthStore();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple executions
+    if (hasProcessed.current) return;
+    
+    // Mark as processed to prevent infinite loop
+    hasProcessed.current = true;
+
     // Clear Zustand store
     authStore.signOut();
 
@@ -29,7 +36,9 @@ export default function SignOutPage() {
       // Redirect to home page
       router.push(ROUTES.HOME);
     });
-  }, [authStore, router]);
+    // Only depend on router - authStore is a stable reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

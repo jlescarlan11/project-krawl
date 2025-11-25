@@ -10,6 +10,10 @@ import {
 import { GuestModeBanner } from "@/components/auth";
 import { ROUTES } from "@/lib/routes";
 
+export interface NavigationWrapperProps {
+  showGuestBanner?: boolean;
+}
+
 /**
  * NavigationWrapper component
  *
@@ -19,7 +23,9 @@ import { ROUTES } from "@/lib/routes";
  * Note: This component returns fragments that should be placed in the layout
  * at the appropriate positions (Header/MobileMenu before main, Footer/BottomNav after).
  */
-export function NavigationWrapper() {
+export function NavigationWrapper({
+  showGuestBanner = true,
+}: NavigationWrapperProps = {}) {
   const pathname = usePathname();
   const isSignInPage = pathname === ROUTES.SIGN_IN;
   const isOnboardingPage = pathname === ROUTES.ONBOARDING;
@@ -31,7 +37,7 @@ export function NavigationWrapper() {
 
   return (
     <>
-      <GuestModeBanner />
+      {showGuestBanner && <GuestModeBanner />}
       <Header />
       <MobileMenu />
     </>

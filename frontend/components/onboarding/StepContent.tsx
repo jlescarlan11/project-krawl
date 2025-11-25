@@ -11,6 +11,7 @@ import { DiscoverIllustration } from "./DiscoverIllustration";
 import { TrailIllustration } from "./TrailIllustration";
 import { CelebrateIllustration } from "./CelebrateIllustration";
 import { CreateIllustration } from "./CreateIllustration";
+import { GuestActionShowcase } from "./GuestActionShowcase";
 
 type StepContentProps = {
   step: OnboardingStep;
@@ -60,6 +61,7 @@ export function StepContent({
   const ctaLabel = nextLabel || step.ctaLabel || "Next";
   const isPermissionsStep = step.id === "permissions";
   const isWelcomeStep = step.id === "welcome";
+  const showGuestIndicators = step.id === "create";
   const isLocationGranted = permissionStatus?.location === "granted";
   const heroIllustration =
     step.id === "welcome" ? (
@@ -133,6 +135,7 @@ export function StepContent({
                 {step.description}
               </p>
             )}
+            {showGuestIndicators && <GuestActionShowcase />}
             <div className="space-y-3 text-center sm:text-left">
               <p className="text-sm font-medium text-[var(--color-text-secondary)]">
                 Step {index + 1} of {total}
@@ -214,6 +217,7 @@ export function StepContent({
     </StepTransition>
   );
 }
+
 
 
 
