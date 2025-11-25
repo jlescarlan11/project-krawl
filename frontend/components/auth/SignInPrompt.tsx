@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getSignInMessage, type GuestFeatureContext } from "@/lib/guest-mode";
-import { useGuestMode } from "@/hooks/useGuestMode";
+import { useGuestMode, type GuestSignInOptions } from "@/hooks/useGuestMode";
 
 /**
  * Sign-in prompt variants
@@ -54,6 +54,10 @@ export interface SignInPromptProps {
    */
   returnUrl?: string;
   /**
+   * Additional guest context data to store before redirecting.
+   */
+  contextData?: GuestSignInOptions["contextData"];
+  /**
    * Callback executed before navigating to sign-in
    */
   onBeforeNavigate?: () => void;
@@ -85,6 +89,7 @@ export function SignInPrompt({
   context,
   variant = "button",
   returnUrl,
+  contextData,
   message,
   showIcon = true,
   className,
@@ -105,6 +110,7 @@ export function SignInPrompt({
     navigateToSignIn(context, {
       redirectTo: returnUrl,
       preserveFilters: !returnUrl,
+      contextData,
     });
   };
 

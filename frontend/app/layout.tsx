@@ -3,6 +3,7 @@ import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 
 import { ToastProvider } from "@/components";
+import { GuestUpgradeSuccessToast } from "@/components/auth/GuestUpgradeSuccessToast";
 import { ServiceWorkerUpdateToast } from "@/components/system/ServiceWorkerUpdateToast";
 import { ServiceWorkerRegistration } from "@/components/system/ServiceWorkerRegistration";
 import { SentryErrorBoundary } from "@/components/system/SentryErrorBoundary";
@@ -90,6 +91,7 @@ export default function RootLayout({
               <SentryUserContextSync />
               <ServiceWorkerRegistration />
             <ToastProvider>
+              <GuestUpgradeSuccessToast />
               <div className="flex min-h-screen flex-col">
                 <NavigationWrapper />
                 <main className="flex-1">{children}</main>

@@ -64,7 +64,7 @@ describe("ProtectedActionGate", () => {
       <ProtectedActionGate context="comment">
         {({ requestSignIn, promptId, Prompt }) => (
           <div>
-            <button onClick={requestSignIn} aria-describedby={promptId}>
+          <button onClick={() => requestSignIn()} aria-describedby={promptId}>
               Sign in to comment
             </button>
             {Prompt}

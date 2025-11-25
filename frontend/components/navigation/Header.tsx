@@ -50,14 +50,20 @@ export function Header() {
             <NavLink href={ROUTES.MAP} label="Map" icon={Map} />
             <NavLink href={ROUTES.SEARCH} label="Search" icon={Search} />
 
-            <ProtectedActionGate context="create">
+            <ProtectedActionGate
+              context="create"
+              promptOptions={{
+                redirectTo: ROUTES.GEM_CREATE,
+                preserveFilters: false,
+              }}
+            >
               {({ isGuest, requestSignIn, promptId, Prompt }) =>
                 isGuest ? (
                   <div className="flex flex-col items-start gap-1">
                     <button
                       type="button"
                       className={guestNavClasses}
-                      onClick={requestSignIn}
+                      onClick={() => requestSignIn()}
                       aria-describedby={promptId}
                     >
                       <Plus className="w-5 h-5" aria-hidden="true" />
@@ -85,7 +91,7 @@ export function Header() {
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={requestSignIn}
+                      onClick={() => requestSignIn()}
                       aria-describedby={promptId}
                       aria-label="Sign in"
                     >

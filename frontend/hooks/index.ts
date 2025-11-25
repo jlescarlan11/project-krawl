@@ -31,3 +31,4 @@ export type {
   UseGuestModeReturn,
   GuestSignInOptions,
 } from "./useGuestMode";
+export { useGuestContextSync } from "./useGuestContextSync";

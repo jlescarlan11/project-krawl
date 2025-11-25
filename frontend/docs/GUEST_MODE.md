@@ -10,28 +10,38 @@ TASK-048 introduces a first-class guest experience so users can explore the map,
 
 ### Utilities (`frontend/lib/guest-mode.ts`)
 
-- `GuestFeatureContext` – typed list of protected features (`"create"`, `"vouch"`, `"rate"`, `"comment"`, `"download"`, `"krawl-mode"`, `"settings"`, `"profile"`).
-- `storeGuestContext` / `retrieveGuestContext` – persist filters, scroll position, and optional `redirectTo` destination in `sessionStorage` before redirecting to `/auth/sign-in`.
-- `getSignInMessage` – standardized copy for each feature (“Sign in to create Gems and Krawls”, “Sign in to vouch for this Gem”, etc.).
+- `GuestFeatureContext` / `GuestUpgradeIntent` – typed list of protected features + passive intents (`"map"`, `"search"`, `"onboarding"`).
+- `GuestUpgradeContext` – versioned (v2) snapshot persisted in `sessionStorage` with TTL (30 minutes) capturing route, scroll, search filters, map viewport, and optional redirect overrides.
+- `storeGuestContext` / `retrieveGuestContext` – persist and restore upgrade state with automatic size guarding and legacy shape conversion.
+- `persistGuestStateForRestore` / `consumeGuestStateForRestore` – allow downstream pages (map/search) to hydrate filters and viewport immediately after sign-in.
+- `queueGuestUpgradeSuccess` / `consumeGuestUpgradeSuccess` – enqueue toast payloads so the post-redirect page can display contextual success messaging.
+- `getSignInMessage` / `getUpgradeSuccessMessage` – standardized copy for prompts and success banners.
 - LocalStorage helpers (`getGuestPreferences`, `setGuestPreference`) for banner dismissal and future guest preferences.
 
-### Hook (`frontend/hooks/useGuestMode.ts`)
+### Hooks
+
+#### `useGuestMode` (`frontend/hooks/useGuestMode.ts`)
 
 ```tsx
 const { isGuest, navigateToSignIn, handleProtectedAction } = useGuestMode();
 ```
 
 - `navigateToSignIn(context, options)` – stores context and routes to `/auth/sign-in`. `options.redirectTo` lets CTAs return users to `/gems/create`, etc.
+- `contextData` option accepts map/search payloads so feature-specific CTAs can supply richer snapshots (e.g., highlighted Gem IDs, filter chips).
 - `handleProtectedAction(action, context)` – executes `action` immediately if authenticated, or triggers the sign-in flow for guests.
 - `showSignInPrompt(context, options)` – low-level helper used by `SignInPrompt`.
 
-### UI Components
+#### `useGuestContextSync` (`frontend/hooks/useGuestContextSync.ts`)
 
-- **`SignInPrompt`** (`components/auth/SignInPrompt.tsx`): button/banner/inline/tooltip variants that call `navigateToSignIn`.
+- Lightweight hook for pages like Map/Search to push live state (filters, viewport, selections) into the guest context while the user browses.
+- Accepts an `intent`, a `getContext` callback, and a dependency array so the snapshot stays current without duplicate code.
+
+- **`SignInPrompt`** (`components/auth/SignInPrompt.tsx`): button/banner/inline/tooltip variants that call `navigateToSignIn`. Accepts `contextData` for CTAs that already know the desired redirect or payload.
 - **`ProtectedActionGate`** (`components/guest/ProtectedActionGate.tsx`): render-prop helper that short-circuits protected CTAs for guests and wires `aria-describedby` tooltips automatically.
 - **`ProtectedFeatureBadge`** (`components/guest/ProtectedFeatureBadge.tsx`): pill or banner badge that communicates “Sign in to unlock” messaging.
 - **`GuestModeBanner`** (`components/auth/GuestModeBanner.tsx`): dismissible top-of-page banner rendered by `NavigationWrapper`.
-- Navigation components (Header, MobileMenu, BottomNav) now integrate these helpers so every guest CTA is consistent.
+- **`GuestUpgradeSuccessToast`** (`components/auth/GuestUpgradeSuccessToast.tsx`): listens for stored success payloads after sign-in and fires a contextual toast once.
+- Navigation components (Header, MobileMenu, BottomNav) now integrate these helpers so every guest CTA is consistent and routes back to the right destination (`redirectTo` when needed).
 
 ---
 
@@ -78,7 +88,7 @@ import { ProtectedActionGate, ProtectedFeatureBadge } from "@/components/guest";
       <div className="space-y-2">
         <button
           type="button"
-          onClick={requestSignIn}
+          onClick={() => requestSignIn()}
           aria-describedby={promptId}
           className="btn btn-primary w-full"
         >

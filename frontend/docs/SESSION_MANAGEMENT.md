@@ -32,11 +32,12 @@ Sessions are stored in HTTP-only cookies managed by NextAuth.js:
 
 ### Guest Mode Context Preservation
 
-Guest users may browse anonymously, then decide to sign in. To make that transition seamless we persist lightweight context in `sessionStorage` via `frontend/lib/guest-mode.ts`:
+Guest users may browse anonymously, then decide to sign in. To make that transition seamless we persist a versioned context in `sessionStorage` via `frontend/lib/guest-mode.ts`:
 
-- **Stored fields:** current query parameters (filters), scroll position, and an optional `redirectTo` target (e.g., `/gems/create` when tapping “Sign In to Create”).
-- **Writers:** `useGuestMode` / `SignInPrompt` call `storeGuestContext` before navigating to `/auth/sign-in`.
-- **Readers:** `app/auth/sign-in/page.tsx` and `app/auth/callback/page.tsx` call `retrieveGuestContext`, restore filters + scroll (when appropriate), or honor the explicit redirect path.
+- **Stored fields:** route snapshot (path, query, hash), scroll position, optional redirect override, search filters, and map viewport/selection data. The payload is capped at 4 KB and expires after 30 minutes.
+- **Writers:** `useGuestMode`, `SignInPrompt`, and `useGuestContextSync` call `storeGuestContext` (or merge) before navigating to `/auth/sign-in`.
+- **Readers:** `app/auth/sign-in/page.tsx` handles already-authenticated visitors, while `app/auth/callback/page.tsx` restores context, queues a success toast, and rehydrates page-level state via `persistGuestStateForRestore`.
+- **Toast feedback:** `queueGuestUpgradeSuccess` stores the upgrade intent so `GuestUpgradeSuccessToast` can fire once the user lands on the destination page.
 - **Scope:** Per-tab (sessionStorage) so multiple guest sessions remain independent; context is cleared immediately after use.
 
 ### Session Lifecycle
