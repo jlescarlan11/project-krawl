@@ -24,3 +24,10 @@ export { useSessionRefresh } from "./useSessionRefresh";
 
 // Service worker hooks
 export { useServiceWorkerUpdates } from "./useServiceWorkerUpdates";
+
+// Guest mode hooks
+export { useGuestMode } from "./useGuestMode";
+export type {
+  UseGuestModeReturn,
+  GuestSignInOptions,
+} from "./useGuestMode";

@@ -7,6 +7,7 @@ import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
 import { Button } from "@/components";
 import { cn } from "@/lib/utils";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 /**
  * Header component
@@ -17,6 +18,14 @@ import { cn } from "@/lib/utils";
 export function Header() {
   const isAuthenticated = useIsAuthenticated();
   const user = useAuthUser();
+  const { navigateToSignIn } = useGuestMode();
+
+  const guestNavClasses = cn(
+    "inline-flex items-center gap-2 px-4 py-2 rounded-lg",
+    "text-base font-medium transition-colors",
+    "focus:outline-2 focus:outline-accent-orange focus:outline-offset-2",
+    "text-text-primary hover:bg-light-green/10 hover:text-primary-green"
+  );
 
   return (
     <header
@@ -42,8 +51,23 @@ export function Header() {
             <NavLink href={ROUTES.MAP} label="Map" icon={Map} />
             <NavLink href={ROUTES.SEARCH} label="Search" icon={Search} />
 
-            {isAuthenticated && (
+            {isAuthenticated ? (
               <NavLink href={ROUTES.GEM_CREATE} label="Create" icon={Plus} />
+            ) : (
+              <button
+                type="button"
+                className={guestNavClasses}
+                onClick={() =>
+                  navigateToSignIn("create", {
+                    redirectTo: ROUTES.GEM_CREATE,
+                    preserveFilters: false,
+                  })
+                }
+                aria-label="Sign in to create"
+              >
+                <Plus className="w-5 h-5" aria-hidden="true" />
+                <span>Create</span>
+              </button>
             )}
           </div>
 
@@ -66,11 +90,19 @@ export function Header() {
                 </Link>
               </>
             ) : (
-              <Link href={ROUTES.SIGN_IN}>
-                <Button variant="primary" size="sm">
-                  Sign In
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() =>
+                  navigateToSignIn(undefined, {
+                    preserveFilters: true,
+                    preserveScroll: false,
+                  })
+                }
+                aria-label="Sign in"
+              >
+                Sign In
+              </Button>
             )}
           </div>
         </div>

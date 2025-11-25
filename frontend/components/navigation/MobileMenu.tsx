@@ -9,7 +9,9 @@ import { useUIStore } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
 import { Button } from "@/components";
+import { SignInPrompt } from "@/components/auth";
 import { cn } from "@/lib/utils";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 /**
  * MobileMenu component
@@ -22,6 +24,7 @@ export function MobileMenu() {
   const isAuthenticated = useIsAuthenticated();
   const user = useAuthUser();
   const { sidebars, closeSidebar } = useUIStore();
+  const { navigateToSignIn } = useGuestMode();
   const isOpen = sidebars.left;
 
   // Close menu on route change
@@ -106,23 +109,31 @@ export function MobileMenu() {
                 onClick={() => closeSidebar("left")}
               />
 
-              {isAuthenticated && (
-                <>
-                  <div className="border-t border-border-default my-2 pt-2">
-                    <NavLink
-                      href={ROUTES.GEM_CREATE}
-                      label="Create Gem"
-                      icon={Plus}
-                      onClick={() => closeSidebar("left")}
-                    />
-                    <NavLink
-                      href={ROUTES.KRAWL_CREATE}
-                      label="Create Krawl"
-                      icon={Plus}
-                      onClick={() => closeSidebar("left")}
-                    />
-                  </div>
-                </>
+              {isAuthenticated ? (
+                <div className="border-t border-border-default my-2 pt-2">
+                  <NavLink
+                    href={ROUTES.GEM_CREATE}
+                    label="Create Gem"
+                    icon={Plus}
+                    onClick={() => closeSidebar("left")}
+                  />
+                  <NavLink
+                    href={ROUTES.KRAWL_CREATE}
+                    label="Create Krawl"
+                    icon={Plus}
+                    onClick={() => closeSidebar("left")}
+                  />
+                </div>
+              ) : (
+                <div className="border-t border-border-default my-4 pt-4">
+                  <SignInPrompt
+                    context="create"
+                    variant="inline"
+                    fullWidth
+                    returnUrl={ROUTES.GEM_CREATE}
+                    onBeforeNavigate={() => closeSidebar("left")}
+                  />
+                </div>
               )}
             </div>
           </nav>
@@ -149,15 +160,16 @@ export function MobileMenu() {
                 </Link>
               </div>
             ) : (
-              <Link href={ROUTES.SIGN_IN}>
-                <Button
-                  variant="primary"
-                  fullWidth
-                  onClick={() => closeSidebar("left")}
-                >
-                  Sign In
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => {
+                  closeSidebar("left");
+                  navigateToSignIn();
+                }}
+              >
+                Sign In
+              </Button>
             )}
           </div>
         </div>

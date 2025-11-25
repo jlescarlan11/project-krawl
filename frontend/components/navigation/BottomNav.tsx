@@ -7,6 +7,7 @@ import { useIsAuthenticated } from "@/stores";
 import { useUIStore } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 /**
  * BottomNav component
@@ -18,6 +19,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const isAuthenticated = useIsAuthenticated();
   const { openSidebar } = useUIStore();
+  const { navigateToSignIn } = useGuestMode();
 
   const navItems = [
     {
@@ -69,7 +71,7 @@ export function BottomNav() {
         })}
 
         {/* Create FAB (if authenticated) */}
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <Link
             href={ROUTES.GEM_CREATE}
             className={cn(
@@ -87,6 +89,26 @@ export function BottomNav() {
           >
             <Plus className="w-6 h-6" aria-hidden="true" />
           </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() =>
+              navigateToSignIn("create", {
+                redirectTo: ROUTES.GEM_CREATE,
+                preserveFilters: false,
+              })
+            }
+            className={cn(
+              "flex flex-col items-center justify-center",
+              "w-14 h-14 rounded-full",
+              "bg-primary-green text-white",
+              "shadow-elevation-2 hover:shadow-elevation-3",
+              "transition-all"
+            )}
+            aria-label="Sign in to create"
+          >
+            <Plus className="w-6 h-6" aria-hidden="true" />
+          </button>
         )}
 
         {/* Profile / Menu */}

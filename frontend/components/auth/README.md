@@ -173,6 +173,64 @@ function SignInPage() {
 
 ---
 
+### SignInPrompt
+
+Context-aware prompt that guides guests to sign in before using protected features.
+
+**Location:** `components/auth/SignInPrompt.tsx`
+
+**Variants:** `button` (default), `banner`, `inline`, `tooltip`
+
+**Usage:**
+```tsx
+import { SignInPrompt } from "@/components/auth";
+
+// Inline prompt below a protected button
+{isGuest ? (
+  <SignInPrompt context="vouch" variant="inline" />
+) : (
+  <VouchButton />
+)}
+```
+
+**Props (additions):**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `context` | `GuestFeatureContext` | **required** | Feature being protected (e.g., `"create"`, `"vouch"`) |
+| `variant?` | `"button" \| "banner" \| "inline" \| "tooltip"` | `"button"` | Visual style |
+| `returnUrl?` | `string` | current route | Override destination after sign-in (e.g., `/gems/create`) |
+| `fullWidth?` | `boolean` | `false` | Expand button to container width (inline/button variants) |
+| `onBeforeNavigate?` | `() => void` | `undefined` | Callback to run (e.g., close drawers) before redirect |
+
+**Features:**
+- Preserves filters/scroll when `returnUrl` not provided
+- Supports CTA-specific redirects (create Gem/Krawl)
+- Provides consistent messaging via `GuestFeatureContext`
+
+### GuestModeBanner
+
+Dismissible banner that reminds users they are browsing as guests.
+
+**Location:** `components/auth/GuestModeBanner.tsx`
+
+**Usage:**
+```tsx
+import { GuestModeBanner } from "@/components/auth";
+
+// Already rendered in NavigationWrapper, but can be embedded elsewhere if needed.
+<GuestModeBanner />
+```
+
+**Features:**
+- Automatically displayed for unauthenticated users
+- Stores dismissal preference in `localStorage`
+- Includes primary "Sign In" CTA wired through `useGuestMode`
+
+> **Tip:** Use the `useGuestMode` hook from `@/hooks` to gate any new protected feature and surface `SignInPrompt` on demand.
+
+---
+
 ## Error Handling Integration
 
 The authentication components integrate with the error handling system:
@@ -207,12 +265,19 @@ The authentication components integrate with the error handling system:
 All authentication components are exported from the main components index:
 
 ```tsx
-import { AuthErrorDisplay, GoogleSignInButton } from "@/components/auth";
+import {
+  AuthErrorDisplay,
+  GoogleSignInButton,
+  SignInPrompt,
+  GuestModeBanner,
+} from "@/components/auth";
 ```
 
 Components are used in:
 - `/auth/sign-in` - Sign-in page
 - `/auth/callback` - OAuth callback page
+- Navigation components (Header, MobileMenu, BottomNav) via `SignInPrompt`
+- Root layout (`NavigationWrapper`) via `GuestModeBanner`
 - Other authentication-related pages
 
 ---
@@ -265,4 +330,5 @@ All authentication components follow WCAG 2.1 Level AA guidelines:
 
 **Last Updated:** 2025-01-27  
 **Status:** ✅ **Current**
+
 

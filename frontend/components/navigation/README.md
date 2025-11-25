@@ -248,6 +248,18 @@ Navigation state is managed using Zustand stores:
   const { isAuthenticated, user } = useAuthStore();
   ```
 
+### Guest Mode Integration
+
+TASK-048 introduced guest-aware CTAs so the main navigation can guide unauthenticated users back to their intended destination after sign-in.
+
+- **`useGuestMode` hook (`@/hooks`):** Provides `navigateToSignIn`, `showSignInPrompt`, and `handleProtectedAction`.
+- **Header:** When signed out, the “Create” button now invokes `navigateToSignIn("create", { redirectTo: ROUTES.GEM_CREATE })` instead of navigating directly.
+- **MobileMenu:** Replaces protected links with an inline `<SignInPrompt context="create" />` and passes `onBeforeNavigate` to close the drawer before redirecting.
+- **BottomNav FAB:** Uses the same hook to launch the create flow after authentication.
+- **GuestModeBanner:** Rendered via `NavigationWrapper` to keep users aware when browsing as guests; includes a primary sign-in CTA.
+
+When adding new protected navigation entries, wrap them with `useGuestMode` or `SignInPrompt` so guests get consistent messaging and state preservation.
+
 ## Accessibility
 
 All navigation components follow WCAG 2.1 Level AA standards:

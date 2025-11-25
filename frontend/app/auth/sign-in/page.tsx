@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
 import { getReturnUrl } from "@/lib/route-utils";
+import { retrieveGuestContext } from "@/lib/guest-mode";
 import {
   detectPopupBlocker,
   testCookieFunctionality,
@@ -208,7 +209,41 @@ function SignInContent() {
   // Redirect if user is already authenticated
   useEffect(() => {
     if (status === "authenticated" && session) {
-      router.push(returnUrl);
+      const context = retrieveGuestContext();
+      const hasRedirectOverride = !!context?.redirectTo;
+      const baseDestination = context?.redirectTo ?? returnUrl;
+
+      if (
+        context?.filters &&
+        Object.keys(context.filters).length > 0 &&
+        !hasRedirectOverride
+      ) {
+        const params = new URLSearchParams();
+        Object.entries(context.filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            params.set(key, String(value));
+          }
+        });
+        const destinationWithFilters = params.toString()
+          ? `${baseDestination}?${params.toString()}`
+          : baseDestination;
+        router.push(destinationWithFilters);
+
+        if (context.scroll) {
+          setTimeout(() => {
+            window.scrollTo(0, context.scroll || 0);
+          }, 100);
+        }
+        return;
+      }
+
+      router.push(baseDestination);
+
+      if (context?.scroll && !hasRedirectOverride) {
+        setTimeout(() => {
+          window.scrollTo(0, context.scroll || 0);
+        }, 100);
+      }
     }
   }, [status, session, returnUrl, router]);
 

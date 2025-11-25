@@ -30,6 +30,15 @@ Sessions are stored in HTTP-only cookies managed by NextAuth.js:
 - **Security:** HttpOnly flag prevents JavaScript access (XSS protection)
 - **Environment-Based:** Secure flag only in production (requires HTTPS)
 
+### Guest Mode Context Preservation
+
+Guest users may browse anonymously, then decide to sign in. To make that transition seamless we persist lightweight context in `sessionStorage` via `frontend/lib/guest-mode.ts`:
+
+- **Stored fields:** current query parameters (filters), scroll position, and an optional `redirectTo` target (e.g., `/gems/create` when tapping “Sign In to Create”).
+- **Writers:** `useGuestMode` / `SignInPrompt` call `storeGuestContext` before navigating to `/auth/sign-in`.
+- **Readers:** `app/auth/sign-in/page.tsx` and `app/auth/callback/page.tsx` call `retrieveGuestContext`, restore filters + scroll (when appropriate), or honor the explicit redirect path.
+- **Scope:** Per-tab (sessionStorage) so multiple guest sessions remain independent; context is cleared immediately after use.
+
 ### Session Lifecycle
 
 1. **Creation** - Session created on successful Google OAuth sign-in
@@ -386,5 +395,6 @@ if (trigger === 'update') {
 
 **Last Updated:** 2025-01-27  
 **Status:** ✅ Current and well-maintained
+
 
 
