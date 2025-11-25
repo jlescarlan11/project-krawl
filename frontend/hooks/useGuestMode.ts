@@ -9,9 +9,13 @@ import { useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useIsAuthenticated } from "@/stores";
 import {
+  getCurrentRouteSnapshot,
   getSignInReturnUrl,
   storeGuestContext,
   type GuestFeatureContext,
+  type GuestContextInput,
+  type GuestRouteSnapshot,
+  type GuestSearchState,
 } from "@/lib/guest-mode";
 import { ROUTES } from "@/lib/routes";
 
@@ -33,6 +37,10 @@ export interface GuestSignInOptions {
    * Defaults to true.
    */
   preserveScroll?: boolean;
+  /**
+   * Additional context data (map state, selection, etc.).
+   */
+  contextData?: Partial<Omit<GuestContextInput, "intent">>;
 }
 
 export interface UseGuestModeReturn {
@@ -99,18 +107,24 @@ export function useGuestMode(): UseGuestModeReturn {
       const shouldPreserveScroll = options?.preserveScroll ?? true;
 
       if (typeof window !== "undefined") {
-        const filters = shouldPreserveFilters
-          ? Object.fromEntries(new URLSearchParams(window.location.search))
-          : undefined;
-        const scroll = shouldPreserveScroll ? window.scrollY : undefined;
+        const routeSnapshot = buildRouteSnapshot({
+          preserveFilters: shouldPreserveFilters,
+          override: options?.contextData?.route,
+        });
 
-        if (filters || scroll !== undefined || options?.redirectTo) {
-          storeGuestContext({
-            filters,
-            scroll,
-            redirectTo: options?.redirectTo,
-          });
-        }
+        const searchState =
+          options?.contextData?.searchState ??
+          (shouldPreserveFilters ? buildSearchStateFromParams() : undefined);
+
+        storeGuestContext({
+          intent: context,
+          route: routeSnapshot,
+          scrollY: options?.contextData?.scrollY ?? (shouldPreserveScroll ? window.scrollY : undefined),
+          searchState,
+          mapView: options?.contextData?.mapView,
+          selection: options?.contextData?.selection,
+          redirectOverride: options?.redirectTo,
+        });
       }
 
       const returnUrl =
@@ -154,6 +168,58 @@ export function useGuestMode(): UseGuestModeReturn {
     showSignInPrompt,
     handleProtectedAction,
     navigateToSignIn,
+  };
+}
+
+interface RouteSnapshotOptions {
+  preserveFilters: boolean;
+  override?: GuestRouteSnapshot;
+}
+
+function buildRouteSnapshot({
+  preserveFilters,
+  override,
+}: RouteSnapshotOptions): GuestRouteSnapshot {
+  if (override) {
+    return override;
+  }
+
+  const snapshot = getCurrentRouteSnapshot();
+  if (!preserveFilters) {
+    return {
+      pathname: snapshot.pathname,
+      hash: snapshot.hash,
+    };
+  }
+
+  return snapshot;
+}
+
+function buildSearchStateFromParams(): GuestSearchState | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (!params.toString()) {
+    return undefined;
+  }
+
+  const filters: Record<string, string | string[]> = {};
+  params.forEach((value, key) => {
+    const existing = filters[key];
+    if (Array.isArray(existing)) {
+      existing.push(value);
+    } else if (typeof existing === "string") {
+      filters[key] = [existing, value];
+    } else {
+      filters[key] = value;
+    }
+  });
+
+  return {
+    query: params.get("q") ?? undefined,
+    filters,
   };
 }
 

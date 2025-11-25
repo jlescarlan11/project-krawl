@@ -10,7 +10,15 @@ import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
 import { getReturnUrl } from "@/lib/route-utils";
 import { getOnboardingState } from "@/lib/onboarding/storage";
-import { retrieveGuestContext } from "@/lib/guest-mode";
+import {
+  retrieveGuestContext,
+  persistGuestStateForRestore,
+  queueGuestUpgradeSuccess,
+  incrementGuestContextAttempts,
+  buildUrlFromRouteSnapshot,
+  type GuestUpgradeContext,
+  type GuestUpgradeIntent,
+} from "@/lib/guest-mode";
 
 /**
  * OAuth Callback Page Content
@@ -28,6 +36,7 @@ function AuthCallbackContent() {
 
   // Validate returnUrl to prevent open redirect vulnerabilities
   const returnUrl = getReturnUrl(searchParams);
+  const intentParam = searchParams.get("context") as GuestUpgradeIntent | null;
 
   useEffect(() => {
     // Wait for session to load
@@ -71,48 +80,37 @@ function AuthCallbackContent() {
         });
       }
 
-      // Retrieve guest context for state preservation
       const guestContext = retrieveGuestContext();
-      const hasRedirectOverride = !!guestContext?.redirectTo;
-      
-      // Redirect to onboarding if:
-      // 1. User is new (isNewUser === true), OR
-      // 2. Onboarding hasn't been completed yet (for existing users who haven't seen it)
+      const finalIntent = guestContext?.intent ?? intentParam ?? "profile";
+
+      // Redirect to onboarding if new or not completed
       if (isNewUser || !hasCompletedOnboarding) {
         if (process.env.NODE_ENV === "development") {
           console.log("[AuthCallback] Redirecting to onboarding. isNewUser:", isNewUser, "hasCompletedOnboarding:", hasCompletedOnboarding);
         }
         router.push(ROUTES.ONBOARDING);
       } else {
-        // Apply guest context if available
-        let finalUrl = guestContext?.redirectTo ?? returnUrl;
-        if (
-          guestContext?.filters &&
-          Object.keys(guestContext.filters).length > 0 &&
-          !hasRedirectOverride
-        ) {
-          const params = new URLSearchParams();
-          Object.entries(guestContext.filters).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-              params.set(key, String(value));
-            }
-          });
-          finalUrl = params.toString()
-            ? `${finalUrl}?${params.toString()}`
-            : finalUrl;
+        const finalUrl = resolveFinalDestination(guestContext, returnUrl);
+
+        if (guestContext) {
+          persistGuestStateForRestore(guestContext);
         }
-        
+        queueGuestUpgradeSuccess(finalIntent);
+
         if (process.env.NODE_ENV === "development") {
           console.log("[AuthCallback] Redirecting existing user to:", finalUrl);
         }
-        
+
         router.push(finalUrl);
-        
-        // Restore scroll position after navigation
-        if (guestContext?.scroll && !hasRedirectOverride) {
-          setTimeout(() => {
-            window.scrollTo(0, guestContext.scroll || 0);
-          }, 100);
+
+        if (
+          guestContext &&
+          typeof guestContext.scrollY === "number" &&
+          !guestContext.redirectOverride
+        ) {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, guestContext.scrollY || 0);
+          });
         }
       }
     } else if (status === "unauthenticated") {
@@ -121,6 +119,7 @@ function AuthCallbackContent() {
       
       // Mark as processed to prevent infinite loop
       hasProcessed.current = true;
+      incrementGuestContextAttempts();
       
       // Check for specific error in URL
       const errorParam = searchParams.get("error");
@@ -140,13 +139,15 @@ function AuthCallbackContent() {
       });
 
       // Redirect with specific error code
-      router.push(
-        `${ROUTES.SIGN_IN}?error=${encodeURIComponent(errorCode)}&returnUrl=${encodeURIComponent(returnUrl)}`
-      );
+      const signInUrl = new URL(ROUTES.SIGN_IN, window.location.origin);
+      signInUrl.searchParams.set("error", errorCode);
+      signInUrl.searchParams.set("returnUrl", returnUrl);
+      if (intentParam) {
+        signInUrl.searchParams.set("context", intentParam);
+      }
+      router.push(signInUrl.toString());
     }
-    // Only depend on status - session, router, returnUrl, and authStore are stable references
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, session, authStore, returnUrl, router, intentParam]);
 
   // Show different message for new users
   const isNewUser = status === "authenticated" && session ? session.isNewUser : false;
@@ -189,4 +190,23 @@ export default function AuthCallbackPage() {
       <AuthCallbackContent />
     </Suspense>
   );
+}
+
+function resolveFinalDestination(
+  context: GuestUpgradeContext | null,
+  fallback: string
+): string {
+  if (!context) {
+    return fallback;
+  }
+
+  if (context.redirectOverride) {
+    return context.redirectOverride;
+  }
+
+  if (context.route) {
+    return buildUrlFromRouteSnapshot(context.route);
+  }
+
+  return fallback;
 }

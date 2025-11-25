@@ -10,11 +10,14 @@ export type ProtectedActionGateRenderProps = {
   /**
    * Call this to open the sign-in flow with preserved context.
    */
-  requestSignIn: () => void;
+  requestSignIn: (options?: GuestSignInOptions) => void;
   /**
    * Wrap a callback that should only execute for authenticated users.
    */
-  handleProtectedAction: (action: () => void) => () => void;
+  handleProtectedAction: (
+    action: () => void,
+    options?: GuestSignInOptions
+  ) => () => void;
   /**
    * ID to wire to `aria-describedby` for disabled controls.
    */
@@ -62,15 +65,15 @@ export function ProtectedActionGate({
   const promptId = useId();
   const promptMessage = message ?? getSignInMessage(context);
 
-  const requestSignIn = () => {
-    showSignInPrompt(context, promptOptions);
+  const requestSignIn = (options?: GuestSignInOptions) => {
+    showSignInPrompt(context, { ...promptOptions, ...options });
   };
 
   const handleProtectedAction =
-    (action: () => void) =>
+    (action: () => void, options?: GuestSignInOptions) =>
     () => {
       if (isGuest) {
-        requestSignIn();
+        requestSignIn(options);
         return;
       }
 

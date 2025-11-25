@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
 import { getReturnUrl } from "@/lib/route-utils";
-import { retrieveGuestContext } from "@/lib/guest-mode";
+import {
+  retrieveGuestContext,
+  buildUrlFromRouteSnapshot,
+  type GuestUpgradeContext,
+} from "@/lib/guest-mode";
 import {
   detectPopupBlocker,
   testCookieFunctionality,
@@ -91,6 +95,8 @@ function SignInContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const intentParam = searchParams.get("context");
+
   // Get error from URL or state
   const urlError = searchParams.get("error");
   const displayError = error || urlError;
@@ -160,8 +166,15 @@ function SignInContent() {
     setIsLoading(true);
 
     try {
+      const callbackParams = new URLSearchParams({
+        returnUrl,
+      });
+      if (intentParam) {
+        callbackParams.set("context", intentParam);
+      }
+
       await signIn("google", {
-        callbackUrl: `/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
+        callbackUrl: `/auth/callback?${callbackParams.toString()}`,
       });
       // Note: signIn() redirects, so setIsLoading(false) won't be reached
     } catch (error) {
@@ -174,7 +187,7 @@ function SignInContent() {
       setError(authErrorCode);
       setIsLoading(false);
     }
-  }, [returnUrl]);
+  }, [returnUrl, intentParam]);
 
   // Retry handler
   const handleRetry = useCallback(() => {
@@ -208,43 +221,24 @@ function SignInContent() {
 
   // Redirect if user is already authenticated
   useEffect(() => {
-    if (status === "authenticated" && session) {
-      const context = retrieveGuestContext();
-      const hasRedirectOverride = !!context?.redirectTo;
-      const baseDestination = context?.redirectTo ?? returnUrl;
-
-      if (
-        context?.filters &&
-        Object.keys(context.filters).length > 0 &&
-        !hasRedirectOverride
-      ) {
-        const params = new URLSearchParams();
-        Object.entries(context.filters).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            params.set(key, String(value));
-          }
-        });
-        const destinationWithFilters = params.toString()
-          ? `${baseDestination}?${params.toString()}`
-          : baseDestination;
-        router.push(destinationWithFilters);
-
-        if (context.scroll) {
-          setTimeout(() => {
-            window.scrollTo(0, context.scroll || 0);
-          }, 100);
-        }
-        return;
-      }
-
-      router.push(baseDestination);
-
-      if (context?.scroll && !hasRedirectOverride) {
-        setTimeout(() => {
-          window.scrollTo(0, context.scroll || 0);
-        }, 100);
-      }
+    if (status !== "authenticated" || !session) {
+      return;
     }
+
+    const context = retrieveGuestContext();
+    if (context) {
+      const destination = resolveDestinationFromContext(context) ?? returnUrl;
+      router.push(destination);
+
+      if (typeof context.scrollY === "number" && !context.redirectOverride) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, context.scrollY || 0);
+        });
+      }
+      return;
+    }
+
+    router.push(returnUrl);
   }, [status, session, returnUrl, router]);
 
   const handleBack = useCallback(() => {
@@ -386,6 +380,20 @@ function SignInContent() {
       </div>
     </main>
   );
+}
+
+function resolveDestinationFromContext(
+  context: GuestUpgradeContext
+): string | null {
+  if (context.redirectOverride) {
+    return context.redirectOverride;
+  }
+
+  if (context.route) {
+    return buildUrlFromRouteSnapshot(context.route);
+  }
+
+  return null;
 }
 
 /**

@@ -76,9 +76,9 @@ export function BottomNav() {
               <div className="flex flex-col items-center gap-1">
                 <button
                   type="button"
-                  disabled
-                  onClick={requestSignIn}
+                  onClick={() => requestSignIn()}
                   aria-describedby={promptId}
+                  aria-disabled="true"
                   className={cn(
                     "flex flex-col items-center justify-center",
                     "w-14 h-14 rounded-full",
