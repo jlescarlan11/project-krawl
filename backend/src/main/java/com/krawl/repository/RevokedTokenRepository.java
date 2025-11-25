@@ -43,3 +43,5 @@ public interface RevokedTokenRepository extends JpaRepository<RevokedToken, UUID
     long deleteByExpiresAtBefore(Instant expiresAt);
 }
 
+
+

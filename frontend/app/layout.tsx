@@ -92,7 +92,7 @@ export default function RootLayout({
             <ToastProvider>
               <div className="flex min-h-screen flex-col">
                 <NavigationWrapper />
-                <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+                <main className="flex-1">{children}</main>
                 <NavigationFooter />
               </div>
               <ServiceWorkerUpdateToast />

@@ -1,6 +1,6 @@
 # Accessibility Guidelines - WCAG 2.1 Level AA
 
-**Last Updated:** 2025-11-17  
+**Last Updated:** 2025-11-23  
 **Version:** 1.0.0  
 **Standard:** WCAG 2.1 Level AA
 
@@ -1323,7 +1323,7 @@ import { Loader2 } from 'lucide-react'
 
 ---
 
-**Last Updated:** 2025-11-17  
+**Last Updated:** 2025-11-23  
 **Version:** 1.0.0  
 **Maintained By:** Krawl Development Team
 

@@ -4,8 +4,8 @@ spring:
   
   # Database Configuration (Aiven PostgreSQL)
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?sslmode=${DB_SSL_MODE:require}
-    username: ${DB_USERNAME:postgres}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?sslmode=${DB_SSL_MODE:disable}
+    username: ${DB_USERNAME:}
     password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     
@@ -22,17 +22,24 @@ spring:
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate  # Use 'validate' in production, 'update' for development
+      ddl-auto: validate  # Use 'validate' in production, 'update' for development. Flyway handles schema changes.
     show-sql: false  # Set to true for debugging SQL queries
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # dialect: org.hibernate.dialect.PostgreSQLDialect  # Removed - Hibernate auto-detects PostgreSQL
         format_sql: true
         use_sql_comments: true
         jdbc:
           batch_size: 20
         order_inserts: true
         order_updates: true
+  
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true  # Creates flyway_schema_history table if it doesn't exist
+    validate-on-migrate: true
 
 # Server Configuration
 server:

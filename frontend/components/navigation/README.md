@@ -250,15 +250,13 @@ Navigation state is managed using Zustand stores:
 
 ### Guest Mode Integration
 
-TASK-048 introduced guest-aware CTAs so the main navigation can guide unauthenticated users back to their intended destination after sign-in.
+TASK-049 builds on TASK-048 by centralizing guest indicators:
 
-- **`useGuestMode` hook (`@/hooks`):** Provides `navigateToSignIn`, `showSignInPrompt`, and `handleProtectedAction`.
-- **Header:** When signed out, the “Create” button now invokes `navigateToSignIn("create", { redirectTo: ROUTES.GEM_CREATE })` instead of navigating directly.
-- **MobileMenu:** Replaces protected links with an inline `<SignInPrompt context="create" />` and passes `onBeforeNavigate` to close the drawer before redirecting.
-- **BottomNav FAB:** Uses the same hook to launch the create flow after authentication.
-- **GuestModeBanner:** Rendered via `NavigationWrapper` to keep users aware when browsing as guests; includes a primary sign-in CTA.
+- **`ProtectedActionGate` (`@/components/guest`):** Wraps every protected CTA (Header create, MobileMenu create links, BottomNav FAB, profile/settings entries) so guests see disabled controls with accessible tooltips plus consistent navigation to `/auth/sign-in`.
+- **`ProtectedFeatureBadge`:** Adds “Sign in to unlock” badges/banners near CTA clusters to explain benefits without spamming modals.
+- **`GuestModeBanner`:** Still rendered globally via `NavigationWrapper`. The wrapper now accepts `showGuestBanner` if a page wants to opt-out temporarily.
 
-When adding new protected navigation entries, wrap them with `useGuestMode` or `SignInPrompt` so guests get consistent messaging and state preservation.
+When adding new protected navigation entries, wrap them with `ProtectedActionGate` and, when space allows, include a `ProtectedFeatureBadge` so guests immediately understand why the feature is locked.
 
 ## Accessibility
 

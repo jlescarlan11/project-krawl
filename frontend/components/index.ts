@@ -50,3 +50,13 @@ export {
   type SectionProps,
   type PageLayoutProps,
 } from "./layout";
+
+// Guest helpers
+export {
+  ProtectedActionGate,
+  type ProtectedActionGateProps,
+  type ProtectedActionGateRenderProps,
+  ProtectedFeatureBadge,
+  type ProtectedFeatureBadgeProps,
+  type ProtectedFeatureBadgeVariant,
+} from "./guest";

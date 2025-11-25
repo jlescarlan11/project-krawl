@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import { LogIn, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,12 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 /**
  * Sign-in prompt variants
  */
-export type SignInPromptVariant = "button" | "banner" | "inline" | "tooltip";
+export type SignInPromptVariant =
+  | "button"
+  | "banner"
+  | "inline"
+  | "tooltip"
+  | "badge";
 
 /**
  * SignInPrompt component props
@@ -51,6 +57,10 @@ export interface SignInPromptProps {
    * Callback executed before navigating to sign-in
    */
   onBeforeNavigate?: () => void;
+  /**
+   * Optional id for associating tooltip content with disabled elements
+   */
+  id?: string;
 }
 
 /**
@@ -81,9 +91,12 @@ export function SignInPrompt({
   size = "md",
   fullWidth = false,
   onBeforeNavigate,
+  id,
 }: SignInPromptProps) {
   const { navigateToSignIn } = useGuestMode();
   const contextMessage = message || getSignInMessage(context);
+  const generatedId = useId();
+  const promptId = id ?? generatedId;
 
   const handleSignIn = () => {
     // Store current context for state preservation
@@ -99,6 +112,7 @@ export function SignInPrompt({
   if (variant === "button") {
     return (
       <Button
+        id={promptId}
         variant="primary"
         size={size}
         onClick={handleSignIn}
@@ -116,6 +130,7 @@ export function SignInPrompt({
   if (variant === "banner") {
     return (
       <div
+        id={promptId}
         className={cn(
           "rounded-lg border-2 border-primary-green bg-light-green/10 p-4",
           className
@@ -152,7 +167,7 @@ export function SignInPrompt({
           {contextMessage}
         </p>
         <Button
-        <Button
+          id={promptId}
           variant="primary"
           size={size}
           onClick={handleSignIn}
@@ -166,11 +181,35 @@ export function SignInPrompt({
     );
   }
 
+  if (variant === "badge") {
+    return (
+      <span
+        id={promptId}
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border border-primary-green/50",
+          "bg-primary-green/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+          "text-primary-green",
+          className
+        )}
+        role="status"
+      >
+        {showIcon && (
+          <Lock className="w-3.5 h-3.5 text-primary-green" aria-hidden="true" />
+        )}
+        <span>{contextMessage}</span>
+      </span>
+    );
+  }
+
   // Tooltip variant (for disabled buttons)
   return (
-    <div className={cn("text-xs text-[var(--color-text-secondary)]", className)}>
+    <p
+      id={promptId}
+      role="note"
+      className={cn("text-xs text-[var(--color-text-secondary)]", className)}
+    >
       {contextMessage}
-    </div>
+    </p>
   );
 }
 

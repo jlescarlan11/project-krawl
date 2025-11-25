@@ -27,6 +27,9 @@ interface AuthStoreInterface {
     session: { token: string; expiresAt: string }
   ) => void;
   signOut: () => void;
+  user?: { id: string; email: string; name: string; avatar?: string } | null;
+  session?: { token: string; expiresAt: string } | null;
+  status?: string;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -217,23 +220,49 @@ export function syncSessionToZustand(
   authStore: AuthStoreInterface
 ): void {
   if (session?.user && session?.jwt) {
-    authStore.signIn(
-      {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        avatar: session.user.picture,
-      },
-      {
-        token: session.jwt,
-        expiresAt:
-          typeof session.expires === "string"
-            ? session.expires
-            : session.expires.toISOString(),
-      }
-    );
+    // Get current state to avoid unnecessary updates
+    const currentUser = authStore.user;
+    const currentSession = authStore.session;
+    
+    // Only update if data has actually changed
+    const newUser = {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      avatar: session.user.picture,
+    };
+    
+    const newSession = {
+      token: session.jwt,
+      expiresAt:
+        typeof session.expires === "string"
+          ? session.expires
+          : session.expires.toISOString(),
+    };
+    
+    // Check if update is needed
+    const userChanged = 
+      !currentUser ||
+      currentUser.id !== newUser.id ||
+      currentUser.email !== newUser.email ||
+      currentUser.name !== newUser.name ||
+      currentUser.avatar !== newUser.avatar;
+    
+    const sessionChanged =
+      !currentSession ||
+      currentSession.token !== newSession.token ||
+      currentSession.expiresAt !== newSession.expiresAt;
+    
+    // Only update if something changed
+    if (userChanged || sessionChanged) {
+      authStore.signIn(newUser, newSession);
+    }
   } else {
-    authStore.signOut();
+    // Only sign out if currently authenticated
+    const currentStatus = authStore.status;
+    if (currentStatus === "authenticated") {
+      authStore.signOut();
+    }
   }
 }
 

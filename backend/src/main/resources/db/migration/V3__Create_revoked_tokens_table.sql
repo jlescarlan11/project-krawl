@@ -14,3 +14,5 @@ CREATE INDEX IF NOT EXISTS idx_revoked_tokens_expires_at ON revoked_tokens(expir
 -- Add comment
 COMMENT ON TABLE revoked_tokens IS 'Stores revoked JWT tokens until expiration for blacklist checking';
 
+
+

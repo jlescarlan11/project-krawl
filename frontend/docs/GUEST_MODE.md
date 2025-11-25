@@ -28,14 +28,16 @@ const { isGuest, navigateToSignIn, handleProtectedAction } = useGuestMode();
 ### UI Components
 
 - **`SignInPrompt`** (`components/auth/SignInPrompt.tsx`): button/banner/inline/tooltip variants that call `navigateToSignIn`.
+- **`ProtectedActionGate`** (`components/guest/ProtectedActionGate.tsx`): render-prop helper that short-circuits protected CTAs for guests and wires `aria-describedby` tooltips automatically.
+- **`ProtectedFeatureBadge`** (`components/guest/ProtectedFeatureBadge.tsx`): pill or banner badge that communicates “Sign in to unlock” messaging.
 - **`GuestModeBanner`** (`components/auth/GuestModeBanner.tsx`): dismissible top-of-page banner rendered by `NavigationWrapper`.
-- Navigation components (Header, MobileMenu, BottomNav) now integrate `useGuestMode` so every guest CTA is consistent.
+- Navigation components (Header, MobileMenu, BottomNav) now integrate these helpers so every guest CTA is consistent.
 
 ---
 
 ## Integration Checklist
 
-1. **Protected CTA:** Wrap actions with `handleProtectedAction` or replace the UI with `<SignInPrompt context="...">`.
+1. **Protected CTA:** Wrap actions with `ProtectedActionGate` (preferred) or `handleProtectedAction`; render `ProtectedFeatureBadge` nearby when space allows.
 2. **Return URL:** Pass `redirectTo` when guests should land on a specific route after signing in (e.g., `ROUTES.GEM_CREATE`).
 3. **State Preservation:** Avoid serializing large objects—stick to filters, scroll, and destination paths.
 4. **Accessibility:** When using the tooltip variant, pair it with `aria-describedby` on the disabled button so screen readers get the explanation.
@@ -65,16 +67,31 @@ function VouchButton({ gemId }: { gemId: string }) {
 }
 ```
 
-### Inline Prompt
+### Inline Prompt / Badge
 
 ```tsx
-import { SignInPrompt } from "@/components/auth";
+import { ProtectedActionGate, ProtectedFeatureBadge } from "@/components/guest";
 
-{isGuest ? (
-  <SignInPrompt context="comment" variant="inline" fullWidth />
-) : (
-  <CommentEditor />
-)}
+<ProtectedActionGate context="comment">
+  {({ isGuest, requestSignIn, promptId, Prompt }) =>
+    isGuest ? (
+      <div className="space-y-2">
+        <button
+          type="button"
+          onClick={requestSignIn}
+          aria-describedby={promptId}
+          className="btn btn-primary w-full"
+        >
+          Sign in to comment
+        </button>
+        <div className="sr-only">{Prompt}</div>
+        <ProtectedFeatureBadge context="comment" />
+      </div>
+    ) : (
+      <CommentEditor />
+    )
+  }
+</ProtectedActionGate>
 ```
 
 ### CTA with Custom Redirect
@@ -103,4 +120,14 @@ const { navigateToSignIn } = useGuestMode();
 
 **Last Updated:** 2025-01-27  
 **Status:** ✅ **Guest mode implemented (TASK-048)**
+
+---
+
+## Manual QA Checklist
+
+- [ ] Visit Header (desktop) as guest: `Create` CTA shows badge + disabled tooltip, Sign In button visible in user controls.
+- [ ] Open MobileMenu as guest: create section shows badge + CTA, profile section shows sign-in button with tooltip.
+- [ ] Tap BottomNav FAB as guest: button stays disabled, explanatory text renders, tapping triggers sign-in.
+- [ ] Onboarding “Create & Share” step shows GuestActionShowcase with badges + disabled sample CTAs.
+- [ ] Dismiss guest banner and refresh – dismissal preference persists (localStorage).
 

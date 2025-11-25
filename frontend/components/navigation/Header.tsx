@@ -7,7 +7,7 @@ import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
 import { Button } from "@/components";
 import { cn } from "@/lib/utils";
-import { useGuestMode } from "@/hooks/useGuestMode";
+import { ProtectedActionGate, ProtectedFeatureBadge } from "@/components/guest";
 
 /**
  * Header component
@@ -18,7 +18,6 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 export function Header() {
   const isAuthenticated = useIsAuthenticated();
   const user = useAuthUser();
-  const { navigateToSignIn } = useGuestMode();
 
   const guestNavClasses = cn(
     "inline-flex items-center gap-2 px-4 py-2 rounded-lg",
@@ -51,59 +50,68 @@ export function Header() {
             <NavLink href={ROUTES.MAP} label="Map" icon={Map} />
             <NavLink href={ROUTES.SEARCH} label="Search" icon={Search} />
 
-            {isAuthenticated ? (
-              <NavLink href={ROUTES.GEM_CREATE} label="Create" icon={Plus} />
-            ) : (
-              <button
-                type="button"
-                className={guestNavClasses}
-                onClick={() =>
-                  navigateToSignIn("create", {
-                    redirectTo: ROUTES.GEM_CREATE,
-                    preserveFilters: false,
-                  })
-                }
-                aria-label="Sign in to create"
-              >
-                <Plus className="w-5 h-5" aria-hidden="true" />
-                <span>Create</span>
-              </button>
-            )}
+            <ProtectedActionGate context="create">
+              {({ isGuest, requestSignIn, promptId, Prompt }) =>
+                isGuest ? (
+                  <div className="flex flex-col items-start gap-1">
+                    <button
+                      type="button"
+                      className={guestNavClasses}
+                      onClick={requestSignIn}
+                      aria-describedby={promptId}
+                    >
+                      <Plus className="w-5 h-5" aria-hidden="true" />
+                      <span>Create</span>
+                    </button>
+                    {Prompt}
+                    <ProtectedFeatureBadge
+                      context="create"
+                      message="Sign in to unlock creator tools"
+                    />
+                  </div>
+                ) : (
+                  <NavLink href={ROUTES.GEM_CREATE} label="Create" icon={Plus} />
+                )
+              }
+            </ProtectedActionGate>
           </div>
 
           {/* User Menu */}
           <div className="flex items-center gap-2">
-            {isAuthenticated ? (
-              <>
-                <Link href={ROUTES.USER_PROFILE(user?.id || "")}>
-                  <Button variant="text" size="sm" icon={<User />}>
-                    {user?.name || "Profile"}
-                  </Button>
-                </Link>
-                <Link href={ROUTES.USER_SETTINGS}>
-                  <Button
-                    variant="text"
-                    size="sm"
-                    icon={<Settings />}
-                    aria-label="Settings"
-                  />
-                </Link>
-              </>
-            ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() =>
-                  navigateToSignIn(undefined, {
-                    preserveFilters: true,
-                    preserveScroll: false,
-                  })
-                }
-                aria-label="Sign in"
-              >
-                Sign In
-              </Button>
-            )}
+            <ProtectedActionGate context="profile">
+              {({ isGuest, requestSignIn, promptId, Prompt }) =>
+                isGuest ? (
+                  <div className="flex flex-col items-end gap-1">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={requestSignIn}
+                      aria-describedby={promptId}
+                      aria-label="Sign in"
+                    >
+                      Sign In
+                    </Button>
+                    <div className="w-full text-right">{Prompt}</div>
+                  </div>
+                ) : (
+                  <>
+                    <Link href={ROUTES.USER_PROFILE(user?.id || "")}>
+                      <Button variant="text" size="sm" icon={<User />}>
+                        {user?.name || "Profile"}
+                      </Button>
+                    </Link>
+                    <Link href={ROUTES.USER_SETTINGS}>
+                      <Button
+                        variant="text"
+                        size="sm"
+                        icon={<Settings />}
+                        aria-label="Settings"
+                      />
+                    </Link>
+                  </>
+                )
+              }
+            </ProtectedActionGate>
           </div>
         </div>
       </nav>

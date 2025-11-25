@@ -6,7 +6,7 @@ This document provides a centralized glossary of all terms, concepts, and techni
 
 **Purpose:** To provide clear definitions for all project-specific terms, technical concepts, and domain-specific language used in Krawl documentation.
 
-**Current Date:** November 14, 2025
+**Current Date:** November 23, 2025
 
 ---
 
@@ -17,7 +17,7 @@ This document provides a centralized glossary of all terms, concepts, and techni
 | 1.0.0 | 2025-11-14 | Development Team | Initial comprehensive glossary |
 
 **Current Version:** 1.0.0  
-**Last Updated:** 2025-11-15  
+**Last Updated:** 2025-11-23  
 **Status:** Draft
 
 ---
