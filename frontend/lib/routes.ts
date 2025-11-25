@@ -96,3 +96,17 @@ export const ROUTE_METADATA: Record<string, RouteMetadata> = {
   },
 };
 
+/**
+ * Check if a route is accessible to guests
+ */
+export function isGuestAccessibleRoute(pathname: string): boolean {
+  return !PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+/**
+ * Check if a route requires authentication
+ */
+export function requiresAuthentication(pathname: string): boolean {
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+}
+

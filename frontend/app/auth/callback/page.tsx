@@ -1,15 +1,16 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { syncSessionToZustand } from "@/lib/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
 import { getReturnUrl } from "@/lib/route-utils";
+import { getOnboardingState } from "@/lib/onboarding/storage";
+import { retrieveGuestContext } from "@/lib/guest-mode";
 
 /**
  * OAuth Callback Page Content
@@ -22,6 +23,8 @@ function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const authStore = useAuthStore();
+  const hasProcessed = useRef(false);
+  const syncedUserId = useRef<string | null>(null);
 
   // Validate returnUrl to prevent open redirect vulnerabilities
   const returnUrl = getReturnUrl(searchParams);
@@ -31,19 +34,94 @@ function AuthCallbackContent() {
     if (status === "loading") return;
 
     if (status === "authenticated" && session) {
+      // Check if we've already processed this session
+      const currentUserId = session.user?.id;
+      if (hasProcessed.current && syncedUserId.current === currentUserId) {
+        return;
+      }
+      
+      // Mark as processed to prevent infinite loop
+      hasProcessed.current = true;
+      syncedUserId.current = currentUserId || null;
+      
       // Sync session to Zustand store for backward compatibility
-      syncSessionToZustand(session, authStore);
+      // Only sync if user ID has changed to prevent unnecessary updates
+      if (authStore.user?.id !== currentUserId) {
+        syncSessionToZustand(session, authStore);
+      }
 
       // Check if user is new (from session)
-      const isNewUser = session.isNewUser || false;
+      // The isNewUser flag is only available during the initial sign-in
+      // It's stored in the JWT token and passed to the session
+      const isNewUser = session.isNewUser === true;
+      
+      // Also check if onboarding has been completed
+      // This handles cases where isNewUser flag might be lost or user hasn't completed onboarding
+      const onboardingState = getOnboardingState();
+      const hasCompletedOnboarding = !!onboardingState.completedAt;
+      
+      // Debug logging (remove in production)
+      if (process.env.NODE_ENV === "development") {
+        console.log("[AuthCallback] Session data:", {
+          userId: currentUserId,
+          isNewUser: session.isNewUser,
+          hasJwt: !!session.jwt,
+          hasCompletedOnboarding,
+          onboardingState,
+        });
+      }
 
-      // Redirect based on whether user is new
-      if (isNewUser) {
+      // Retrieve guest context for state preservation
+      const guestContext = retrieveGuestContext();
+      const hasRedirectOverride = !!guestContext?.redirectTo;
+      
+      // Redirect to onboarding if:
+      // 1. User is new (isNewUser === true), OR
+      // 2. Onboarding hasn't been completed yet (for existing users who haven't seen it)
+      if (isNewUser || !hasCompletedOnboarding) {
+        if (process.env.NODE_ENV === "development") {
+          console.log("[AuthCallback] Redirecting to onboarding. isNewUser:", isNewUser, "hasCompletedOnboarding:", hasCompletedOnboarding);
+        }
         router.push(ROUTES.ONBOARDING);
       } else {
-        router.push(returnUrl);
+        // Apply guest context if available
+        let finalUrl = guestContext?.redirectTo ?? returnUrl;
+        if (
+          guestContext?.filters &&
+          Object.keys(guestContext.filters).length > 0 &&
+          !hasRedirectOverride
+        ) {
+          const params = new URLSearchParams();
+          Object.entries(guestContext.filters).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              params.set(key, String(value));
+            }
+          });
+          finalUrl = params.toString()
+            ? `${finalUrl}?${params.toString()}`
+            : finalUrl;
+        }
+        
+        if (process.env.NODE_ENV === "development") {
+          console.log("[AuthCallback] Redirecting existing user to:", finalUrl);
+        }
+        
+        router.push(finalUrl);
+        
+        // Restore scroll position after navigation
+        if (guestContext?.scroll && !hasRedirectOverride) {
+          setTimeout(() => {
+            window.scrollTo(0, guestContext.scroll || 0);
+          }, 100);
+        }
       }
     } else if (status === "unauthenticated") {
+      // Prevent multiple executions
+      if (hasProcessed.current) return;
+      
+      // Mark as processed to prevent infinite loop
+      hasProcessed.current = true;
+      
       // Check for specific error in URL
       const errorParam = searchParams.get("error");
       const errorCode = errorParam || "Verification";
@@ -66,7 +144,9 @@ function AuthCallbackContent() {
         `${ROUTES.SIGN_IN}?error=${encodeURIComponent(errorCode)}&returnUrl=${encodeURIComponent(returnUrl)}`
       );
     }
-  }, [status, session, router, returnUrl, authStore]);
+    // Only depend on status - session, router, returnUrl, and authStore are stable references
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   // Show different message for new users
   const isNewUser = status === "authenticated" && session ? session.isNewUser : false;

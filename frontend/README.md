@@ -146,6 +146,8 @@ Navigation is handled by components in `components/navigation/`:
 
 For complete navigation documentation, see [`components/navigation/README.md`](./components/navigation/README.md).
 
+> 💡 **Guest Mode:** See [`docs/GUEST_MODE.md`](./docs/GUEST_MODE.md) for details on `useGuestMode`, `SignInPrompt`, and guest-specific UX patterns introduced in TASK-048.
+
 ### Brand Components
 
 Brand components provide consistent branding across the application:
