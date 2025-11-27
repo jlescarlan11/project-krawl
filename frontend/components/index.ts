@@ -51,6 +51,9 @@ export {
   type PageLayoutProps,
 } from "./layout";
 
+// Landing components
+export { FeaturedKrawlsCarousel } from "./landing";
+
 // Guest helpers
 export {
   ProtectedActionGate,
