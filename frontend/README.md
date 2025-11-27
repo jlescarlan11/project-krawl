@@ -11,6 +11,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **ESLint:** 9.x (with eslint-config-next)
 - **Prettier:** 3.x (code formatter)
 
+## Landing-carousel overview
+
+The landing page now includes the **Featured Krawls carousel** (TASK-080) right below the hero and stats sections.
+
+- UI components live under `components/landing/`:
+  - `FeaturedKrawlsCarousel.tsx` — Embla-powered carousel wrapper with loading/empty states.
+  - `FeaturedKrawlCard.tsx` — Cover image, metadata, and CTA for each card.
+  - `types.ts` — `FeaturedKrawl` DTO used by both UI and API handlers.
+- In development, the carousel fetches data from temporary Next.js route handlers in `app/api/landing/featured-krawls/route.ts` and `app/api/landing/popular-krawls/route.ts`. These routes return mock `FeaturedKrawl` payloads and are annotated as placeholders until the Spring Boot landing APIs (Task-085) are ready.
+- The landing fetch helper in `app/page.tsx` derives the API base URL from request headers (`x-forwarded-host`/`host`) and respects `NEXT_PUBLIC_APP_URL`/`process.env.PORT` fallbacks, enabling both local and deployed execution.
+- Update the mock routes or remove them once the backend landing APIs are implemented; the comments in those files explain their temporary nature.
+
 ## Getting Started
 
 First, run the development server:
@@ -138,11 +150,12 @@ For complete layout documentation, see [`components/layout/README.md`](./compone
 Navigation is handled by components in `components/navigation/`:
 - `Header` – Desktop top navigation
 - `Footer` – Site footer
-- `MobileMenu` – Mobile slide-in menu
 - `BottomNav` – Mobile bottom navigation
 - `Breadcrumbs` – Dynamic breadcrumb navigation
 - `NavLink` – Reusable navigation link with active state
 - `ProtectedRoute` – Client-side route protection wrapper
+
+Settings access now lives on the profile page, so both the header user chip and the mobile bottom nav expose a profile entry that leads into those actions for authenticated users.
 
 For complete navigation documentation, see [`components/navigation/README.md`](./components/navigation/README.md).
 
@@ -312,7 +325,7 @@ Krawl includes a comprehensive component library with reusable UI components bui
 ### Available Components
 
 - **Layout Components:** Container, Section, PageLayout for consistent page structure
-- **Navigation Components:** Header, Footer, MobileMenu, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
+- **Navigation Components:** Header, Footer, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
 - **Buttons:** Primary, secondary, outline, text, and accent variants with loading states
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload with validation states
@@ -482,9 +495,9 @@ function MyComponent() {
 
 #### UI Store (`useUIStore`)
 
-- **State:** `modals`, `sidebars`, `theme`, `loading`
-- **Actions:** `openModal()`, `closeModal()`, `toggleModal()`, `openSidebar()`, `closeSidebar()`, `toggleSidebar()`, `setTheme()`, `setLoading()`
-- **Selectors:** `useModal(id)`, `useSidebar(side)`, `useTheme()`, `useLoading(key)`
+- **State:** `modals`, `theme`, `loading`
+- **Actions:** `openModal()`, `closeModal()`, `toggleModal()`, `setTheme()`, `setLoading()`
+- **Selectors:** `useModal(id)`, `useTheme()`, `useLoading(key)`
 
 #### Map Store (`useMapStore`)
 
