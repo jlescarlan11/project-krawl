@@ -7,13 +7,37 @@ This directory contains the reusable UI component library for the Krawl applicat
 The component library includes:
 
 - **Layout Components:** Container, Section, and PageLayout for consistent page structure
-- **Navigation Components:** Header, Footer, MobileMenu, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
+- **Navigation Components:** Header, Footer, BottomNav, Breadcrumbs, NavLink, ProtectedRoute
 - **Brand Components:** Logo component with multiple variants and sizes
 - **Authentication Components:** GoogleSignInButton, AuthErrorDisplay for authentication flows
 - **Buttons:** Primary, secondary, outline, text, and accent variants
 - **Cards:** Standard, interactive, and elevated variants with image support
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
 - **State Components:** Spinner, LoadingSkeleton, ProgressBar, EmptyState, ErrorDisplay, and Toast
+- **Hero Components:** HeroSection, HeroStatsSection, HeroStats, HeroVisual, and useCountUp for the landing page hero experience
+
+## Landing Hero Components
+
+The landing page hero now ships with a dedicated component suite:
+
+- `HeroSection` renders the gradient hero background, tagline _“The Living Map of Filipino Culture”_, the primary “Explore Cebu City” button, the secondary “Sign In” button, and the `HeroVisual` illustration.
+- `HeroStatsSection` and `HeroStats` present Gems mapped, Krawls shared, and Active Krawlers using the `LandingStats` interface, animated count-up numbers (`useCountUp`), and accessibility-friendly labels.
+- `HeroVisual` loads `public/hero-cebu.svg` with lazy loading, a gradient overlay for contrast, and a friendly fallback view if the illustration fails to load.
+
+Use the hero components together (see `frontend/components/hero/README.md` for detailed props and accessibility notes):
+
+```tsx
+import { HeroSection, HeroStatsSection } from "@/components/hero";
+
+export default function Home() {
+  return (
+    <>
+      <HeroSection />
+      <HeroStatsSection />
+    </>
+  );
+}
+```
 
 All components are:
 
@@ -836,7 +860,6 @@ components/
 ├── navigation/          # Navigation components (TASK-034)
 │   ├── Header.tsx       # Desktop top navigation
 │   ├── Footer.tsx       # Site footer
-│   ├── MobileMenu.tsx   # Mobile slide-in menu
 │   ├── BottomNav.tsx    # Mobile bottom navigation
 │   ├── Breadcrumbs.tsx  # Dynamic breadcrumbs
 │   ├── NavLink.tsx      # Reusable navigation link

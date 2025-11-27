@@ -19,11 +19,16 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - 📴 **Offline-First** - Downloadable Krawls for areas with inconsistent connectivity
 - 👥 **Community-Curated** - User-driven content with quality control mechanisms
 - 🎓 **Guided Onboarding** - Optional 5-step intro that explains value props, permissions, and quick-start paths ✅ **Implemented** (TASK-046)
+- 🌅 **Landing Hero & Trust Stats** - The new hero experience crowns the landing page with the value proposition, dual call-to-action buttons, and animated trust indicators that spotlight Gems, Krawls, and community growth.
 - 🇵🇭 **Hyperlocal Focus** - Authentic, non-commercial Filipino cultural experiences
 
 ### Launch Area
 
 **Cebu City, Philippines** - Initial launch focused exclusively on Cebu City boundaries.
+
+### Landing Page Hero
+
+The landing experience now centers on the `HeroSection` and `HeroStatsSection` components from `frontend/components/hero`. The hero section carries the tagline _“The Living Map of Filipino Culture”_, renders the hero illustration (`public/hero-cebu.svg`) via `HeroVisual`, and offers the primary “Explore Cebu City” and secondary “Sign In” CTAs powered by the shared button component. Directly below, animated trust indicators highlight Gems mapped, Krawls shared, and active Krawlers while formatting large numbers and remaining accessible to screen readers. See [`frontend/components/hero/README.md`](./frontend/components/hero/README.md) for usage notes, accessibility considerations, and extension points.
 
 ---
 
@@ -50,6 +55,7 @@ This project includes comprehensive documentation organized in the `docs/` direc
 - **[ACCESSIBILITY_CHECKLIST.md](./docs/design/ACCESSIBILITY_CHECKLIST.md)** - Developer and QA checklists for accessibility compliance during development and testing
 - **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
 - **[Component Library](./frontend/components/README.md)** - Reusable UI component library (buttons, cards, forms) with TypeScript support and accessibility features
+- **[Hero Components](./frontend/components/hero/README.md)** - Landing hero experience with CTA buttons, value proposition copy, hero illustration, and animated trust indicators.
 - **[TASK-029_SOLUTION_DESIGN.md](./docs/design/TASK-029_SOLUTION_DESIGN.md)** - Full onboarding flow specs, edge cases, and testing strategy
 - **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
 - **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints
