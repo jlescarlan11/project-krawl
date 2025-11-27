@@ -886,6 +886,31 @@ Create the hero section for the landing page with compelling tagline, value prop
   - Benefits clearly communicated
   - Brand personality reflected (explorer, community builder)
 
+**Status:** ✅ **COMPLETED** (2025-11-27)
+
+**Implementation Summary:**
+- `HeroSection` renders the branded hero copy, `HeroVisual`, and the “Explore Cebu City” / “Sign In” buttons backed by `Button` variants.
+- `HeroStatsSection` surfaces `HeroStats` cards with Gems, Krawls, and active user counts and animates them via `useCountUp` when the section scrolls into view.
+- `HeroVisual` loads `public/hero-cebu.svg` with lazy loading, gradient overlay, and fallback messaging so the hero never looks broken.
+- `frontend/app/page.tsx` now renders the hero and stats components at the home route, keeping the value proposition front and center.
+
+**Files Added / Modified:**
+- `frontend/components/hero/HeroSection.tsx`
+- `frontend/components/hero/HeroStatsSection.tsx`
+- `frontend/components/hero/HeroStats.tsx`
+- `frontend/components/hero/HeroVisual.tsx`
+- `frontend/components/hero/useCountUp.ts`
+- `frontend/app/page.tsx`
+- `public/hero-cebu.svg`
+
+**Testing:**
+- `npm run build` (frontend) verifies the updated landing page compiles and the hero modules bundle correctly.
+- Manual inspection confirms CTA buttons, hero copy, and stats render at `/`.
+
+**Documentation:**
+- [`TASK-079_IMPLEMENTATION_SUMMARY.md`](../../../TASK-079_IMPLEMENTATION_SUMMARY.md)
+- [`frontend/components/hero/README.md`](../../../frontend/components/hero/README.md)
+
 **Edge Cases:**
 - Hero image fails to load - show fallback image or gradient
 - Very large hero image - optimize for performance, use WebP format
