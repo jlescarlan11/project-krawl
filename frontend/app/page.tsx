@@ -1,10 +1,11 @@
 import { Section } from "@/components/layout";
 import { HeroSection, HeroStatsSection } from "@/components/hero";
-import { FeaturedKrawlsCarousel } from "@/components/landing";
-import type { FeaturedKrawl } from "@/components/landing/types";
+import { FeaturedKrawlsCarousel, PopularGemsSection } from "@/components/landing";
+import type { FeaturedKrawl, PopularGem } from "@/components/landing/types";
 import { headers } from "next/headers";
 
 const FEATURED_KRAWLS_LIMIT = 8;
+const POPULAR_GEMS_LIMIT = 9;
 
 const getLandingApiBaseUrl = async () => {
   const requestHeaders = await headers();
@@ -63,8 +64,41 @@ async function fetchFeaturedKrawls(): Promise<FeaturedKrawl[]> {
   }
 }
 
+async function fetchPopularGems(limit = POPULAR_GEMS_LIMIT): Promise<PopularGem[]> {
+  const baseUrl = await getLandingApiBaseUrl();
+
+  const fetchPayload = async <T extends { [key: string]: PopularGem[] }>(path: string) => {
+    try {
+      const response = await fetch(`${baseUrl}${path}?limit=${limit}`, { next: { revalidate: 60 } });
+
+      if (!response.ok) {
+        throw new Error(`Landing fetch failed for ${path}`);
+      }
+
+      return (await response.json()) as T;
+    } catch (error) {
+      console.error(`Landing fetch error (${path}):`, error);
+      return {} as T;
+    }
+  };
+
+  const popularPayload = await fetchPayload<{ popular?: PopularGem[] }>("/api/landing/popular-gems");
+
+  if (Array.isArray(popularPayload.popular) && popularPayload.popular.length > 0) {
+    return popularPayload.popular.slice(0, limit);
+  }
+
+  const fallbackPayload = await fetchPayload<{ recent?: PopularGem[] }>("/api/landing/recent-gems");
+
+  if (Array.isArray(fallbackPayload.recent) && fallbackPayload.recent.length > 0) {
+    return fallbackPayload.recent.slice(0, limit);
+  }
+
+  return [];
+}
+
 export default async function Home() {
-  const featuredKrawls = await fetchFeaturedKrawls();
+  const [featuredKrawls, popularGems] = await Promise.all([fetchFeaturedKrawls(), fetchPopularGems()]);
 
   return (
     <main className="bg-bg-white">
@@ -73,6 +107,11 @@ export default async function Home() {
       <Section spacing="xl" background="light" className="py-12 lg:py-20 pb-16 lg:pb-24">
         <div className="mx-auto container px-4 sm:px-6">
           <FeaturedKrawlsCarousel featuredKrawls={featuredKrawls} />
+        </div>
+      </Section>
+      <Section spacing="xl" background="white" className="py-12 lg:py-20">
+        <div className="mx-auto container px-4 sm:px-6">
+          <PopularGemsSection gems={popularGems} />
         </div>
       </Section>
     </main>

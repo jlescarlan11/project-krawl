@@ -1004,6 +1004,7 @@ Implement a featured Krawls carousel on the landing page that displays high-qual
 **Priority:** High  
 **Estimated Effort:** 1 day  
 **Dependencies:** TASK-061, TASK-085
+**Status:** ✅ **COMPLETE** (2025-11-28)
 
 **Description:**  
 Implement a popular Gems grid on the landing page displaying the most popular Gems with images, ratings, and quick access to details.
