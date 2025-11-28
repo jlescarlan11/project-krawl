@@ -35,8 +35,9 @@ This document provides comprehensive RESTful API documentation for the Krawl Pro
 | 1.4.0 | 2025-11-23 | Development Team | Added secure token management endpoints (TASK-043): POST /api/auth/refresh and POST /api/auth/revoke, documented refresh token flow and token blacklist |
 | 1.5.0 | 2025-01-27 | Development Team | Documented comprehensive sign-in error handling (TASK-045), added frontend error codes, edge case detection, and error recovery mechanisms |
 | 1.6.0 | 2025-11-28 | Development Team | Added landing page read endpoints (TASK-081) including `/api/v1/landing/popular-gems` and `/api/v1/landing/recent-gems` with caching and fallback behaviors |
+| 1.6.1 | 2025-01-27 | Development Team | Added landing page statistics endpoint (TASK-082) `/api/v1/landing/statistics` for platform metrics display |
 
-**Current Version:** 1.5.0  
+**Current Version:** 1.6.1  
 **Last Updated:** 2025-01-27  
 **Status:** Current
 
@@ -1605,6 +1606,49 @@ Returns the most recently approved Gems. Used as a fallback when popularity metr
 - Only includes Gems with `lifecycle_status = 'published'` and `approval_status = 'approved'`
 - Cache TTL shorter (3 minutes) to keep the feed fresh
 - Shared DTO (`PopularGemResponse`) reused by both endpoints for consistent card rendering
+
+#### GET /api/v1/landing/statistics
+
+Returns platform-wide statistics including total Gems, total Krawls, and active user count. Used to display trust indicators on the landing page with animated counters.
+
+**Authentication:** Not required (public)
+
+**Response (200 OK):**
+```json
+{
+  "totalGems": 1520,
+  "totalKrawls": 45,
+  "activeUsers": 2340
+}
+```
+
+**Response Fields:**
+- `totalGems` (integer, required) - Total number of published and approved Gems
+- `totalKrawls` (integer, required) - Total number of published Krawls
+- `activeUsers` (integer, required) - Count of users who have been active in the last 30 days
+
+**Errors:**
+- `500 Internal Server Error` – Database query failure or calculation error
+
+**Implementation Notes:**
+- Currently returns mock data (zero values) via temporary Next.js API route (`/api/landing/statistics`)
+- Will be replaced with backend implementation in TASK-085
+- Frontend endpoint caches responses for 5 minutes using Next.js ISR
+- Graceful degradation: Returns zero values on error to prevent page breakage
+- Response validation ensures all fields are numbers, not NaN, not Infinity, and non-negative
+- Frontend displays statistics with animated count-up animation when scrolled into view
+
+**Frontend Implementation (Temporary):**
+- Route: `frontend/app/api/landing/statistics/route.ts`
+- Returns mock data until backend API is ready
+- Uses Next.js ISR with 5-minute cache (`revalidate: 300`)
+- Sets appropriate `Cache-Control` headers for CDN caching
+
+**Future Backend Implementation (TASK-085):**
+- Will query database for actual counts
+- Will cache results using Spring Cache (Caffeine)
+- Will calculate active users based on last activity timestamp
+- Will return same response format for seamless frontend integration
 
 ---
 
