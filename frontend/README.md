@@ -19,7 +19,7 @@ The landing page includes multiple hero-to-discovery sections, including the **F
   - `FeaturedKrawlsCarousel.tsx` & `FeaturedKrawlCard.tsx` — Embla-powered carousel with responsive cards.
   - `PopularGemCard.tsx`, `PopularGemsGrid.tsx`, `PopularGemsSection.tsx` — Responsive grid with skeleton/empty states and CTA.
   - `types.ts` — Shared DTOs for `FeaturedKrawl` and `PopularGem`.
-- In development, these sections fetch data from temporary Next.js route handlers in `app/api/landing/featured-krawls/route.ts`, `app/api/landing/popular-krawls/route.ts`, `app/api/landing/popular-gems/route.ts`, and `app/api/landing/recent-gems/route.ts` (fallback). These routes return mock payloads and are annotated as placeholders until the Spring Boot landing APIs (Task-085) are ready.
+- In development, these sections fetch data from temporary Next.js route handlers in `app/api/landing/featured-krawls/route.ts`, `app/api/landing/popular-krawls/route.ts`, `app/api/landing/popular-gems/route.ts`, `app/api/landing/recent-gems/route.ts` (fallback), and `app/api/landing/statistics/route.ts` (TASK-082). These routes return mock payloads and are annotated as placeholders until the Spring Boot landing APIs (Task-085) are ready.
 - The landing fetch helpers in `app/page.tsx` derive the API base URL from request headers (`x-forwarded-host`/`host`) and respect `NEXT_PUBLIC_APP_URL`/`process.env.PORT` fallbacks, enabling both local and deployed execution.
 - Update or remove the mock routes once the backend landing APIs are implemented; the comments in those files explain their temporary nature.
 

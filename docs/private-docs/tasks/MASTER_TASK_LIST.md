@@ -97,7 +97,7 @@ Each task includes its ID, name, week assignment, phase, epic, priority, depende
 | TASK-079 | Create hero section with value proposition | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-022, TASK-027 | [View Details](./WEEK_03_TASKS.md#task-task-079) |
 | TASK-080 | Implement featured Krawls carousel | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-071, TASK-085 | [View Details](./WEEK_03_TASKS.md#task-task-080) |
 | TASK-081 | Implement popular Gems grid | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-061, TASK-085 | ✅ **COMPLETE** (2025-11-28) - [View Details](./WEEK_03_TASKS.md#task-task-081) |
-| TASK-082 | Create statistics display (Gem count, Krawl count, user count) | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-085 | [View Details](./WEEK_03_TASKS.md#task-task-082) |
+| TASK-082 | Create statistics display (Gem count, Krawl count, user count) | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-085 | ✅ **COMPLETE** (2025-01-27) - [View Details](./WEEK_03_TASKS.md#task-task-082) |
 | TASK-083 | Implement clear call-to-action buttons | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-022, TASK-044 | [View Details](./WEEK_03_TASKS.md#task-task-083) |
 | TASK-084 | Create authenticated variant with personalized content | Week 3 | Phase 2: Core Development | epic:landing-page | Medium | ** TASK-079, TASK-080, TASK-081, TASK-042 | [View Details](./WEEK_03_TASKS.md#task-task-084) |
 | TASK-085 | Implement landing page API endpoints | Week 3 | Phase 2: Core Development | epic:landing-page | High | ** TASK-097, TASK-108 | [View Details](./WEEK_03_TASKS.md#task-task-085) |
