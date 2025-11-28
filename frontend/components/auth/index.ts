@@ -13,4 +13,5 @@ export type { SignInPromptProps, SignInPromptVariant } from "./SignInPrompt";
 export type { GuestFeatureContext } from "@/lib/guest-mode";
 
 export { GuestModeBanner } from "./GuestModeBanner";
+export { GuestUpgradeSuccessToast } from "./GuestUpgradeSuccessToast";
 

@@ -38,3 +38,4 @@ The landing page now opens with a purpose-built hero experience that states the 
 - `frontend/components/hero/README.md` – Component-level usage and accessibility notes
 - `docs/private-docs/tasks/WEEK_03_TASKS.md` – Task tracking entry
 
+

@@ -8,7 +8,7 @@ import { ROUTES } from "@/lib/routes";
  */
 export function Footer() {
   return (
-    <footer className="bg-bg-light border-t border-border-default mt-auto">
+    <footer className="hidden lg:block bg-bg-white border-t border-[var(--color-border-subtle)] shadow-[var(--shadow-elevation-1)] mt-auto">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand Section */}
@@ -77,7 +77,7 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-8 pt-8 border-t border-border-default text-center">
+        <div className="mt-8 pt-8 border-t border-[var(--color-border-subtle)] text-center">
           <p className="text-text-tertiary text-sm">
             © {new Date().getFullYear()} Krawl. All rights reserved.
           </p>

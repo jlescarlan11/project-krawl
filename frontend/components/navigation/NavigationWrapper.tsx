@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import {
   Header,
   Footer,
-  MobileMenu,
   BottomNav,
 } from "@/components/navigation";
 import { GuestModeBanner } from "@/components/auth";
@@ -39,7 +38,6 @@ export function NavigationWrapper({
     <>
       {showGuestBanner && <GuestModeBanner />}
       <Header />
-      <MobileMenu />
     </>
   );
 }

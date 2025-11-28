@@ -110,7 +110,7 @@
    * HEX: #F5F5F5 | RGB: 245, 245, 245
    * Usage: Secondary backgrounds, subtle sections
    */
-  --color-bg-light: #f5f5f5;
+  --color-bg-light: #ffffff;
 
   /* Medium Gray - Borders and dividers
    * HEX: #E5E5E5 | RGB: 229, 229, 229
@@ -301,6 +301,9 @@
    * BORDERS
    * ============================================ */
 
+  /* Border Colors */
+  --color-border-subtle: #e8e8e8; /* Very subtle border (barely visible, for minimal card definitions) */
+
   /* Border Widths */
   --border-width-thin: 1px; /* Default borders (cards, inputs) */
   --border-width-default: 2px; /* Emphasized borders (outline buttons) */
@@ -316,6 +319,7 @@
    * GRAY SCALE (for borders, dividers)
    * ============================================ */
 
+  --color-gray-100: #f5f5f5; /* Very subtle borders (barely visible) */
   --color-gray-200: #e5e5e5; /* Borders, dividers */
   --color-gray-300: #d1d5db; /* Light borders */
   --color-gray-600: #4b5563; /* Medium gray text */

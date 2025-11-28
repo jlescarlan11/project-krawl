@@ -27,7 +27,6 @@ export {
 export {
   useUIStore,
   useModal,
-  useSidebar,
   useTheme,
   useLoading,
   type Theme,

@@ -14,4 +14,18 @@ export interface FeaturedKrawl {
   gemsCount?: number;
 }
 
+/**
+ * Represents a popular Gem payload returned from the landing API.
+ */
+export interface PopularGem {
+  id: string;
+  name: string;
+  category: string;
+  district: string;
+  thumbnailUrl: string;
+  rating?: number;
+  vouchCount?: number;
+  viewCount?: number;
+  shortDescription?: string;
+}
 

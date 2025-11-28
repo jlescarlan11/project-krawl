@@ -48,7 +48,7 @@ export function FeaturedKrawlsCarousel({ featuredKrawls = [], loading }: Feature
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
-          <div key={idx} className="h-[320px] rounded-[1.75rem] bg-bg-medium/30 p-6 shadow-lg animate-pulse" />
+          <div key={idx} className="h-[320px] rounded-[1.75rem] bg-bg-medium/30 p-6 animate-pulse" />
         ))}
       </div>
     );
@@ -56,7 +56,7 @@ export function FeaturedKrawlsCarousel({ featuredKrawls = [], loading }: Feature
 
   if (!slides.length) {
     return (
-      <div className="mx-auto flex flex-col items-center justify-center gap-3 rounded-[1.75rem] border border-dashed border-border px-6 py-8 text-center shadow-sm">
+      <div className="mx-auto flex flex-col items-center justify-center gap-3 rounded-[1.75rem] border border-dashed border-border px-6 py-8 text-center">
         <p className="text-lg font-semibold text-text-primary">
           No featured Krawls available right now
         </p>
@@ -115,7 +115,7 @@ export function FeaturedKrawlsCarousel({ featuredKrawls = [], loading }: Feature
       </div>
 
       <div className="relative">
-        <div ref={viewportRef} className="overflow-hidden">
+        <div ref={viewportRef} className="overflow-hidden pb-4">
           <div className="flex gap-6">
             {slides.map((slide) => (
               <div key={slide.id} className="min-w-[280px] sm:min-w-[320px] lg:min-w-[360px] grow-0 shrink-0">

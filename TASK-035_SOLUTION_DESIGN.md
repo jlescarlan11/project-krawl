@@ -275,7 +275,7 @@ const Container = forwardRef<HTMLDivElement, ContainerProps>(
       md: "max-w-[768px]",
       lg: "max-w-[1280px]",
       xl: "max-w-[1536px]",
-      "2xl": "max-w-[1920px]",
+      "2xl": "container",
       full: "",
     };
 

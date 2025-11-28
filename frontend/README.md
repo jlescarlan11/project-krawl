@@ -11,17 +11,17 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **ESLint:** 9.x (with eslint-config-next)
 - **Prettier:** 3.x (code formatter)
 
-## Landing-carousel overview
+## Landing content overview
 
-The landing page now includes the **Featured Krawls carousel** (TASK-080) right below the hero and stats sections.
+The landing page includes multiple hero-to-discovery sections, including the **Featured Krawls carousel** (TASK-080) and the new **Popular Gems grid** (TASK-081).
 
 - UI components live under `components/landing/`:
-  - `FeaturedKrawlsCarousel.tsx` — Embla-powered carousel wrapper with loading/empty states.
-  - `FeaturedKrawlCard.tsx` — Cover image, metadata, and CTA for each card.
-  - `types.ts` — `FeaturedKrawl` DTO used by both UI and API handlers.
-- In development, the carousel fetches data from temporary Next.js route handlers in `app/api/landing/featured-krawls/route.ts` and `app/api/landing/popular-krawls/route.ts`. These routes return mock `FeaturedKrawl` payloads and are annotated as placeholders until the Spring Boot landing APIs (Task-085) are ready.
-- The landing fetch helper in `app/page.tsx` derives the API base URL from request headers (`x-forwarded-host`/`host`) and respects `NEXT_PUBLIC_APP_URL`/`process.env.PORT` fallbacks, enabling both local and deployed execution.
-- Update the mock routes or remove them once the backend landing APIs are implemented; the comments in those files explain their temporary nature.
+  - `FeaturedKrawlsCarousel.tsx` & `FeaturedKrawlCard.tsx` — Embla-powered carousel with responsive cards.
+  - `PopularGemCard.tsx`, `PopularGemsGrid.tsx`, `PopularGemsSection.tsx` — Responsive grid with skeleton/empty states and CTA.
+  - `types.ts` — Shared DTOs for `FeaturedKrawl` and `PopularGem`.
+- In development, these sections fetch data from temporary Next.js route handlers in `app/api/landing/featured-krawls/route.ts`, `app/api/landing/popular-krawls/route.ts`, `app/api/landing/popular-gems/route.ts`, and `app/api/landing/recent-gems/route.ts` (fallback). These routes return mock payloads and are annotated as placeholders until the Spring Boot landing APIs (Task-085) are ready.
+- The landing fetch helpers in `app/page.tsx` derive the API base URL from request headers (`x-forwarded-host`/`host`) and respect `NEXT_PUBLIC_APP_URL`/`process.env.PORT` fallbacks, enabling both local and deployed execution.
+- Update or remove the mock routes once the backend landing APIs are implemented; the comments in those files explain their temporary nature.
 
 ## Getting Started
 
@@ -107,6 +107,7 @@ Krawl uses Next.js 16 App Router with a comprehensive routing structure. All rou
 - `/` – Landing page (placeholder, will become marketing/hero page)
 - `/map` – Map view page
 - `/search` – Search & discovery page
+- `/gems` – Gem discovery list (landing CTA target)
 - `/gems/[id]` – Gem detail page (dynamic route)
 - `/krawls/[id]` – Krawl detail page (dynamic route)
 - `/krawls/[id]/mode` – Krawl mode page (dynamic route)

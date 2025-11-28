@@ -195,3 +195,6 @@ Check the logs:
 - **NextAuth logs**: Look for `[auth][error]` messages in frontend terminal
 
 
+
+
+

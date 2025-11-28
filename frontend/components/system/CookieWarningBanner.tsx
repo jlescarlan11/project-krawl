@@ -40,7 +40,7 @@ export function CookieWarningBanner() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 bg-yellow-50 border-t border-yellow-200 px-4 py-3 shadow-lg"
+      className="fixed left-0 right-0 z-50 bottom-16 bg-yellow-50 border-t border-yellow-200 px-4 py-3 shadow-lg lg:bottom-0"
       role="alert"
       aria-live="polite"
     >

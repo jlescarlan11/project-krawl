@@ -8,6 +8,7 @@ export const ROUTES = {
   HOME: "/",
   MAP: "/map",
   SEARCH: "/search",
+  GEMS: "/gems",
   GEM_DETAIL: (id: string) => `/gems/${id}`,
   KRAWL_DETAIL: (id: string) => `/krawls/${id}`,
   KRAWL_MODE: (id: string) => `/krawls/${id}/mode`,
@@ -63,6 +64,10 @@ export const ROUTE_METADATA: Record<string, RouteMetadata> = {
     path: ROUTES.HOME,
     label: "Home",
     icon: "Home",
+  },
+  [ROUTES.GEMS]: {
+    path: ROUTES.GEMS,
+    label: "Gems",
   },
   [ROUTES.MAP]: {
     path: ROUTES.MAP,

@@ -92,9 +92,9 @@ export default function RootLayout({
               <ServiceWorkerRegistration />
             <ToastProvider>
               <GuestUpgradeSuccessToast />
-              <div className="flex min-h-screen flex-col">
+              <div className="flex min-h-screen flex-col bg-bg-white">
                 <NavigationWrapper />
-                <main className="flex-1">{children}</main>
+                <main className="flex-1 bg-bg-white">{children}</main>
                 <NavigationFooter />
               </div>
               <ServiceWorkerUpdateToast />

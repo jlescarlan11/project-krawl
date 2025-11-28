@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Map, Search, Plus, User, Settings } from "lucide-react";
-import { useIsAuthenticated, useAuthUser } from "@/stores";
+import { User } from "lucide-react";
+import { useAuthUser } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
 import { Button } from "@/components";
 import { cn } from "@/lib/utils";
-import { ProtectedActionGate, ProtectedFeatureBadge } from "@/components/guest";
+import { ProtectedActionGate } from "@/components/guest";
+import { Logo } from "@/components/brand";
 
 /**
  * Header component
@@ -16,8 +17,16 @@ import { ProtectedActionGate, ProtectedFeatureBadge } from "@/components/guest";
  * Hidden on mobile (replaced by BottomNav and MobileMenu).
  */
 export function Header() {
-  const isAuthenticated = useIsAuthenticated();
   const user = useAuthUser();
+  const profileName = user?.name?.trim() || "Profile";
+  const profileHref = ROUTES.USER_PROFILE(user?.id || "");
+  const profileChipClasses = cn(
+    "inline-flex h-10 w-10 items-center justify-center rounded-full p-0 text-text-primary transition-colors",
+    "hover:text-primary-green focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-orange"
+  );
+  const avatarWrapperClasses =
+    "h-full w-full overflow-hidden rounded-full bg-transparent text-text-secondary";
+  const avatarImageClasses = "h-full w-full object-cover";
 
   const guestNavClasses = cn(
     "inline-flex items-center gap-2 px-4 py-2 rounded-lg",
@@ -30,7 +39,8 @@ export function Header() {
     <header
       className={cn(
         "sticky top-0 z-50 w-full",
-        "bg-bg-white border-b border-border-default",
+        "bg-bg-white border-b border-[var(--color-border-subtle)]",
+        "shadow-[var(--shadow-elevation-1)]",
         "lg:block hidden" // Hidden on mobile, visible on desktop
       )}
     >
@@ -39,25 +49,36 @@ export function Header() {
           {/* Logo */}
           <Link
             href={ROUTES.HOME}
-            className="flex items-center gap-2 font-bold text-xl text-primary-green"
+            className="flex items-center gap-2"
             aria-label="Krawl Home"
           >
-            <span>Krawl</span>
+            <Logo
+              variant="full-color"
+              size="sm"
+              className="h-10 w-auto rounded-full"
+            />
+            <span className="text-lg font-semibold text-primary-green">
+              Krawl
+            </span>
           </Link>
 
           {/* Main Navigation */}
-          <div className="flex items-center gap-1">
-            <NavLink href={ROUTES.MAP} label="Map" icon={Map} />
-            <NavLink href={ROUTES.SEARCH} label="Search" icon={Search} />
+          <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <NavLink href={ROUTES.HOME} label="Home" exact />
+                <NavLink href={ROUTES.MAP} label="Map" />
+                <NavLink href={ROUTES.SEARCH} label="Search" />
+              </div>
 
             <ProtectedActionGate
               context="create"
+              message="Sign in to unlock creator tools"
               promptOptions={{
                 redirectTo: ROUTES.GEM_CREATE,
                 preserveFilters: false,
               }}
             >
-              {({ isGuest, requestSignIn, promptId, Prompt }) =>
+              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
                 isGuest ? (
                   <div className="flex flex-col items-start gap-1">
                     <button
@@ -65,27 +86,24 @@ export function Header() {
                       className={guestNavClasses}
                       onClick={() => requestSignIn()}
                       aria-describedby={promptId}
+                      title={promptMessage}
                     >
-                      <Plus className="w-5 h-5" aria-hidden="true" />
                       <span>Create</span>
                     </button>
-                    {Prompt}
-                    <ProtectedFeatureBadge
-                      context="create"
-                      message="Sign in to unlock creator tools"
-                    />
+                    <span className="sr-only">{Prompt}</span>
                   </div>
                 ) : (
-                  <NavLink href={ROUTES.GEM_CREATE} label="Create" icon={Plus} />
+                  <NavLink href={ROUTES.GEM_CREATE} label="Create" />
                 )
               }
             </ProtectedActionGate>
+
           </div>
 
           {/* User Menu */}
           <div className="flex items-center gap-2">
             <ProtectedActionGate context="profile">
-              {({ isGuest, requestSignIn, promptId, Prompt }) =>
+              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
                 isGuest ? (
                   <div className="flex flex-col items-end gap-1">
                     <Button
@@ -93,26 +111,36 @@ export function Header() {
                       size="sm"
                       onClick={() => requestSignIn()}
                       aria-describedby={promptId}
+                      title={promptMessage}
                       aria-label="Sign in"
                     >
                       Sign In
                     </Button>
-                    <div className="w-full text-right">{Prompt}</div>
+                    <div className="w-full text-right">
+                      <span className="sr-only">{Prompt}</span>
+                    </div>
                   </div>
                 ) : (
                   <>
-                    <Link href={ROUTES.USER_PROFILE(user?.id || "")}>
-                      <Button variant="text" size="sm" icon={<User />}>
-                        {user?.name || "Profile"}
-                      </Button>
-                    </Link>
-                    <Link href={ROUTES.USER_SETTINGS}>
-                      <Button
-                        variant="text"
-                        size="sm"
-                        icon={<Settings />}
-                        aria-label="Settings"
-                      />
+                    <Link
+                      href={profileHref}
+                      className={profileChipClasses}
+                      title={`View ${profileName}`}
+                      aria-label={`View ${profileName} profile`}
+                    >
+                      <span className={avatarWrapperClasses}>
+                        {user?.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={`${profileName} avatar`}
+                            className={`${avatarImageClasses} block`}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <User className="h-5 w-5" />
+                        )}
+                      </span>
+                      <span className="sr-only">{profileName}</span>
                     </Link>
                   </>
                 )

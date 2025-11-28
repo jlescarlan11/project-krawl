@@ -1,3 +1,5 @@
+import { UserProfileActions } from "@/components/users/UserProfileActions";
+
 export default async function UserProfilePage({
   params,
 }: {
@@ -11,6 +13,7 @@ export default async function UserProfilePage({
         User profile page - to be implemented in TASK-157
       </p>
       <p className="text-text-tertiary mt-2">User ID: {id}</p>
+      <UserProfileActions userId={id} />
     </div>
   );
 }

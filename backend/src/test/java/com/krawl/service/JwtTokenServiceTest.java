@@ -99,6 +99,7 @@ class JwtTokenServiceTest {
     @Test
     void testValidateToken_ExpiredToken_ThrowsException() {
         // Given - create expired token manually
+        ReflectionTestUtils.setField(jwtTokenService, "clockSkewSeconds", 0L);
         SecretKey key = Keys.hmacShaKeyFor(TEST_SECRET.getBytes(StandardCharsets.UTF_8));
         Date pastDate = new Date(System.currentTimeMillis() - 10000); // 10 seconds ago
         
@@ -219,6 +220,7 @@ class JwtTokenServiceTest {
     @Test
     void testValidateRefreshToken_ExpiredToken_ThrowsException() {
         // Given - create expired refresh token manually
+        ReflectionTestUtils.setField(jwtTokenService, "clockSkewSeconds", 0L);
         SecretKey key = Keys.hmacShaKeyFor(TEST_SECRET.getBytes(StandardCharsets.UTF_8));
         Date pastDate = new Date(System.currentTimeMillis() - 10000); // 10 seconds ago
         
