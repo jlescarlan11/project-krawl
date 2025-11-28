@@ -6,10 +6,6 @@ describe("UIStore", () => {
     // Reset store to default state
     useUIStore.setState({
       modals: {},
-      sidebars: {
-        left: false,
-        right: false,
-      },
       theme: "light",
       loading: {},
     });
@@ -21,8 +17,6 @@ describe("UIStore", () => {
     it("should initialize with default state", () => {
       const state = useUIStore.getState();
       expect(state.modals).toEqual({});
-      expect(state.sidebars.left).toBe(false);
-      expect(state.sidebars.right).toBe(false);
       expect(state.theme).toBe("light");
       expect(state.loading).toEqual({});
     });
@@ -58,27 +52,6 @@ describe("UIStore", () => {
       useUIStore.getState().closeModal("modal-1");
       expect(useUIStore.getState().modals["modal-1"]).toBe(false);
       expect(useUIStore.getState().modals["modal-2"]).toBe(true);
-    });
-  });
-
-  describe("sidebar actions", () => {
-    it("should open left sidebar", () => {
-      useUIStore.getState().openSidebar("left");
-      expect(useUIStore.getState().sidebars.left).toBe(true);
-    });
-
-    it("should close right sidebar", () => {
-      useUIStore.getState().openSidebar("right");
-      useUIStore.getState().closeSidebar("right");
-      expect(useUIStore.getState().sidebars.right).toBe(false);
-    });
-
-    it("should toggle sidebar", () => {
-      useUIStore.getState().toggleSidebar("left");
-      expect(useUIStore.getState().sidebars.left).toBe(true);
-
-      useUIStore.getState().toggleSidebar("left");
-      expect(useUIStore.getState().sidebars.left).toBe(false);
     });
   });
 

@@ -16,7 +16,7 @@ import { ProtectedActionGate } from "@/components/guest";
       <>
         <button
           type="button"
-          onClick={requestSignIn}
+          onClick={() => requestSignIn()}
           aria-describedby={promptId}
           className="cta-button"
         >

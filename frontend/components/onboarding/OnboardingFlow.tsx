@@ -212,7 +212,7 @@ export function OnboardingFlow() {
     <section
       className={cn(
         "mx-auto flex min-h-[100dvh] w-full flex-col justify-center gap-6 px-6 py-8 sm:gap-10 sm:py-12",
-        "max-w-6xl lg:py-20"
+        "container lg:py-20"
       )}
     >
 

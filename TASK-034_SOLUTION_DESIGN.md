@@ -596,7 +596,7 @@ export function NavLink({
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Map, Search, Plus, User, Settings, Menu } from "lucide-react";
+import { Map, Search, Plus, User } from "lucide-react";
 import { useIsAuthenticated, useAuthUser } from "@/stores";
 import { useUIStore } from "@/stores";
 import { ROUTES, ROUTE_METADATA } from "@/lib/routes";
@@ -660,14 +660,6 @@ export function Header() {
                     {user?.name || "Profile"}
                   </Button>
                 </Link>
-                <Link href={ROUTES.USER_SETTINGS}>
-                  <Button
-                    variant="text"
-                    size="sm"
-                    icon={<Settings />}
-                    aria-label="Settings"
-                  />
-                </Link>
               </>
             ) : (
               <Link href={ROUTES.SIGN_IN}>
@@ -683,6 +675,8 @@ export function Header() {
   );
 }
 ```
+
+> Settings are now reached via the profile page (the header profile chip and future profile actions) rather than a dedicated settings button in the nav.
 
 #### Step 3.3: Create MobileMenu Component
 **File:** `frontend/components/navigation/MobileMenu.tsx`

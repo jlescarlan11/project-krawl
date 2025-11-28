@@ -14,10 +14,6 @@ export type Theme = "light" | "dark" | "system";
  */
 interface UIState {
   modals: Record<string, boolean>;
-  sidebars: {
-    left: boolean;
-    right: boolean;
-  };
   theme: Theme;
   loading: Record<string, boolean>;
 }
@@ -29,9 +25,6 @@ interface UIActions {
   openModal: (id: string) => void;
   closeModal: (id: string) => void;
   toggleModal: (id: string) => void;
-  openSidebar: (side: "left" | "right") => void;
-  closeSidebar: (side: "left" | "right") => void;
-  toggleSidebar: (side: "left" | "right") => void;
   setTheme: (theme: Theme) => void;
   setLoading: (key: string, value: boolean) => void;
 }
@@ -46,10 +39,6 @@ type UIStore = UIState & UIActions;
  */
 const defaultState: UIState = {
   modals: {},
-  sidebars: {
-    left: false,
-    right: false,
-  },
   theme: "light",
   loading: {},
 };
@@ -57,7 +46,7 @@ const defaultState: UIState = {
 /**
  * UI Store Hook
  *
- * Manages UI state including modals, sidebars, theme preferences, and loading states.
+ * Manages UI state including modals, theme preferences, and loading states.
  * Theme preference is persisted to localStorage.
  *
  * @example
@@ -87,21 +76,6 @@ export const useUIStore = create<UIStore>()(
                 [id]: !state.modals[id],
               },
           })),
-        openSidebar: (side) =>
-          set((state) => ({
-              sidebars: { ...state.sidebars, [side]: true },
-          })),
-        closeSidebar: (side) =>
-          set((state) => ({
-              sidebars: { ...state.sidebars, [side]: false },
-          })),
-        toggleSidebar: (side) =>
-          set((state) => ({
-              sidebars: {
-                ...state.sidebars,
-                [side]: !state.sidebars[side],
-              },
-          })),
         setTheme: (theme) => set({ theme }),
         setLoading: (key, value) =>
           set((state) => ({
@@ -125,12 +99,6 @@ export const useUIStore = create<UIStore>()(
  */
 export const useModal = (id: string) =>
   useUIStore((state) => state.modals[id] ?? false);
-
-/**
- * Selector: Get sidebar state
- */
-export const useSidebar = (side: "left" | "right") =>
-  useUIStore((state) => state.sidebars[side]);
 
 /**
  * Selector: Get theme preference

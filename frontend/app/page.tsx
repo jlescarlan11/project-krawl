@@ -70,7 +70,7 @@ export default async function Home() {
     <main className="bg-bg-white">
       <HeroSection />
       <HeroStatsSection />
-      <Section spacing="xl" background="light" className="py-12 lg:py-20">
+      <Section spacing="xl" background="light" className="py-12 lg:py-20 pb-16 lg:pb-24">
         <div className="mx-auto container px-4 sm:px-6">
           <FeaturedKrawlsCarousel featuredKrawls={featuredKrawls} />
         </div>

@@ -71,7 +71,7 @@ class GoogleTokenValidatorTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         @SuppressWarnings("unchecked")
         Mono<Object> errorMono = Mono.error(new RuntimeException("Network error"));
-        when(responseSpec.bodyToMono(any(Class.class))).thenReturn(errorMono);
+        lenient().when(responseSpec.bodyToMono(any(Class.class))).thenReturn(errorMono);
         
         // When/Then
         assertThrows(AuthException.class, () -> {

@@ -75,3 +75,4 @@ const latestStats = {
 
 Refer to `frontend/components/hero` for the source files (`HeroSection.tsx`, `HeroStatsSection.tsx`, `HeroStats.tsx`, `HeroVisual.tsx`, `useCountUp.ts`) when customizing behavior.
 
+

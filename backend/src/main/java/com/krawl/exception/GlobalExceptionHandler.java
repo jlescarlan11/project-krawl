@@ -3,6 +3,8 @@ package com.krawl.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -44,6 +46,26 @@ public class GlobalExceptionHandler {
             .error("VALIDATION_ERROR")
             .message(e.getMessage())
             .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
+     * Handles validation errors triggered by @Valid/@Validated annotated parameters.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        log.error("Method argument validation failed: {}", e.getMessage());
+        String message = e.getBindingResult().getFieldErrors().stream()
+            .map(FieldError::getDefaultMessage)
+            .filter(msg -> msg != null && !msg.isBlank())
+            .findFirst()
+            .orElse("Validation failed");
+
+        ErrorResponse error = ErrorResponse.builder()
+            .error("VALIDATION_ERROR")
+            .message(message)
+            .build();
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
     

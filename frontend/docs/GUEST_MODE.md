@@ -135,8 +135,8 @@ const { navigateToSignIn } = useGuestMode();
 
 ## Manual QA Checklist
 
-- [ ] Visit Header (desktop) as guest: `Create` CTA shows badge + disabled tooltip, Sign In button visible in user controls.
-- [ ] Open MobileMenu as guest: create section shows badge + CTA, profile section shows sign-in button with tooltip.
+- [ ] Visit Header (desktop) as guest: `Create` CTA exposes tooltip-only messaging (no visible badge) and Sign In button remains in the user controls.
+- [ ] Open MobileMenu as guest: create CTA relies on tooltip-only messaging (no badge) while the profile section keeps the sign-in button tooltip.
 - [ ] Tap BottomNav FAB as guest: button stays disabled, explanatory text renders, tapping triggers sign-in.
 - [ ] Onboarding “Create & Share” step shows GuestActionShowcase with badges + disabled sample CTAs.
 - [ ] Dismiss guest banner and refresh – dismissal preference persists (localStorage).

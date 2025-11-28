@@ -9,7 +9,7 @@ This directory contains all navigation-related components for the Krawl applicat
 Desktop top navigation bar that displays:
 - Logo/brand link
 - Main navigation links (Map, Search, Create)
-- User menu (Profile, Settings) or Sign In button
+- User menu (Profile) or Sign In button; Settings are now reachable from the profile page
 
 **Features:**
 - Hidden on mobile (replaced by BottomNav)
@@ -53,46 +53,14 @@ export default function Layout() {
 }
 ```
 
-### MobileMenu (`MobileMenu.tsx`)
-
-Slide-in mobile navigation menu that:
-- Opens from the left side
-- Contains all navigation links
-- Includes user section (Profile, Settings) or Sign In button
-- Closes automatically on route change
-- Prevents body scroll when open
-
-**Features:**
-- Hidden on desktop (lg:)
-- Managed by `uiStore` (sidebars.left)
-- Accessible with ARIA labels
-- Smooth slide-in animation
-
-**Usage:**
-```tsx
-import { MobileMenu } from "@/components/navigation";
-import { useUIStore } from "@/stores";
-
-export default function Layout() {
-  const { openSidebar } = useUIStore();
-  
-  return (
-    <>
-      <button onClick={() => openSidebar("left")}>Menu</button>
-      <MobileMenu />
-    </>
-  );
-}
-```
-
 ### BottomNav (`BottomNav.tsx`)
 
 Mobile bottom navigation bar that:
-- Always visible on mobile
-- Hidden on desktop
-- Includes main navigation items (Map, Search)
-- Features a "Create" Floating Action Button (FAB) for authenticated users
-- Includes menu button to open MobileMenu
+ - Always visible on mobile
+ - Hidden on desktop
+ - Includes main navigation items (Map, Search)
+ - Features a "Create" Floating Action Button (FAB) for authenticated users
+ - Provides a profile entry so mobile users can reach their account and the relocated settings actions
 
 **Features:**
 - Active route highlighting
@@ -237,10 +205,11 @@ Routes are protected at two levels:
 
 Navigation state is managed using Zustand stores:
 
-- **`uiStore`:** Manages mobile menu open/closed state
+- **`uiStore`:** Manages modal dialogs, theme preference, and loading indicators
   ```tsx
-  const { sidebars, openSidebar, closeSidebar } = useUIStore();
-  const isMenuOpen = sidebars.left;
+  const { openModal, closeModal } = useUIStore();
+  const theme = useTheme();
+  const isLoading = useLoading("fetch-gems");
   ```
 
 - **`authStore`:** Manages authentication state
@@ -252,7 +221,7 @@ Navigation state is managed using Zustand stores:
 
 TASK-049 builds on TASK-048 by centralizing guest indicators:
 
-- **`ProtectedActionGate` (`@/components/guest`):** Wraps every protected CTA (Header create, MobileMenu create links, BottomNav FAB, profile/settings entries) so guests see disabled controls with accessible tooltips plus consistent navigation to `/auth/sign-in`.
+- **`ProtectedActionGate` (`@/components/guest`):** Wraps every protected CTA (Header create links, BottomNav FAB, profile/settings entries) so guests see disabled controls with accessible tooltips plus consistent navigation to `/auth/sign-in`.
 - **`ProtectedFeatureBadge`:** Adds “Sign in to unlock” badges/banners near CTA clusters to explain benefits without spamming modals.
 - **`GuestModeBanner`:** Still rendered globally via `NavigationWrapper`. The wrapper now accepts `showGuestBanner` if a page wants to opt-out temporarily.
 
@@ -275,30 +244,29 @@ Navigation adapts to screen size:
 
 - **Mobile (< 1024px):**
   - BottomNav visible
-  - MobileMenu available via menu button
   - Header hidden
 
 - **Desktop (≥ 1024px):**
   - Header visible
   - BottomNav hidden
-  - MobileMenu hidden
 
 ## Integration
 
-Navigation components are integrated in the root layout (`frontend/app/layout.tsx`):
+Navigation components are composed via the `NavigationWrapper` bundle (`frontend/components/navigation/NavigationWrapper.tsx`):
 
 ```tsx
-import { Header, Footer, MobileMenu, BottomNav } from "@/components/navigation";
+import {
+  NavigationWrapper,
+  NavigationFooter,
+} from "@/components/navigation/NavigationWrapper";
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <Header />
-        <MobileMenu />
+        <NavigationWrapper />
         <main className="pb-16 lg:pb-0">{children}</main>
-        <Footer />
-        <BottomNav />
+        <NavigationFooter />
       </body>
     </html>
   );

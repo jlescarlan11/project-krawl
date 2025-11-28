@@ -37,7 +37,7 @@ const difficultyColor = (difficulty?: string) => {
 
 export function FeaturedKrawlCard({ className, krawl }: FeaturedKrawlCardProps) {
   return (
-    <article className={cn("group flex h-full w-full flex-col rounded-[1.75rem] bg-bg-white shadow-xl transition-shadow duration-300 hover:shadow-2xl", className)}>
+    <article className={cn("group flex h-full w-full flex-col rounded-[1.75rem] border border-[var(--color-border-subtle)] bg-bg-white shadow-[var(--shadow-elevation-1)] transition-shadow duration-300", className)}>
       <Link
         href={ROUTES.KRAWL_DETAIL(krawl.id)}
         className="flex h-full flex-col"
@@ -85,4 +85,5 @@ export function FeaturedKrawlCard({ className, krawl }: FeaturedKrawlCardProps) 
     </article>
   );
 }
+
 
