@@ -29,3 +29,41 @@ export interface PopularGem {
   shortDescription?: string;
 }
 
+/**
+ * User statistics for authenticated users
+ */
+export interface UserStats {
+  gemsCreated: number;
+  krawlsCreated: number;
+  vouchesGiven: number;
+  krawlsCompleted: number;
+}
+
+/**
+ * User activity item (Gem or Krawl)
+ */
+export interface UserActivityItemData {
+  id: string;
+  type: "gem" | "krawl";
+  name: string;
+  thumbnailUrl?: string;
+  createdAt: string;
+  // Gem-specific fields
+  category?: string;
+  district?: string;
+  // Krawl-specific fields
+  coverImage?: string;
+  difficulty?: string;
+  gemsCount?: number;
+}
+
+/**
+ * User activity response from API
+ */
+export interface UserActivityResponse {
+  stats: UserStats;
+  recentGems: UserActivityItemData[];
+  savedKrawls: UserActivityItemData[];
+  completedKrawls: UserActivityItemData[];
+}
+
