@@ -9,6 +9,7 @@ export const ROUTES = {
   MAP: "/map",
   SEARCH: "/search",
   GEMS: "/gems",
+  KRAWLS: "/krawls",
   GEM_DETAIL: (id: string) => `/gems/${id}`,
   KRAWL_DETAIL: (id: string) => `/krawls/${id}`,
   KRAWL_MODE: (id: string) => `/krawls/${id}/mode`,

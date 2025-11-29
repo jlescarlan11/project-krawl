@@ -28,7 +28,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 
 ### Landing Page Hero
 
-The landing experience now centers on the `HeroSection` and `HeroStatsSection` components from `frontend/components/hero`. The hero section carries the tagline _“The Living Map of Filipino Culture”_, renders the hero illustration (`public/hero-cebu.svg`) via `HeroVisual`, and offers the primary “Explore Cebu City” and secondary “Sign In” CTAs powered by the shared button component. Directly below, animated trust indicators highlight Gems mapped, Krawls shared, and active Krawlers while formatting large numbers and remaining accessible to screen readers. See [`frontend/components/hero/README.md`](./frontend/components/hero/README.md) for usage notes, accessibility considerations, and extension points.
+The landing experience now centers on the `HeroSection` and `HeroStatsSection` components from `frontend/components/hero`. The hero section carries the tagline _"The Living Map of Filipino Culture"_, renders the hero illustration (`public/hero-cebu.svg`) via `HeroVisual`, and offers conditional call-to-action buttons via the `HeroCTAs` component. The CTAs adapt based on authentication state: always showing "Explore Cebu City" (primary), and conditionally showing "Create Your First Gem" and "Start Krawl Mode" for authenticated users or "Sign In" for guests. Directly below, animated trust indicators highlight Gems mapped, Krawls shared, and active Krawlers while formatting large numbers and remaining accessible to screen readers. See [`frontend/components/hero/README.md`](./frontend/components/hero/README.md) for usage notes, accessibility considerations, and extension points.
 
 ---
 

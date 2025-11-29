@@ -1,9 +1,7 @@
-import Link from "next/link";
-import { Button } from "@/components";
 import { Container, Section } from "@/components/layout";
-import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
+import { HeroCTAs } from "./HeroCTAs";
 import { HeroVisual } from "./HeroVisual";
 
 export function HeroSection() {
@@ -30,18 +28,7 @@ export function HeroSection() {
               Discover, document, and share the stories, food spots, and traditions that define
               Cebu—every Gem is a memory, every Krawl is a shared adventure.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href={ROUTES.MAP} className="w-full sm:w-auto">
-                <Button variant="primary" size="lg" fullWidth>
-                  Explore Cebu City
-                </Button>
-              </Link>
-              <Link href={ROUTES.SIGN_IN} className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" fullWidth>
-                  Sign In
-                </Button>
-              </Link>
-            </div>
+            <HeroCTAs />
             <p className="text-sm text-text-tertiary">
               Build your own Gem, follow curated Krawls, and see how the community grows with every
               story shared.

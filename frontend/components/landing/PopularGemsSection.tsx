@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 import { PopularGemsGrid } from "./PopularGemsGrid";
 import type { PopularGem } from "./types";
@@ -26,11 +27,10 @@ export function PopularGemsSection({ gems = [], loading = false }: PopularGemsSe
       <PopularGemsGrid gems={gems} loading={loading} />
 
       <div className="flex justify-center sm:justify-end">
-        <Link
-          href={ROUTES.GEMS}
-          className="inline-flex w-full items-center justify-center rounded-lg border-2 border-primary-green px-8 py-4 text-lg font-medium text-primary-green transition hover:bg-light-green/10 focus:outline-2 focus:outline-accent-orange focus:outline-offset-2 sm:w-auto"
-        >
-          View All Gems
+        <Link href={ROUTES.GEMS}>
+          <Button variant="outline" size="md">
+            Browse All Gems
+          </Button>
         </Link>
       </div>
     </div>
