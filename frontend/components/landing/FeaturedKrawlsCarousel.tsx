@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/routes";
 import { FeaturedKrawl } from "./types";
 import { FeaturedKrawlCard } from "./FeaturedKrawlCard";
-import { Button } from "@/components/ui/button";
 
 interface FeaturedKrawlsCarouselProps {
   featuredKrawls?: FeaturedKrawl[];
@@ -66,7 +68,7 @@ export function FeaturedKrawlsCarousel({ featuredKrawls = [], loading }: Feature
         <Button
           variant="primary"
           size="md"
-          onClick={() => router.push("/krawls")}
+          onClick={() => router.push(ROUTES.KRAWLS)}
           className="mt-2"
         >
           Explore All Krawls
@@ -140,6 +142,15 @@ export function FeaturedKrawlsCarousel({ featuredKrawls = [], loading }: Feature
             ))}
           </div>
         )}
+      </div>
+
+      {/* Permanent CTA button below carousel */}
+      <div className="flex justify-center sm:justify-end">
+        <Link href={ROUTES.KRAWLS}>
+          <Button variant="outline" size="md">
+            View All Krawls
+          </Button>
+        </Link>
       </div>
     </div>
   );

@@ -6,11 +6,31 @@ This folder houses the landing page hero experience, which pairs a storytelling 
 
 `HeroSection` wraps a `Section` and `Container` from `frontend/components/layout` to deliver the gradient background, headline copy, and CTA buttons. It combines:
 
-- The tagline **“The Living Map of Filipino Culture”** with supporting copy that highlights stories, food, and traditions in Cebu.
-- Primary and secondary CTAs that link to the map (`ROUTES.MAP`) and sign-in page (`ROUTES.SIGN_IN`) using the shared `Button` component (`variant="primary"` and `variant="outline"`).
+- The tagline **"The Living Map of Filipino Culture"** with supporting copy that highlights stories, food, and traditions in Cebu.
+- The `HeroCTAs` component that conditionally renders call-to-action buttons based on authentication state.
 - The `HeroVisual` illustration on the right-hand side, which loads `public/hero-cebu.svg` lazily and includes a friendly fallback if the image fails to load.
 
 `HeroSection` requires no props and can be placed at the top of any page that needs to promote the brand story.
+
+## HeroCTAs
+
+`HeroCTAs` is a client component that conditionally renders call-to-action buttons based on authentication state. It always shows "Explore Cebu City" as the primary CTA, and conditionally shows creation CTAs for authenticated users or "Sign In" for guests.
+
+**CTAs Rendered:**
+- **Always visible:** "Explore Cebu City" (primary button, links to map view)
+- **Authenticated users:** "Create Your First Gem" and "Start Krawl Mode" (secondary buttons)
+- **Guest users:** "Sign In" (secondary button)
+
+**Usage:**
+Typically used internally by `HeroSection` - not usually imported directly. Can be imported directly from `@/components/hero` or from the specific file:
+
+```tsx
+import { HeroCTAs } from "@/components/hero";
+// or
+import { HeroCTAs } from "@/components/hero/HeroCTAs";
+
+<HeroCTAs />
+```
 
 ## HeroStatsSection
 
@@ -20,7 +40,7 @@ This folder houses the landing page hero experience, which pairs a storytelling 
 |------|------|-------------|
 | `stats` | `LandingStats` | Optional stats data (total Gems, total Krawls, active users). When omitted, placeholders appear and the cards show `aria-busy` states. |
 
-Use this component immediately below `HeroSection` to present the trust indicators. The default stats (`DEFAULT_LANDING_STATS`) display 13,242 Gems, 862 Krawls, and 24,500 active users.
+Use this component immediately below `HeroSection` to present the trust indicators. Statistics are fetched from the API endpoint (`/api/landing/statistics`). When the `stats` prop is undefined, the component shows a loading state with animated placeholders.
 
 ## HeroStats
 
@@ -42,7 +62,7 @@ Use this component immediately below `HeroSection` to present the trust indicato
 ## Usage Example
 
 ```tsx
-import { HeroSection, HeroStatsSection } from "@/components/hero";
+import { HeroSection, HeroStatsSection, HeroCTAs } from "@/components/hero";
 
 export default function Home() {
   return (
@@ -73,6 +93,7 @@ const latestStats = {
 - Hero image loads lazily and degrades gracefully when offline.
 - Background gradients and typography adhere to the design system’s contrast guidelines.
 
-Refer to `frontend/components/hero` for the source files (`HeroSection.tsx`, `HeroStatsSection.tsx`, `HeroStats.tsx`, `HeroVisual.tsx`, `useCountUp.ts`) when customizing behavior.
+Refer to `frontend/components/hero` for the source files (`HeroSection.tsx`, `HeroCTAs.tsx`, `HeroStatsSection.tsx`, `HeroStats.tsx`, `HeroVisual.tsx`, `useCountUp.ts`) when customizing behavior.
+
 
 
