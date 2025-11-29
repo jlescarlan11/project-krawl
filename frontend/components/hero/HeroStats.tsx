@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { formatStatValue } from "@/lib/format";
 
 import { useCountUp } from "./useCountUp";
 
@@ -36,22 +37,6 @@ const STAT_ITEMS: Array<{
     description: "People contributing stories",
   },
 ];
-
-const formatStatValue = (value: number | undefined | null) => {
-  if (value == null) {
-    return "—";
-  }
-  if (value === 0) {
-    return "0";
-  }
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}M`;
-  }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)}K`;
-  }
-  return value.toString();
-};
 
 export function HeroStats({ stats }: HeroStatsProps) {
   const [animate, setAnimate] = useState(false);

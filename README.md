@@ -19,7 +19,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - 📴 **Offline-First** - Downloadable Krawls for areas with inconsistent connectivity
 - 👥 **Community-Curated** - User-driven content with quality control mechanisms
 - 🎓 **Guided Onboarding** - Optional 5-step intro that explains value props, permissions, and quick-start paths ✅ **Implemented** (TASK-046)
-- 🌅 **Landing Hero & Trust Stats** - The new hero experience crowns the landing page with the value proposition, dual call-to-action buttons, and animated trust indicators that spotlight Gems, Krawls, and community growth.
+- 🌅 **Landing Hero & Trust Stats** - The new hero experience crowns the landing page with the value proposition, dual call-to-action buttons, and animated trust indicators that spotlight Gems, Krawls, and community growth. Authenticated users see a personalized variant with their activity and statistics.
 - 🇵🇭 **Hyperlocal Focus** - Authentic, non-commercial Filipino cultural experiences
 
 ### Launch Area
@@ -56,6 +56,7 @@ This project includes comprehensive documentation organized in the `docs/` direc
 - **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
 - **[Component Library](./frontend/components/README.md)** - Reusable UI component library (buttons, cards, forms) with TypeScript support and accessibility features
 - **[Hero Components](./frontend/components/hero/README.md)** - Landing hero experience with CTA buttons, value proposition copy, hero illustration, and animated trust indicators.
+- **[Landing Components](./frontend/components/landing/README.md)** - Landing page components including authenticated variant with personalized content, user activity sections, and statistics display.
 - **[TASK-029_SOLUTION_DESIGN.md](./docs/design/TASK-029_SOLUTION_DESIGN.md)** - Full onboarding flow specs, edge cases, and testing strategy
 - **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
 - **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints

@@ -1,7 +1,14 @@
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 import { Section } from "@/components/layout";
 import { HeroSection, HeroStatsSection } from "@/components/hero";
-import { FeaturedKrawlsCarousel, PopularGemsSection } from "@/components/landing";
-import type { FeaturedKrawl, PopularGem } from "@/components/landing/types";
+import {
+  FeaturedKrawlsCarousel,
+  PopularGemsSection,
+  AuthenticatedHeroSection,
+  UserStatsSection,
+  UserActivitySection,
+} from "@/components/landing";
+import type { FeaturedKrawl, PopularGem, UserActivityResponse } from "@/components/landing/types";
 import type { LandingStats } from "@/components/hero/HeroStats";
 import { headers } from "next/headers";
 
@@ -148,13 +155,62 @@ async function fetchStatistics(): Promise<LandingStats | undefined> {
   }
 }
 
+/**
+ * Fetches user activity data from the user activity API endpoint.
+ * 
+ * @param userId - User ID to fetch activity for
+ * @returns {Promise<UserActivityResponse | undefined>} User activity data or undefined on error
+ */
+async function fetchUserActivity(userId: string): Promise<UserActivityResponse | undefined> {
+  try {
+    const baseUrl = await getLandingApiBaseUrl();
+    const response = await fetch(
+      `${baseUrl}/api/landing/user-activity?userId=${userId}`,
+      { next: { revalidate: 120 } } // 2 minutes cache
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to load user activity");
+    }
+
+    const data = (await response.json()) as UserActivityResponse;
+    return data;
+  } catch (error) {
+    console.error("User activity fetch error:", error);
+    return undefined;
+  }
+}
+
 export default async function Home() {
-  const [featuredKrawls, popularGems, statistics] = await Promise.all([
+  // Get session server-side
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
+  const userId = session?.user?.id;
+
+  // Fetch data based on authentication state
+  const [featuredKrawls, popularGems, statistics, userActivity] = await Promise.all([
     fetchFeaturedKrawls(),
     fetchPopularGems(),
     fetchStatistics(),
+    isAuthenticated && userId ? fetchUserActivity(userId) : Promise.resolve(undefined),
   ]);
 
+  // Render authenticated variant if user is logged in
+  if (isAuthenticated && session.user) {
+    return (
+      <main className="bg-bg-white">
+        <AuthenticatedHeroSection user={session.user} />
+        {userActivity && (
+          <>
+            <UserStatsSection stats={userActivity.stats} />
+            <UserActivitySection activity={userActivity} />
+          </>
+        )}
+      </main>
+    );
+  }
+
+  // Guest variant (existing)
   return (
     <main className="bg-bg-white">
       <HeroSection />
