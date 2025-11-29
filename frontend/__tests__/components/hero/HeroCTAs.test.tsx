@@ -55,26 +55,26 @@ describe("HeroCTAs", () => {
       mockIsAuthenticated = false;
       render(<HeroCTAs />);
 
-      expect(screen.queryByText(/create your first gem/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/start krawl mode/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/create gem/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/krawl mode/i)).not.toBeInTheDocument();
     });
   });
 
   describe("authenticated user CTAs", () => {
-    it("should render 'Create Your First Gem' button for authenticated users", () => {
+    it("should render 'Create Gem' button for authenticated users", () => {
       mockIsAuthenticated = true;
       render(<HeroCTAs />);
 
-      const createGemButton = screen.getByRole("link", { name: /create your first gem/i });
+      const createGemButton = screen.getByRole("link", { name: /create gem/i });
       expect(createGemButton).toBeInTheDocument();
       expect(createGemButton).toHaveAttribute("href", ROUTES.GEM_CREATE);
     });
 
-    it("should render 'Start Krawl Mode' button for authenticated users", () => {
+    it("should render 'Krawl Mode' button for authenticated users", () => {
       mockIsAuthenticated = true;
       render(<HeroCTAs />);
 
-      const krawlModeButton = screen.getByRole("link", { name: /start krawl mode/i });
+      const krawlModeButton = screen.getByRole("link", { name: /krawl mode/i });
       expect(krawlModeButton).toBeInTheDocument();
       expect(krawlModeButton).toHaveAttribute("href", ROUTES.KRAWLS);
     });
@@ -94,8 +94,8 @@ describe("HeroCTAs", () => {
       expect(screen.getByRole("link", { name: /explore cebu city/i })).toBeInTheDocument();
       
       // Authenticated CTAs should be present
-      expect(screen.getByRole("link", { name: /create your first gem/i })).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /start krawl mode/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /create gem/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /krawl mode/i })).toBeInTheDocument();
     });
   });
 
@@ -134,8 +134,8 @@ describe("HeroCTAs", () => {
       mockIsAuthenticated = true;
       render(<HeroCTAs />);
 
-      const createGemLink = screen.getByRole("link", { name: /create your first gem/i });
-      const krawlModeLink = screen.getByRole("link", { name: /start krawl mode/i });
+      const createGemLink = screen.getByRole("link", { name: /create gem/i });
+      const krawlModeLink = screen.getByRole("link", { name: /krawl mode/i });
 
       expect(createGemLink.querySelector("button")).toBeInTheDocument();
       expect(krawlModeLink.querySelector("button")).toBeInTheDocument();

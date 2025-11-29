@@ -18,7 +18,7 @@ This folder houses the landing page hero experience, which pairs a storytelling 
 
 **CTAs Rendered:**
 - **Always visible:** "Explore Cebu City" (primary button, links to map view)
-- **Authenticated users:** "Create Your First Gem" and "Start Krawl Mode" (secondary buttons)
+- **Authenticated users:** "Create Gem" and "Krawl Mode" (secondary buttons)
 - **Guest users:** "Sign In" (secondary button)
 
 **Usage:**
