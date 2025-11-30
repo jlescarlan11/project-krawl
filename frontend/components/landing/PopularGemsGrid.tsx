@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { PopularGemCard } from "./PopularGemCard";
 import type { PopularGem } from "./types";
 
@@ -11,14 +12,12 @@ const SKELETON_COUNT = 6;
 export function PopularGemsGrid({ gems = [], loading = false }: PopularGemsGridProps) {
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-          <div
-            key={`popular-gem-skeleton-${index}`}
-            className="h-[360px] rounded-[1.5rem] border border-dashed border-border bg-bg-medium/20"
-          >
-            <div className="h-full w-full animate-pulse rounded-[1.5rem] bg-gradient-to-r from-bg-medium/40 via-bg-medium/20 to-bg-medium/40" />
-          </div>
+          <LoadingSkeleton
+            key={`gem-skeleton-${index}`}
+            className="h-[360px] rounded-[1.5rem]"
+          />
         ))}
       </div>
     );
