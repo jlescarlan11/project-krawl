@@ -67,10 +67,15 @@ export {
 // Map components
 export {
   Map,
-  MemoizedMap,
   MapLoadingState,
   MapErrorState,
+  MapWithBoundary,
+  LocationPicker,
+  useBoundaryLayer,
   type MapProps,
+  type MapWithBoundaryProps,
+  type LocationPickerProps,
+  type BoundaryLayerOptions,
   type MapError,
   type MapErrorCode,
   type MapState,

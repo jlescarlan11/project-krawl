@@ -102,50 +102,58 @@ export const Sidebar = memo(function Sidebar() {
   const profileName = currentUser?.name?.trim() || "Profile";
   const profileHref = ROUTES.USER_PROFILE(currentUser?.id || "");
   const profileChipClasses = cn(
-    "flex items-center justify-center rounded-full p-0 h-10 w-10 text-text-primary transition-colors",
-    "hover:text-primary-green focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-orange"
+    "flex items-center justify-center rounded-full p-0 h-11 w-11 text-text-primary",
+    "transition-all duration-200 hover:scale-110 hover:shadow-lg active:scale-95",
+    "ring-2 ring-transparent hover:ring-primary-green/20",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-green"
   );
   const avatarWrapperClasses =
-    "h-full w-full overflow-hidden rounded-full bg-transparent text-text-secondary";
+    "h-full w-full overflow-hidden rounded-full bg-gradient-to-br from-primary-green/10 to-light-green/10 text-text-secondary";
   const avatarImageClasses = "h-full w-full object-cover";
 
   const guestNavClasses = cn(
-    "flex items-center justify-center px-2 py-2 rounded-lg",
-    "text-base font-medium transition-colors",
+    "flex items-center justify-center px-3 py-3 rounded-xl",
+    "text-base font-medium transition-all duration-200",
     "focus:outline-2 focus:outline-accent-orange focus:outline-offset-2",
-    "text-text-primary hover:bg-light-green/10 hover:text-primary-green"
+    "text-text-primary hover:bg-primary-green/10 hover:text-primary-green hover:scale-105 active:scale-95"
   );
 
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-50 h-screen w-16",
-        "bg-bg-white border-r border-[var(--color-border-subtle)]",
-        "shadow-[var(--shadow-elevation-1)]",
+        "fixed left-0 top-0 z-50 h-screen w-20",
+        "bg-gradient-to-b from-bg-white via-bg-white to-bg-light/50",
+        "border-r border-[var(--color-border-subtle)]",
+        "shadow-[0_4px_24px_rgba(0,0,0,0.06)]",
         "lg:block hidden" // Hidden on mobile, visible on desktop
       )}
       aria-label="Main navigation"
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex items-center justify-center border-b border-[var(--color-border-subtle)] p-4">
+        <div className="flex items-center justify-center border-b border-[var(--color-border-subtle)] p-5 mb-2">
           <Link
             href={ROUTES.HOME}
-            className="flex items-center justify-center transition-opacity hover:opacity-80"
+            className={cn(
+              "flex items-center justify-center rounded-xl p-2",
+              "transition-all duration-200 hover:scale-110 hover:rotate-3",
+              "hover:bg-primary-green/10 active:scale-95",
+              "focus:outline-2 focus:outline-primary-green focus:outline-offset-2"
+            )}
             aria-label="Krawl Home"
             title="Krawl Home"
           >
             <Logo
               variant="full-color"
               size="sm"
-              className="h-8 w-8 rounded-full"
+              className="h-9 w-9 rounded-full shadow-sm"
             />
           </Link>
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          <div className="flex flex-col gap-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+          <div className="flex flex-col gap-2">
             <NavLink 
               href={ROUTES.HOME} 
               label="Home" 
@@ -207,54 +215,56 @@ export const Sidebar = memo(function Sidebar() {
         </nav>
 
         {/* User Menu - Shows skeleton while loading to prevent flash */}
-        <div className="border-t border-[var(--color-border-subtle)] p-4" suppressHydrationWarning>
-          {isLoading ? (
-            // Skeleton loading state - prevents flash on page refresh
-            <div
-              className={cn(
-                profileChipClasses,
-                "bg-bg-light skeleton-shimmer"
-              )}
-              aria-label="Loading profile"
-              title="Loading profile"
-            >
-              <span className={avatarWrapperClasses}>
-                <User className="h-5 w-5 text-text-tertiary opacity-60" />
-              </span>
-            </div>
-          ) : isGuest ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSignIn}
-              aria-label="Sign in"
-              title="Sign in to access your profile"
-              className="w-full px-2 justify-center"
-            >
-              <User className="w-5 h-5" />
-            </Button>
-          ) : (
-            <Link
-              href={profileHref}
-              className={profileChipClasses}
-              title={`View ${profileName} profile`}
-              aria-label={`View ${profileName} profile`}
-            >
-              <span className={avatarWrapperClasses}>
-                {currentUser?.avatar ? (
-                  <img
-                    src={currentUser.avatar}
-                    alt={`${profileName} avatar`}
-                    className={`${avatarImageClasses} block`}
-                    loading="lazy"
-                  />
-                ) : (
-                  <User className="h-5 w-5" />
+        <div className="border-t border-[var(--color-border-subtle)] p-4 mt-auto" suppressHydrationWarning>
+          <div className="flex items-center justify-center">
+            {isLoading ? (
+              // Skeleton loading state - prevents flash on page refresh
+              <div
+                className={cn(
+                  profileChipClasses,
+                  "bg-bg-light skeleton-shimmer"
                 )}
-              </span>
-              <span className="sr-only">{profileName}</span>
-            </Link>
-          )}
+                aria-label="Loading profile"
+                title="Loading profile"
+              >
+                <span className={avatarWrapperClasses}>
+                  <User className="h-5 w-5 text-text-tertiary opacity-60" />
+                </span>
+              </div>
+            ) : isGuest ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSignIn}
+                aria-label="Sign in"
+                title="Sign in to access your profile"
+                className="w-11 h-11 p-0 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
+              >
+                <User className="w-5 h-5" />
+              </Button>
+            ) : (
+              <Link
+                href={profileHref}
+                className={profileChipClasses}
+                title={`View ${profileName} profile`}
+                aria-label={`View ${profileName} profile`}
+              >
+                <span className={avatarWrapperClasses}>
+                  {currentUser?.avatar ? (
+                    <img
+                      src={currentUser.avatar}
+                      alt={`${profileName} avatar`}
+                      className={`${avatarImageClasses} block`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </span>
+                <span className="sr-only">{profileName}</span>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </aside>
