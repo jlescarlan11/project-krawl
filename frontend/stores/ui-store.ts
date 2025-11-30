@@ -16,6 +16,7 @@ interface UIState {
   modals: Record<string, boolean>;
   theme: Theme;
   loading: Record<string, boolean>;
+  sidebarCollapsed: boolean;
 }
 
 /**
@@ -27,6 +28,8 @@ interface UIActions {
   toggleModal: (id: string) => void;
   setTheme: (theme: Theme) => void;
   setLoading: (key: string, value: boolean) => void;
+  toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 /**
@@ -41,6 +44,7 @@ const defaultState: UIState = {
   modals: {},
   theme: "light",
   loading: {},
+  sidebarCollapsed: false,
 };
 
 /**
@@ -81,12 +85,19 @@ export const useUIStore = create<UIStore>()(
           set((state) => ({
               loading: { ...state.loading, [key]: value },
           })),
+        toggleSidebar: () =>
+          set((state) => ({
+            sidebarCollapsed: !state.sidebarCollapsed,
+          })),
+        setSidebarCollapsed: (collapsed) =>
+          set({ sidebarCollapsed: collapsed }),
       }),
       {
         name: "krawl:ui:v1",
         storage: createJSONStorage(() => safeLocalStorage),
         partialize: (state) => ({
           theme: state.theme,
+          sidebarCollapsed: state.sidebarCollapsed,
         }),
       }
     ),
@@ -110,3 +121,9 @@ export const useTheme = () => useUIStore((state) => state.theme);
  */
 export const useLoading = (key: string) =>
   useUIStore((state) => state.loading[key] ?? false);
+
+/**
+ * Selector: Get sidebar collapsed state
+ */
+export const useSidebarCollapsed = () =>
+  useUIStore((state) => state.sidebarCollapsed);

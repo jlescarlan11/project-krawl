@@ -22,3 +22,4 @@ public class UserActivityResponse {
     private List<UserActivityItemResponse> completedKrawls;
 }
 
+

@@ -20,3 +20,4 @@ public class UserStatsResponse {
     private Integer krawlsCompleted;
 }
 
+

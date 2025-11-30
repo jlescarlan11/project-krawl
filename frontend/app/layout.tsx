@@ -14,7 +14,8 @@ import {
   NavigationWrapper,
   NavigationFooter,
 } from "@/components/navigation/NavigationWrapper";
-import { ConditionalHeader } from "@/components/navigation";
+import { ConditionalSidebar } from "@/components/navigation/ConditionalSidebar";
+import { MainContentWrapper } from "@/components/navigation/MainContentWrapper";
 
 import "./globals.css";
 
@@ -94,9 +95,9 @@ export default function RootLayout({
             <ToastProvider>
               <GuestUpgradeSuccessToast />
               <div className="flex min-h-screen flex-col bg-bg-white">
-                <ConditionalHeader />
+                <ConditionalSidebar />
                 <NavigationWrapper />
-                <main className="flex-1 bg-bg-white">{children}</main>
+                <MainContentWrapper>{children}</MainContentWrapper>
                 <NavigationFooter />
               </div>
               <ServiceWorkerUpdateToast />

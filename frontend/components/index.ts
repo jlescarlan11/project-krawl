@@ -63,3 +63,19 @@ export {
   type ProtectedFeatureBadgeProps,
   type ProtectedFeatureBadgeVariant,
 } from "./guest";
+
+// Map components
+export {
+  Map,
+  MemoizedMap,
+  MapLoadingState,
+  MapErrorState,
+  type MapProps,
+  type MapError,
+  type MapErrorCode,
+  type MapState,
+  type MapRef,
+  type ControlPosition,
+  type CebuBounds,
+  type MapConfig,
+} from "./map";

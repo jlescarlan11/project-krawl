@@ -69,3 +69,4 @@ export function AuthenticatedHeroSection({ user }: AuthenticatedHeroSectionProps
   );
 }
 
+

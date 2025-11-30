@@ -12,6 +12,7 @@ interface NavLinkProps {
   exact?: boolean; // Exact match vs prefix match
   className?: string;
   onClick?: () => void;
+  hideLabel?: boolean; // Hide label text (for icon-only mode)
 }
 
 /**
@@ -27,6 +28,7 @@ export function NavLink({
   exact = false,
   className,
   onClick,
+  hideLabel = false,
 }: NavLinkProps) {
   const pathname = usePathname();
 
@@ -47,12 +49,15 @@ export function NavLink({
         isActive
           ? "bg-primary-green text-white"
           : "text-text-primary hover:bg-light-green/10 hover:text-primary-green",
+        hideLabel && "justify-center px-2",
         className
       )}
       aria-current={isActive ? "page" : undefined}
+      title={hideLabel ? label : undefined}
+      aria-label={label}
     >
       {Icon && <Icon className="w-5 h-5" aria-hidden="true" />}
-      <span>{label}</span>
+      {!hideLabel && <span>{label}</span>}
     </Link>
   );
 }
