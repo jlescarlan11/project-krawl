@@ -202,7 +202,7 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
         // 5. Create map instance
         const map = new mapboxgl.Map({
           container,
-          style: style || process.env.NEXT_PUBLIC_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v12',
+          style: style || process.env.NEXT_PUBLIC_MAPBOX_STYLE || 'mapbox://styles/mapbox/standard',
           center: initialCenter,
           zoom: initialZoom,
           interactive,
@@ -239,6 +239,15 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
           if (maxBounds) {
             map.setMaxBounds(maxBounds);
           }
+
+          // Smooth animation to center after map loads
+          // This ensures the map gracefully centers on the initial position
+          map.flyTo({
+            center: initialCenter,
+            zoom: initialZoom,
+            duration: 1500, // 1.5 seconds animation
+            essential: true, // Animation will happen even if user prefers reduced motion
+          });
 
           setMapState(prev => ({
             ...prev,
@@ -284,13 +293,26 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
           map.on('click', onClick);
         }
 
-        if (onMoveEnd) {
-          map.on('moveend', onMoveEnd);
-        }
+        // Track map state changes
+        map.on('moveend', (event) => {
+          const center = map.getCenter();
+          const zoom = map.getZoom();
+          setMapState(prev => ({
+            ...prev,
+            center: [center.lng, center.lat],
+            zoom,
+          }));
+          onMoveEnd?.(event);
+        });
 
-        if (onZoomEnd) {
-          map.on('zoomend', onZoomEnd);
-        }
+        map.on('zoomend', (event) => {
+          const zoom = map.getZoom();
+          setMapState(prev => ({
+            ...prev,
+            zoom,
+          }));
+          onZoomEnd?.(event);
+        });
 
         // 11. Store map instance
         mapInstanceRef.current = map;

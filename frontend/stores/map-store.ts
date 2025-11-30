@@ -53,7 +53,7 @@ type MapStore = MapState & MapActions;
  */
 const defaultState: MapState = {
   center: [123.8854, 10.3157], // Cebu City center
-  zoom: 13,
+  zoom: 12, // Initial zoom level for viewing entire city
   bearing: 0,
   pitch: 0,
   selectedMarkerId: null,
