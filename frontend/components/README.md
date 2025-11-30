@@ -15,6 +15,7 @@ The component library includes:
 - **Form Components:** Input, Textarea, Select, Checkbox, Radio, and FileUpload
 - **State Components:** Spinner, LoadingSkeleton, ProgressBar, EmptyState, ErrorDisplay, and Toast
 - **Hero Components:** HeroSection, HeroCTAs, HeroStatsSection, HeroStats, HeroVisual, and useCountUp for the landing page hero experience
+- **Map Components:** Map, MapLoadingState, MapErrorState for interactive map functionality (TASK-051)
 
 ## Landing Hero Components
 
@@ -624,6 +625,111 @@ import { ErrorDisplay } from '@/components'
 - `variant?: 'network' | 'error' | '404' | '500' | 'permission'` - Error variant (default: 'error')
 - `className?: string` - Additional CSS classes
 
+### Map Components
+
+**Purpose:** Interactive map functionality using Mapbox GL JS 3.x
+
+**Components:** `Map`, `MapLoadingState`, `MapErrorState`
+
+#### Map Component
+
+Interactive Mapbox GL JS map with comprehensive error handling, loading states, and WebGL detection.
+
+```tsx
+import { Map } from '@/components/map'
+
+// Basic usage
+<Map className="h-screen" />
+
+// With custom configuration
+<Map
+  initialCenter={[123.8854, 10.3157]} // Cebu City
+  initialZoom={13}
+  showNavigationControl
+  showGeolocateControl
+  onLoad={(map) => console.log('Map loaded', map)}
+  onError={(error) => console.error('Map error', error)}
+  className="h-screen w-full"
+/>
+```
+
+**Props:**
+
+- `initialCenter?: [number, number]` - Initial map center [lng, lat] (default: Cebu City)
+- `initialZoom?: number` - Initial zoom level (default: 13)
+- `style?: string` - Mapbox style URL
+- `className?: string` - Additional CSS classes
+- `showNavigationControl?: boolean` - Show zoom/compass controls (default: true)
+- `showGeolocateControl?: boolean` - Show geolocation button (default: true)
+- `showScaleControl?: boolean` - Show scale control (default: false)
+- `onLoad?: (map: mapboxgl.Map) => void` - Map load callback
+- `onError?: (error: MapError) => void` - Error handler
+- `onClick?: (event: mapboxgl.MapMouseEvent) => void` - Click handler
+- `onMoveEnd?: (event: mapboxgl.MapboxEvent) => void` - Move end handler
+- `onZoomEnd?: (event: mapboxgl.MapboxEvent) => void` - Zoom end handler
+- `retryOnError?: boolean` - Enable retry on errors (default: true)
+- `loadingComponent?: React.ReactNode` - Custom loading component
+- `errorComponent?: React.ReactNode` - Custom error component
+
+**Features:**
+
+- ✅ WebGL support detection
+- ✅ Comprehensive error handling
+- ✅ Automatic retry for recoverable errors
+- ✅ Loading states with skeleton
+- ✅ User-friendly error messages
+- ✅ Mobile and desktop responsive
+- ✅ Code splitting with dynamic imports
+- ✅ Sentry integration for error monitoring
+
+**Error Handling:**
+
+The Map component handles all edge cases:
+- Invalid/expired Mapbox token
+- Network failures
+- Rate limit exceeded
+- WebGL not supported
+- Container size zero
+- Map initialization failures
+
+**Usage Example:**
+
+```tsx
+"use client";
+
+import dynamic from 'next/dynamic';
+import { Map } from '@/components/map';
+
+// Dynamic import for code splitting
+const DynamicMap = dynamic(
+  () => Promise.resolve(Map),
+  {
+    ssr: false,
+    loading: () => <div>Loading map...</div>,
+  }
+);
+
+export default function MapPage() {
+  return (
+    <div className="h-screen w-full">
+      <DynamicMap className="h-full w-full" />
+    </div>
+  );
+}
+```
+
+**Dependencies:**
+
+- `mapbox-gl@^3.0.0` - Mapbox GL JS library
+- `@types/mapbox-gl` - TypeScript definitions
+
+**Environment Variables:**
+
+- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` - Mapbox access token (required)
+- `NEXT_PUBLIC_MAPBOX_STYLE` - Mapbox style URL (optional, defaults to streets-v12)
+
+See [`map/README.md`](./map/README.md) for complete documentation (if exists).
+
 ### Toast System
 
 **Purpose:** Toast notifications for success/error feedback
@@ -871,6 +977,13 @@ components/
 │   ├── Logo.tsx         # Logo component with variants and sizes
 │   ├── index.ts         # Barrel exports
 │   └── README.md        # Brand components documentation
+├── map/                 # Map components (TASK-051)
+│   ├── Map.tsx          # Main Mapbox GL JS map component
+│   ├── MapLoadingState.tsx # Loading state component
+│   ├── MapErrorState.tsx # Error state component
+│   ├── types.ts         # TypeScript type definitions
+│   ├── index.ts         # Barrel exports
+│   └── README.md        # Map components documentation (if exists)
 ├── ui/                  # Base UI components
 │   ├── button.tsx       # Button component
 │   ├── card.tsx         # Card component
