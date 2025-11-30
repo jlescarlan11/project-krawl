@@ -12,6 +12,15 @@ export const CEBU_CITY_BOUNDS: [[number, number], [number, number]] = [
   [123.95, 10.40], // Northeast coordinates [lng, lat]
 ];
 
+// Precise boundary constraints for enforcing Cebu City limits
+export const CEBU_CITY_MAX_BOUNDS: [[number, number], [number, number]] = [
+  [123.8150, 10.2450], // Southwest corner [lng, lat]
+  [123.9600, 10.4000], // Northeast corner [lng, lat]
+];
+
+// Boundary GeoJSON file path
+export const BOUNDARY_GEOJSON_PATH = '/data/cebu-city-boundary.geojson';
+
 // Zoom Levels
 export const DEFAULT_ZOOM = 13;
 export const MIN_ZOOM = 10; // Don't allow zooming out beyond Cebu region

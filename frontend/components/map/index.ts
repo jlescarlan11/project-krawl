@@ -1,12 +1,18 @@
 /**
  * Map Components Barrel Export
- * 
+ *
  * Central export point for all map-related components.
  */
 
 export { Map } from './Map';
 export { MapLoadingState } from './MapLoadingState';
 export { MapErrorState } from './MapErrorState';
+export { MapWithBoundary } from './MapWithBoundary';
+export type { MapWithBoundaryProps } from './MapWithBoundary';
+export { LocationPicker } from './LocationPicker';
+export type { LocationPickerProps } from './LocationPicker';
+export { useBoundaryLayer } from './useBoundaryLayer';
+export type { BoundaryLayerOptions } from './useBoundaryLayer';
 export type {
   MapProps,
   MapError,
