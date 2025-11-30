@@ -10,7 +10,9 @@
 import React, { useState, useCallback } from 'react';
 import { Map } from './Map';
 import { useBoundaryLayer } from './useBoundaryLayer';
+import { GemMarkerLayer } from './GemMarkerLayer';
 import type { MapProps } from './types';
+import type { MapGem } from './gem-types';
 import type mapboxgl from 'mapbox-gl';
 
 export interface MapWithBoundaryProps extends Omit<MapProps, 'onLoad'> {
@@ -59,6 +61,27 @@ export interface MapWithBoundaryProps extends Omit<MapProps, 'onLoad'> {
    * Callback when boundary layer fails to load
    */
   onBoundaryError?: (error: Error) => void;
+
+  /**
+   * Whether to show Gem markers on the map
+   * @default false
+   */
+  showGemMarkers?: boolean;
+
+  /**
+   * Filter Gem markers by categories
+   */
+  gemCategories?: string[];
+
+  /**
+   * Callback when a Gem marker is clicked
+   */
+  onGemMarkerClick?: (gem: MapGem) => void;
+
+  /**
+   * Callback when Gem markers are loaded
+   */
+  onGemMarkersLoad?: (gems: MapGem[]) => void;
 }
 
 /**
@@ -84,6 +107,10 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       boundaryLineOpacity = 1,
       boundaryFillColor = '#3b82f6',
       boundaryFillOpacity = 0.1,
+      showGemMarkers = false,
+      gemCategories,
+      onGemMarkerClick,
+      onGemMarkersLoad,
       onLoad,
       onBoundaryError,
       ...mapProps
@@ -125,7 +152,19 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       }
     }, [boundaryError, onBoundaryError]);
 
-    return <Map ref={ref} {...mapProps} onLoad={handleMapLoad} />;
+    return (
+      <>
+        <Map ref={ref} {...mapProps} onLoad={handleMapLoad} />
+        {showGemMarkers && (
+          <GemMarkerLayer
+            map={mapInstance}
+            categories={gemCategories}
+            onMarkerClick={onGemMarkerClick}
+            onMarkersLoad={onGemMarkersLoad}
+          />
+        )}
+      </>
+    );
   }
 );
 

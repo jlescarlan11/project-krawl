@@ -1,14 +1,8 @@
-/**
- * Custom hook for managing Cebu City boundary layer on Mapbox GL JS map
- *
- * Handles loading, displaying, and styling the boundary polygon
- */
-
 "use client";
 
-import { useEffect, useState } from 'react';
-import type mapboxgl from 'mapbox-gl';
-import { BOUNDARY_GEOJSON_PATH } from '@/lib/map/constants';
+import { useEffect, useState } from "react";
+import type mapboxgl from "mapbox-gl";
+import { BOUNDARY_GEOJSON_PATH } from "@/lib/map/constants";
 
 export interface BoundaryLayerOptions {
   lineColor?: string;
@@ -20,26 +14,14 @@ export interface BoundaryLayerOptions {
 }
 
 const DEFAULT_OPTIONS: Required<BoundaryLayerOptions> = {
-  lineColor: '#3b82f6', // Blue-500
+  lineColor: "#3b82f6",
   lineWidth: 3,
   lineOpacity: 1,
-  fillColor: '#3b82f6', // Blue-500
+  fillColor: "#3b82f6",
   fillOpacity: 0.1,
   showBoundary: true,
 };
 
-/**
- * Custom hook to add and manage Cebu City boundary layer
- *
- * @param map - Mapbox GL JS map instance
- * @param options - Styling options for the boundary layer
- *
- * @example
- * const { isLoaded, error } = useBoundaryLayer(mapInstance, {
- *   lineColor: '#ef4444',
- *   fillOpacity: 0.15
- * });
- */
 export function useBoundaryLayer(
   map: mapboxgl.Map | null,
   options: BoundaryLayerOptions = {}
@@ -50,88 +32,107 @@ export function useBoundaryLayer(
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
   useEffect(() => {
-    if (!map || !opts.showBoundary) {
-      return;
-    }
+    if (!map || !opts.showBoundary) return;
 
-    // Wait for map to be fully loaded
-    const addBoundaryLayer = async () => {
+    let active = true;
+
+    const addLayer = async () => {
       try {
-        // Check if map is loaded
+        // Wait for style load safely
         if (!map.isStyleLoaded()) {
-          // Wait for style to load
           await new Promise<void>((resolve) => {
-            map.once('styledata', () => resolve());
+            map.once("styledata", () => resolve());
           });
         }
 
-        // Check if source already exists
-        if (map.getSource('cebu-city-boundary')) {
+        if (!active) return;
+
+        // If already added → skip
+        if (map.getSource("cebu-city-boundary")) {
           setIsLoaded(true);
           return;
         }
 
-        // Fetch boundary GeoJSON
-        const response = await fetch(BOUNDARY_GEOJSON_PATH);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch boundary data: ${response.statusText}`);
+        const res = await fetch(BOUNDARY_GEOJSON_PATH);
+        if (!res.ok) throw new Error("Failed to fetch boundary data");
+
+        const data = await res.json();
+        if (!active) return;
+
+        // SOURCE
+        if (!map.getSource("cebu-city-boundary")) {
+          map.addSource("cebu-city-boundary", {
+            type: "geojson",
+            data,
+          });
         }
 
-        const boundaryData = await response.json();
+        // FILL LAYER
+        if (!map.getLayer("cebu-city-boundary-fill")) {
+          map.addLayer({
+            id: "cebu-city-boundary-fill",
+            type: "fill",
+            source: "cebu-city-boundary",
+            paint: {
+              "fill-color": opts.fillColor,
+              "fill-opacity": opts.fillOpacity,
+            },
+          });
+        }
 
-        // Add source
-        map.addSource('cebu-city-boundary', {
-          type: 'geojson',
-          data: boundaryData,
-        });
-
-        // Add fill layer (background)
-        map.addLayer({
-          id: 'cebu-city-boundary-fill',
-          type: 'fill',
-          source: 'cebu-city-boundary',
-          paint: {
-            'fill-color': opts.fillColor,
-            'fill-opacity': opts.fillOpacity,
-          },
-        });
-
-        // Add line layer (border)
-        map.addLayer({
-          id: 'cebu-city-boundary-line',
-          type: 'line',
-          source: 'cebu-city-boundary',
-          paint: {
-            'line-color': opts.lineColor,
-            'line-width': opts.lineWidth,
-            'line-opacity': opts.lineOpacity,
-          },
-        });
+        // LINE LAYER
+        if (!map.getLayer("cebu-city-boundary-line")) {
+          map.addLayer({
+            id: "cebu-city-boundary-line",
+            type: "line",
+            source: "cebu-city-boundary",
+            paint: {
+              "line-color": opts.lineColor,
+              "line-width": opts.lineWidth,
+              "line-opacity": opts.lineOpacity,
+            },
+          });
+        }
 
         setIsLoaded(true);
-        setError(null);
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error loading boundary');
-        setError(error);
-        console.error('Error loading boundary layer:', error);
+        if (active) setError(err as Error);
+        console.error("Boundary layer error:", err);
       }
     };
 
-    addBoundaryLayer();
+    addLayer();
 
-    // Cleanup function
     return () => {
-      if (map && map.getLayer('cebu-city-boundary-line')) {
-        map.removeLayer('cebu-city-boundary-line');
-      }
-      if (map && map.getLayer('cebu-city-boundary-fill')) {
-        map.removeLayer('cebu-city-boundary-fill');
-      }
-      if (map && map.getSource('cebu-city-boundary')) {
-        map.removeSource('cebu-city-boundary');
+      active = false;
+
+      try {
+        // Extra guard: style might be gone already
+        if (!map?.isStyleLoaded()) return;
+
+        if (map.getLayer("cebu-city-boundary-line"))
+          map.removeLayer("cebu-city-boundary-line");
+
+        if (map.getLayer("cebu-city-boundary-fill"))
+          map.removeLayer("cebu-city-boundary-fill");
+
+        if (map.getSource("cebu-city-boundary"))
+          map.removeSource("cebu-city-boundary");
+
+      } catch (e) {
+        // ignore — map may already be destroyed
+        console.debug("Boundary cleanup skipped, map already destroyed.");
       }
     };
-  }, [map, opts.showBoundary, opts.lineColor, opts.lineWidth, opts.lineOpacity, opts.fillColor, opts.fillOpacity]);
+  }, [
+    map,
+    opts.showBoundary,
+    opts.lineColor,
+    opts.lineWidth,
+    opts.lineOpacity,
+    opts.fillColor,
+    opts.fillOpacity,
+  ]);
 
   return { isLoaded, error };
 }
