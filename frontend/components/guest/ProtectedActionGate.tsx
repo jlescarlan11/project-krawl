@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import { useId, useSyncExternalStore, type ReactNode } from "react";
 import { SignInPrompt } from "@/components/auth";
 import { useGuestMode, type GuestSignInOptions } from "@/hooks/useGuestMode";
 import { getSignInMessage, type GuestFeatureContext } from "@/lib/guest-mode";
@@ -25,7 +25,10 @@ export interface ProtectedActionGateProps {
 }
 
 /**
- * Clean, hydration-safe ProtectedActionGate
+ * Hydration-safe ProtectedActionGate
+ *
+ * Prevents hydration mismatches by only rendering auth-dependent content after client mount.
+ * Uses useSyncExternalStore to ensure server and client render the same initial HTML.
  */
 export function ProtectedActionGate({
   context,
@@ -37,7 +40,18 @@ export function ProtectedActionGate({
   const promptId = useId();
   const promptMessage = message ?? getSignInMessage(context);
 
-  const isGuest = isGuestFromStore;
+  // Use useSyncExternalStore to handle hydration safely
+  // Server: always returns false (not guest)
+  // Client: returns false on initial render, then actual guest state
+  const isMounted = useSyncExternalStore(
+    () => () => {}, // subscribe (no-op)
+    () => true, // getSnapshot (client)
+    () => false // getServerSnapshot (server)
+  );
+
+  // Use guest state only after mounting to avoid hydration mismatch
+  // On server and initial render, assume not guest (most permissive state)
+  const isGuest = isMounted ? isGuestFromStore : false;
 
   const requestSignIn = (options?: GuestSignInOptions) => {
     showSignInPrompt(context, { ...promptOptions, ...options });
@@ -63,14 +77,8 @@ export function ProtectedActionGate({
     />
   ) : null;
 
-  /**
-   * Hydration-safe wrapper:
-   *
-   * - <div className="contents"> does not affect layout
-   * - suppressHydrationWarning prevents SSR/CSR mismatch errors
-   */
   return (
-    <div className="contents" suppressHydrationWarning>
+    <div className="contents">
       {children({
         isGuest,
         requestSignIn,

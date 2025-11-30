@@ -11,8 +11,10 @@ import React, { useState, useCallback } from 'react';
 import { Map } from './Map';
 import { useBoundaryLayer } from './useBoundaryLayer';
 import { GemMarkerLayer } from './GemMarkerLayer';
+import { KrawlTrailLayer } from './KrawlTrailLayer';
 import type { MapProps } from './types';
 import type { MapGem } from './gem-types';
+import type { MapKrawl } from './krawl-types';
 import type mapboxgl from 'mapbox-gl';
 
 export interface MapWithBoundaryProps extends Omit<MapProps, 'onLoad'> {
@@ -82,6 +84,27 @@ export interface MapWithBoundaryProps extends Omit<MapProps, 'onLoad'> {
    * Callback when Gem markers are loaded
    */
   onGemMarkersLoad?: (gems: MapGem[]) => void;
+
+  /**
+   * Whether to show Krawl trails on the map
+   * @default false
+   */
+  showKrawlTrails?: boolean;
+
+  /**
+   * Selected Krawl ID to highlight
+   */
+  selectedKrawlId?: string | null;
+
+  /**
+   * Callback when a Krawl trail is clicked
+   */
+  onKrawlTrailClick?: (krawl: MapKrawl) => void;
+
+  /**
+   * Callback when Krawl trails are loaded
+   */
+  onKrawlTrailsLoad?: (krawls: MapKrawl[]) => void;
 }
 
 /**
@@ -111,6 +134,10 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       gemCategories,
       onGemMarkerClick,
       onGemMarkersLoad,
+      showKrawlTrails = false,
+      selectedKrawlId,
+      onKrawlTrailClick,
+      onKrawlTrailsLoad,
       onLoad,
       onBoundaryError,
       ...mapProps
@@ -155,6 +182,15 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
     return (
       <>
         <Map ref={ref} {...mapProps} onLoad={handleMapLoad} />
+        {showKrawlTrails && (
+          <KrawlTrailLayer
+            map={mapInstance}
+            selectedKrawlId={selectedKrawlId}
+            showTrails={showKrawlTrails}
+            onTrailClick={onKrawlTrailClick}
+            onTrailsLoad={onKrawlTrailsLoad}
+          />
+        )}
         {showGemMarkers && (
           <GemMarkerLayer
             map={mapInstance}

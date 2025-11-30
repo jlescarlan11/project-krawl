@@ -1,5 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
+import { useSyncExternalStore } from "react";
+
+// Get current year - hydration-safe
+function useCurrentYear() {
+  return useSyncExternalStore(
+    () => () => {}, // subscribe (no-op)
+    () => new Date().getFullYear(), // getSnapshot (client)
+    () => new Date().getFullYear() // getServerSnapshot (server)
+  );
+}
 
 /**
  * Footer component
@@ -7,6 +19,8 @@ import { ROUTES } from "@/lib/routes";
  * Site footer with links, legal information, and branding.
  */
 export function Footer() {
+  const currentYear = useCurrentYear();
+
   return (
     <footer className="hidden lg:block bg-bg-white border-t border-[var(--color-border-subtle)] shadow-[var(--shadow-elevation-1)] mt-auto">
       <div className="container mx-auto px-4 py-8">
@@ -79,7 +93,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-8 pt-8 border-t border-[var(--color-border-subtle)] text-center">
           <p className="text-text-tertiary text-sm">
-            © {new Date().getFullYear()} Krawl. All rights reserved.
+            © {currentYear} Krawl. All rights reserved.
           </p>
         </div>
       </div>

@@ -15,38 +15,34 @@ import { Logo } from "@/components/brand";
 /**
  * Get cached auth from localStorage synchronously - OPTIMIZATION
  * This runs synchronously during render to prevent any flash
- * Since this is a client component, we can safely read localStorage immediately
+ * Returns null on server to match initial client render
  */
 function useOptimisticAuth() {
   return useMemo(() => {
-    // Since this is a "use client" component, we're always on the client
-    // Read localStorage synchronously to prevent flicker
+    // Return null on server to ensure hydration match
     if (typeof window === "undefined") {
-      return { user: null, isLoading: true };
+      return { user: null, isLoading: false };
     }
-    
+
     try {
       const stored = localStorage.getItem("krawl:auth:v1");
       if (!stored) {
-        // No stored data means user is not authenticated - no need to show loading
         return { user: null, isLoading: false };
       }
-      
+
       const parsed = JSON.parse(stored);
       const user = parsed.state?.user;
       const session = parsed.state?.session;
-      
+
       if (user && session?.expiresAt) {
         const expiresDate = new Date(session.expiresAt);
         if (!isNaN(expiresDate.getTime()) && expiresDate > new Date()) {
           return { user, isLoading: false };
         }
       }
-      
-      // Session expired or invalid - user is not authenticated
+
       return { user: null, isLoading: false };
     } catch {
-      // Parse error - assume not authenticated
       return { user: null, isLoading: false };
     }
   }, []); // Only compute once on mount
@@ -194,7 +190,7 @@ export const Sidebar = memo(function Sidebar() {
                       aria-describedby={promptId}
                       title={promptMessage}
                     >
-                      <Plus className="w-5 h-5 flex-shrink-0" />
+                      <Plus className="w-5 h-5 shrink-0" />
                     </button>
                     <span className="sr-only">{Prompt}</span>
                   </>
@@ -212,8 +208,8 @@ export const Sidebar = memo(function Sidebar() {
           </div>
         </nav>
 
-        {/* User Menu - Shows skeleton while loading to prevent flash */}
-        <div className="border-t border-[var(--color-border-subtle)] p-4 mt-auto" suppressHydrationWarning>
+        {/* User Menu */}
+        <div className="border-t border-[var(--color-border-subtle)] p-4 mt-auto">
           <div className="flex items-center justify-center">
             {isLoading ? (
               // Skeleton loading state - prevents flash on page refresh

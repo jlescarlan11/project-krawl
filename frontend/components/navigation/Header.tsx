@@ -15,38 +15,34 @@ import { Logo } from "@/components/brand";
 /**
  * Get cached auth from localStorage synchronously - OPTIMIZATION
  * This runs synchronously during render to prevent any flash
- * Since this is a client component, we can safely read localStorage immediately
+ * Returns null on server to match initial client render
  */
 function useOptimisticAuth() {
   return useMemo(() => {
-    // Since this is a "use client" component, we're always on the client
-    // Read localStorage synchronously to prevent flicker
+    // Return null on server to ensure hydration match
     if (typeof window === "undefined") {
-      return { user: null, isLoading: true };
+      return { user: null, isLoading: false };
     }
-    
+
     try {
       const stored = localStorage.getItem("krawl:auth:v1");
       if (!stored) {
-        // No stored data means user is not authenticated - no need to show loading
         return { user: null, isLoading: false };
       }
-      
+
       const parsed = JSON.parse(stored);
       const user = parsed.state?.user;
       const session = parsed.state?.session;
-      
+
       if (user && session?.expiresAt) {
         const expiresDate = new Date(session.expiresAt);
         if (!isNaN(expiresDate.getTime()) && expiresDate > new Date()) {
           return { user, isLoading: false };
         }
       }
-      
-      // Session expired or invalid - user is not authenticated
+
       return { user: null, isLoading: false };
     } catch {
-      // Parse error - assume not authenticated
       return { user: null, isLoading: false };
     }
   }, []); // Only compute once on mount
@@ -147,39 +143,37 @@ export const Header = memo(function Header() {
             <NavLink href={ROUTES.HOME} label="Home" exact />
             <NavLink href={ROUTES.MAP} label="Map" />
             <NavLink href={ROUTES.SEARCH} label="Search" />
-            <div suppressHydrationWarning>
-              <ProtectedActionGate
-                context="create"
-                message="Sign in to unlock creator tools"
-                promptOptions={{
-                  redirectTo: ROUTES.GEM_CREATE,
-                  preserveFilters: false,
-                }}
-              >
-                {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-                  isGuest ? (
-                    <div className="flex flex-col items-start gap-1">
-                      <button
-                        type="button"
-                        className={guestNavClasses}
-                        onClick={() => requestSignIn()}
-                        aria-describedby={promptId}
-                        title={promptMessage}
-                      >
-                        <span>Create</span>
-                      </button>
-                      <span className="sr-only">{Prompt}</span>
-                    </div>
-                  ) : (
-                    <NavLink href={ROUTES.GEM_CREATE} label="Create" />
-                  )
-                }
-              </ProtectedActionGate>
-            </div>
+            <ProtectedActionGate
+              context="create"
+              message="Sign in to unlock creator tools"
+              promptOptions={{
+                redirectTo: ROUTES.GEM_CREATE,
+                preserveFilters: false,
+              }}
+            >
+              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
+                isGuest ? (
+                  <div className="flex flex-col items-start gap-1">
+                    <button
+                      type="button"
+                      className={guestNavClasses}
+                      onClick={() => requestSignIn()}
+                      aria-describedby={promptId}
+                      title={promptMessage}
+                    >
+                      <span>Create</span>
+                    </button>
+                    <span className="sr-only">{Prompt}</span>
+                  </div>
+                ) : (
+                  <NavLink href={ROUTES.GEM_CREATE} label="Create" />
+                )
+              }
+            </ProtectedActionGate>
           </div>
 
-          {/* User Menu - Shows skeleton while loading to prevent flash */}
-          <div className="flex items-center gap-2" suppressHydrationWarning>
+          {/* User Menu */}
+          <div className="flex items-center gap-2">
             {isLoading ? (
               // Skeleton loading state - prevents flash on page refresh
               <div
