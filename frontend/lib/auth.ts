@@ -22,9 +22,10 @@ import {
  * between lib/auth.ts and stores/auth-store.ts.
  */
 interface AuthStoreInterface {
-  signIn: (
-    user: { id: string; email: string; name: string; avatar?: string },
-    session: { token: string; expiresAt: string }
+  syncFromNextAuth: (
+    user: { id: string; email: string; name: string; avatar?: string } | null,
+    session: { token: string; expiresAt: string } | null,
+    error?: string | null
   ) => void;
   signOut: () => void;
   user?: { id: string; email: string; name: string; avatar?: string } | null;
@@ -203,6 +204,10 @@ export async function refreshSession(
 /**
  * Sync NextAuth.js session to Zustand store
  * 
+ * This is the ONLY function that should sync NextAuth session to Zustand.
+ * It uses the store's syncFromNextAuth method which includes sync locking
+ * to prevent concurrent syncs and race conditions.
+ * 
  * Updates Zustand auth store with data from NextAuth.js session.
  * This maintains backward compatibility with existing components
  * that use Zustand store for authentication state.
@@ -212,6 +217,9 @@ export async function refreshSession(
  * and should not be exposed unnecessarily. The primary session management
  * is handled by NextAuth.js with HTTP-only cookies.
  * 
+ * **Important:** This function validates session expiration and clears
+ * Zustand state if the session is expired or null.
+ * 
  * @param session - NextAuth.js session object (can be null)
  * @param authStore - Zustand auth store instance
  */
@@ -219,20 +227,43 @@ export function syncSessionToZustand(
   session: Session | null,
   authStore: AuthStoreInterface
 ): void {
-  if (session?.user && session?.jwt) {
-    // Get current state to avoid unnecessary updates
-    const currentUser = authStore.user;
-    const currentSession = authStore.session;
+  const timestamp = new Date().toISOString();
+  const hasSession = !!session;
+  const userId = session?.user?.id || null;
+  
+  console.log(`[syncSessionToZustand] Called at ${timestamp}`, {
+    hasSession,
+    userId,
+    userEmail: session?.user?.email || null,
+    hasJwt: !!session?.jwt,
+    stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n'),
+  });
+  
+  // Validate session expiration
+  if (session?.expires) {
+    const expiresDate =
+      typeof session.expires === "string"
+        ? new Date(session.expires)
+        : session.expires;
     
-    // Only update if data has actually changed
-    const newUser = {
+    // If session is expired, treat as null
+    if (isNaN(expiresDate.getTime()) || expiresDate < new Date()) {
+      console.log(`[syncSessionToZustand] Session expired, clearing at ${timestamp}`);
+      authStore.syncFromNextAuth(null, null, null);
+      return;
+    }
+  }
+
+  if (session?.user && session?.jwt) {
+    // Map NextAuth session to Zustand format
+    const user = {
       id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
+      email: session.user.email || "",
+      name: session.user.name || "",
       avatar: session.user.picture,
     };
     
-    const newSession = {
+    const zustandSession = {
       token: session.jwt,
       expiresAt:
         typeof session.expires === "string"
@@ -240,29 +271,17 @@ export function syncSessionToZustand(
           : session.expires.toISOString(),
     };
     
-    // Check if update is needed
-    const userChanged = 
-      !currentUser ||
-      currentUser.id !== newUser.id ||
-      currentUser.email !== newUser.email ||
-      currentUser.name !== newUser.name ||
-      currentUser.avatar !== newUser.avatar;
+    console.log(`[syncSessionToZustand] Syncing authenticated user at ${timestamp}`, {
+      userId: user.id,
+      userEmail: user.email,
+    });
     
-    const sessionChanged =
-      !currentSession ||
-      currentSession.token !== newSession.token ||
-      currentSession.expiresAt !== newSession.expiresAt;
-    
-    // Only update if something changed
-    if (userChanged || sessionChanged) {
-      authStore.signIn(newUser, newSession);
-    }
+    // Use store's syncFromNextAuth method (includes sync lock)
+    authStore.syncFromNextAuth(user, zustandSession, null);
   } else {
-    // Only sign out if currently authenticated
-    const currentStatus = authStore.status;
-    if (currentStatus === "authenticated") {
-      authStore.signOut();
-    }
+    // Session is null or invalid - clear Zustand state
+    console.log(`[syncSessionToZustand] Session null/invalid, clearing at ${timestamp}`);
+    authStore.syncFromNextAuth(null, null, null);
   }
 }
 

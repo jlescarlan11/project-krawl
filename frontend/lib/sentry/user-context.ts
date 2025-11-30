@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
-import { useAuthStore } from "@/stores/auth-store";
-import type { User } from "@/stores/auth-store";
+import { useSession } from "next-auth/react";
 
 /**
  * Sets user context in Sentry for error tracking and user identification.
@@ -11,7 +10,7 @@ import type { User } from "@/stores/auth-store";
  * Only includes non-sensitive user data (ID and username). Email and other
  * sensitive information are explicitly excluded for privacy.
  * 
- * @param user - User object from auth store, or `null` to clear user context
+ * @param user - User object from NextAuth session, or `null` to clear user context
  * 
  * @example
  * ```typescript
@@ -20,12 +19,12 @@ import type { User } from "@/stores/auth-store";
  * setSentryUser(null);
  * ```
  */
-export function setSentryUser(user: User | null) {
+export function setSentryUser(user: { id: string; name?: string | null } | null) {
   try {
     if (user) {
       Sentry.setUser({
         id: user.id,
-        username: user.name,
+        username: user.name || undefined,
         // Don't include email or sensitive data for privacy
       });
     } else {
@@ -63,11 +62,13 @@ export function clearSentryUser() {
 }
 
 /**
- * React hook to sync auth store with Sentry user context.
+ * React hook to sync NextAuth session with Sentry user context.
  * 
  * Automatically updates Sentry user context when authentication state changes.
  * This hook should be used in the root layout component to ensure user context
  * is always in sync with the authentication state.
+ * 
+ * Uses NextAuth.js session as the source of truth for user information.
  * 
  * @example
  * ```tsx
@@ -85,15 +86,17 @@ export function clearSentryUser() {
  * ```
  */
 export function useSentryUserContext() {
-  const user = useAuthStore((state) => state.user);
-  const status = useAuthStore((state) => state.status);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated" && user) {
-      setSentryUser(user);
+    if (status === "authenticated" && session?.user) {
+      setSentryUser({
+        id: session.user.id,
+        name: session.user.name,
+      });
     } else {
       clearSentryUser();
     }
-  }, [user, status]);
+  }, [session, status]);
 }
 

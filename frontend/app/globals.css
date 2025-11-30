@@ -409,7 +409,7 @@ body {
 
 /* Dark mode colors are defined above but not yet implemented.
  * When implementing dark mode, add:
- * 
+ *
  * @media (prefers-color-scheme: dark) {
  *   :root {
  *     --color-bg-white: var(--color-bg-dark);

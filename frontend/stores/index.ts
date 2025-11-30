@@ -16,12 +16,15 @@ export {
   useAuthStore,
   useAuthStatus,
   useAuthUser,
-  useIsAuthenticated,
   useAuthError,
   type User,
   type Session,
   type AuthStatus,
 } from "./auth-store";
+
+// Unified Auth Hooks (use these instead of store selectors)
+export { useAuth } from "@/hooks/useAuth";
+export { useIsAuthenticated } from "@/hooks/useIsAuthenticated";
 
 // UI Store
 export {

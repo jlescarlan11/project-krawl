@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
-import { useIsAuthenticated } from "@/stores/auth-store";
+import { useIsAuthenticated } from "@/hooks/useIsAuthenticated";
 
 /**
  * Hero Call-to-Action Buttons

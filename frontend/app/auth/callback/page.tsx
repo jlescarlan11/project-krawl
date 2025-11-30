@@ -4,8 +4,6 @@ import { Suspense, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
-import { syncSessionToZustand } from "@/lib/auth";
-import { useAuthStore } from "@/stores/auth-store";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
 import { getReturnUrl } from "@/lib/route-utils";
@@ -30,9 +28,7 @@ function AuthCallbackContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const authStore = useAuthStore();
   const hasProcessed = useRef(false);
-  const syncedUserId = useRef<string | null>(null);
 
   // Validate returnUrl to prevent open redirect vulnerabilities
   const returnUrl = getReturnUrl(searchParams);
@@ -45,19 +41,15 @@ function AuthCallbackContent() {
     if (status === "authenticated" && session) {
       // Check if we've already processed this session
       const currentUserId = session.user?.id;
-      if (hasProcessed.current && syncedUserId.current === currentUserId) {
+      if (hasProcessed.current) {
         return;
       }
       
       // Mark as processed to prevent infinite loop
       hasProcessed.current = true;
-      syncedUserId.current = currentUserId || null;
       
-      // Sync session to Zustand store for backward compatibility
-      // Only sync if user ID has changed to prevent unnecessary updates
-      if (authStore.user?.id !== currentUserId) {
-        syncSessionToZustand(session, authStore);
-      }
+      // Note: Session sync to Zustand is handled by useSessionRefresh hook
+      // No need to sync here - it will happen automatically
 
       // Check if user is new (from session)
       // The isNewUser flag is only available during the initial sign-in
@@ -147,7 +139,7 @@ function AuthCallbackContent() {
       }
       router.push(signInUrl.toString());
     }
-  }, [status, session, authStore, returnUrl, router, intentParam]);
+  }, [status, session, returnUrl, router, intentParam]);
 
   // Show different message for new users
   const isNewUser = status === "authenticated" && session ? session.isNewUser : false;

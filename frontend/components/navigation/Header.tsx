@@ -1,8 +1,10 @@
 "use client";
 
+import { memo, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { User } from "lucide-react";
-import { useAuthUser } from "@/stores";
+import { useAuthStore } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
 import { Button } from "@/components";
@@ -11,15 +13,93 @@ import { ProtectedActionGate } from "@/components/guest";
 import { Logo } from "@/components/brand";
 
 /**
- * Header component
+ * Get cached auth from localStorage synchronously - OPTIMIZATION
+ * This runs synchronously during render to prevent any flash
+ * Since this is a client component, we can safely read localStorage immediately
+ */
+function useOptimisticAuth() {
+  return useMemo(() => {
+    // Since this is a "use client" component, we're always on the client
+    // Read localStorage synchronously to prevent flicker
+    if (typeof window === "undefined") {
+      return { user: null, isLoading: true };
+    }
+    
+    try {
+      const stored = localStorage.getItem("krawl:auth:v1");
+      if (!stored) {
+        // No stored data means user is not authenticated - no need to show loading
+        return { user: null, isLoading: false };
+      }
+      
+      const parsed = JSON.parse(stored);
+      const user = parsed.state?.user;
+      const session = parsed.state?.session;
+      
+      if (user && session?.expiresAt) {
+        const expiresDate = new Date(session.expiresAt);
+        if (!isNaN(expiresDate.getTime()) && expiresDate > new Date()) {
+          return { user, isLoading: false };
+        }
+      }
+      
+      // Session expired or invalid - user is not authenticated
+      return { user: null, isLoading: false };
+    } catch {
+      // Parse error - assume not authenticated
+      return { user: null, isLoading: false };
+    }
+  }, []); // Only compute once on mount
+}
+
+/**
+ * Header component - OPTIMIZED FOR ZERO FLICKER
  *
  * Desktop top navigation bar with logo, main nav links, and user menu.
  * Hidden on mobile (replaced by BottomNav and MobileMenu).
+ * 
+ * Now uses optimistic rendering to completely eliminate flicker:
+ * 1. Immediately reads cached state from localStorage (synchronous)
+ * 2. Shows avatar/Sign In based on cached state (no skeleton needed)
+ * 3. Updates seamlessly when NextAuth confirms state
  */
-export function Header() {
-  const user = useAuthUser();
-  const profileName = user?.name?.trim() || "Profile";
-  const profileHref = ROUTES.USER_PROFILE(user?.id || "");
+export const Header = memo(function Header() {
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  // Get optimistic state first (synchronous, no delay)
+  // Reads from localStorage immediately on first render to prevent flicker
+  // Returns user data if available, or { user: null, isLoading: false } if not authenticated
+  const optimistic = useOptimisticAuth();
+
+  // Then get actual state (may be delayed)
+  const user = useAuthStore((state) => state.user);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+  // Note: We don't use useSession() here anymore - optimistic state is sufficient
+  // The session will sync via useSessionRefresh hook in the background
+
+  // Use optimistic state until Zustand hydrates, then use actual state
+  // This ensures we show the correct UI immediately without waiting for Zustand
+  const currentUser = hasHydrated ? user : optimistic.user;
+
+  // Show loading skeleton only if we're truly loading (should rarely happen now)
+  // Optimistic state typically has isLoading: false since we read from localStorage immediately
+  const isLoading = hasHydrated ? false : optimistic.isLoading;
+
+  // Determine guest status immediately from optimistic state
+  // This bypasses ProtectedActionGate's useGuestMode hook which doesn't use optimistic state
+  const isGuest = !currentUser;
+  
+  // Handle sign-in navigation (simplified version of showSignInPrompt)
+  const handleSignIn = useCallback(() => {
+    const signInUrl = new URL(ROUTES.SIGN_IN, window.location.origin);
+    signInUrl.searchParams.set("returnUrl", pathname);
+    signInUrl.searchParams.set("context", "profile");
+    router.push(signInUrl.toString());
+  }, [router, pathname]);
+  
+  const profileName = currentUser?.name?.trim() || "Profile";
+  const profileHref = ROUTES.USER_PROFILE(currentUser?.id || "");
   const profileChipClasses = cn(
     "inline-flex h-10 w-10 items-center justify-center rounded-full p-0 text-text-primary transition-colors",
     "hover:text-primary-green focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-orange"
@@ -63,93 +143,92 @@ export function Header() {
           </Link>
 
           {/* Main Navigation */}
-          <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1">
-                <NavLink href={ROUTES.HOME} label="Home" exact />
-                <NavLink href={ROUTES.MAP} label="Map" />
-                <NavLink href={ROUTES.SEARCH} label="Search" />
-              </div>
-
-            <ProtectedActionGate
-              context="create"
-              message="Sign in to unlock creator tools"
-              promptOptions={{
-                redirectTo: ROUTES.GEM_CREATE,
-                preserveFilters: false,
-              }}
-            >
-              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-                isGuest ? (
-                  <div className="flex flex-col items-start gap-1">
-                    <button
-                      type="button"
-                      className={guestNavClasses}
-                      onClick={() => requestSignIn()}
-                      aria-describedby={promptId}
-                      title={promptMessage}
-                    >
-                      <span>Create</span>
-                    </button>
-                    <span className="sr-only">{Prompt}</span>
-                  </div>
-                ) : (
-                  <NavLink href={ROUTES.GEM_CREATE} label="Create" />
-                )
-              }
-            </ProtectedActionGate>
-
-          </div>
-
-          {/* User Menu */}
-          <div className="flex items-center gap-2">
-            <ProtectedActionGate context="profile">
-              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-                isGuest ? (
-                  <div className="flex flex-col items-end gap-1">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => requestSignIn()}
-                      aria-describedby={promptId}
-                      title={promptMessage}
-                      aria-label="Sign in"
-                    >
-                      Sign In
-                    </Button>
-                    <div className="w-full text-right">
+          <div className="flex items-center gap-1">
+            <NavLink href={ROUTES.HOME} label="Home" exact />
+            <NavLink href={ROUTES.MAP} label="Map" />
+            <NavLink href={ROUTES.SEARCH} label="Search" />
+            <div suppressHydrationWarning>
+              <ProtectedActionGate
+                context="create"
+                message="Sign in to unlock creator tools"
+                promptOptions={{
+                  redirectTo: ROUTES.GEM_CREATE,
+                  preserveFilters: false,
+                }}
+              >
+                {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
+                  isGuest ? (
+                    <div className="flex flex-col items-start gap-1">
+                      <button
+                        type="button"
+                        className={guestNavClasses}
+                        onClick={() => requestSignIn()}
+                        aria-describedby={promptId}
+                        title={promptMessage}
+                      >
+                        <span>Create</span>
+                      </button>
                       <span className="sr-only">{Prompt}</span>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <Link
-                      href={profileHref}
-                      className={profileChipClasses}
-                      title={`View ${profileName}`}
-                      aria-label={`View ${profileName} profile`}
-                    >
-                      <span className={avatarWrapperClasses}>
-                        {user?.avatar ? (
-                          <img
-                            src={user.avatar}
-                            alt={`${profileName} avatar`}
-                            className={`${avatarImageClasses} block`}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <User className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="sr-only">{profileName}</span>
-                    </Link>
-                  </>
-                )
-              }
-            </ProtectedActionGate>
+                  ) : (
+                    <NavLink href={ROUTES.GEM_CREATE} label="Create" />
+                  )
+                }
+              </ProtectedActionGate>
+            </div>
+          </div>
+
+          {/* User Menu - Shows skeleton while loading to prevent flash */}
+          <div className="flex items-center gap-2" suppressHydrationWarning>
+            {isLoading ? (
+              // Skeleton loading state - prevents flash on page refresh
+              <div
+                className={cn(
+                  profileChipClasses,
+                  "bg-bg-light skeleton-shimmer"
+                )}
+                aria-label="Loading profile"
+              >
+                <span className={avatarWrapperClasses}>
+                  <User className="h-5 w-5 text-text-tertiary opacity-60" />
+                </span>
+              </div>
+            ) : isGuest ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSignIn}
+                aria-label="Sign in"
+                title="Sign in to access your profile"
+              >
+                Sign In
+              </Button>
+            ) : (
+              <Link
+                href={profileHref}
+                className={profileChipClasses}
+                title={`View ${profileName}`}
+                aria-label={`View ${profileName} profile`}
+              >
+                <span className={avatarWrapperClasses}>
+                  {currentUser?.avatar ? (
+                    <img
+                      src={currentUser.avatar}
+                      alt={`${profileName} avatar`}
+                      className={`${avatarImageClasses} block`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </span>
+                <span className="sr-only">{profileName}</span>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
     </header>
   );
-}
+});
 
