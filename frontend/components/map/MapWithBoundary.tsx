@@ -7,11 +7,14 @@
 
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Map } from './Map';
 import { useBoundaryLayer } from './useBoundaryLayer';
 import { GemMarkerLayer } from './GemMarkerLayer';
 import { KrawlTrailLayer } from './KrawlTrailLayer';
+import { GemPopup, GemPopupMobile, adjustPopupPosition } from './GemPopup';
+import { calculateDistance } from '@/lib/map/geoUtils';
+import { easingFunctions, ANIMATION_DURATIONS } from '@/lib/map/animationUtils';
 import type { MapProps } from './types';
 import type { MapGem } from './gem-types';
 import type { MapKrawl } from './krawl-types';
@@ -146,6 +149,12 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
   ) => {
     const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
 
+    // Popup state management
+    const [selectedGem, setSelectedGem] = useState<MapGem | null>(null);
+    const [popupPosition, setPopupPosition] = useState<{ x: number; y: number; placement: 'above' | 'below' } | null>(null);
+    const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
+
     // Use boundary layer hook
     const { isLoaded: boundaryLoaded, error: boundaryError } = useBoundaryLayer(
       mapInstance,
@@ -159,16 +168,146 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       }
     );
 
+    // Device detection for responsive popup
+    useEffect(() => {
+      const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Track user location for distance calculation
+    useEffect(() => {
+      if (!navigator.geolocation) return;
+
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          setUserLocation([position.coords.longitude, position.coords.latitude]);
+        },
+        (error) => {
+          console.warn('Geolocation unavailable:', error.message);
+          // Gracefully degrade: distance won't be shown
+        },
+        {
+          enableHighAccuracy: false, // Balance accuracy vs battery
+          timeout: 10000,
+          maximumAge: 60000, // Cache for 1 minute
+        }
+      );
+
+      return () => navigator.geolocation.clearWatch(watchId);
+    }, []);
+
+    // Handle marker click
+    const handleMarkerClick = useCallback(
+      (gem: MapGem) => {
+        // Validate gem has minimum required data
+        if (!gem.id || !gem.name || !gem.coordinates) {
+          console.error('Invalid gem data:', gem);
+          return;
+        }
+
+        setSelectedGem(gem);
+
+        // Desktop: Calculate popup position
+        // Use window.innerWidth directly instead of isMobile state
+        const isDesktop = window.innerWidth >= 1024;
+        if (isDesktop && mapInstance) {
+          const screenPoint = mapInstance.project(gem.coordinates);
+          const adjustedPosition = adjustPopupPosition({
+            x: screenPoint.x,
+            y: screenPoint.y,
+          });
+          setPopupPosition(adjustedPosition);
+
+          // Pan map to ensure marker + popup visible
+          mapInstance.easeTo({
+            center: gem.coordinates,
+            offset: [0, -150], // 150px up from center
+            duration: ANIMATION_DURATIONS.FAST, // 300ms
+            easing: easingFunctions.easeOutCubic,
+          });
+        }
+
+        // Call user's callback
+        onGemMarkerClick?.(gem);
+      },
+      [mapInstance, onGemMarkerClick]
+    );
+
+    // Handle popup close
+    const handleClosePopup = useCallback(() => {
+      setSelectedGem(null);
+      setPopupPosition(null);
+    }, []);
+
+    // Handle ESC key to close popup
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && selectedGem) {
+          handleClosePopup();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedGem, handleClosePopup]);
+
+    // Handle click outside popup (desktop only)
+    const handleMapClick = useCallback(
+      (e: mapboxgl.MapMouseEvent) => {
+        const isDesktop = window.innerWidth >= 1024;
+        if (!selectedGem || !isDesktop || !mapInstance) return;
+
+        // Check if click was on a gem marker
+        const features = mapInstance.queryRenderedFeatures(e.point, {
+          layers: ['gem-markers'],
+        });
+
+        // If no marker clicked, close popup
+        if (features.length === 0) {
+          handleClosePopup();
+        }
+      },
+      [selectedGem, mapInstance, handleClosePopup]
+    );
+
+    // Close popup when user pans map (desktop only)
+    useEffect(() => {
+      const isDesktop = window.innerWidth >= 1024;
+      if (!mapInstance || !isDesktop || !selectedGem) return;
+
+      const handleMoveStart = () => {
+        handleClosePopup();
+      };
+
+      mapInstance.on('movestart', handleMoveStart);
+      return () => {
+        mapInstance.off('movestart', handleMoveStart);
+      };
+    }, [mapInstance, selectedGem, handleClosePopup]);
+
+    // Add click handler for close-on-outside-click
+    useEffect(() => {
+      if (!mapInstance) return;
+
+      mapInstance.on('click', handleMapClick);
+      return () => {
+        mapInstance.off('click', handleMapClick);
+      };
+    }, [mapInstance, handleMapClick]);
+
     // Handle map load
     const handleMapLoad = useCallback(
       (map: mapboxgl.Map) => {
         setMapInstance(map);
+
         // Call user's onLoad after a brief delay to allow boundary to load
         setTimeout(() => {
           onLoad?.(map, boundaryLoaded);
         }, 100);
       },
-      [onLoad, boundaryLoaded]
+      [boundaryLoaded]
     );
 
     // Handle boundary errors
@@ -195,8 +334,37 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
           <GemMarkerLayer
             map={mapInstance}
             categories={gemCategories}
-            onMarkerClick={onGemMarkerClick}
+            onMarkerClick={handleMarkerClick}
             onMarkersLoad={onGemMarkersLoad}
+          />
+        )}
+
+        {/* Desktop Popup (absolute positioned) */}
+        {selectedGem && !isMobile && popupPosition && (
+          <GemPopup
+            gem={selectedGem}
+            position={{ x: popupPosition.x, y: popupPosition.y }}
+            placement={popupPosition.placement}
+            distance={
+              userLocation
+                ? calculateDistance(userLocation, selectedGem.coordinates)
+                : undefined
+            }
+            onClose={handleClosePopup}
+          />
+        )}
+
+        {/* Mobile Bottom Sheet */}
+        {selectedGem && isMobile && (
+          <GemPopupMobile
+            gem={selectedGem}
+            isOpen={true}
+            distance={
+              userLocation
+                ? calculateDistance(userLocation, selectedGem.coordinates)
+                : undefined
+            }
+            onClose={handleClosePopup}
           />
         )}
       </>

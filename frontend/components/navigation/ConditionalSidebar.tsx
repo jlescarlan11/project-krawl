@@ -32,8 +32,10 @@ export function ConditionalSidebar() {
 
   // Use CSS to hide instead of conditional rendering
   // This keeps the Sidebar mounted and prevents re-initialization
+  // Container wrapper ensures sidebar has a consistent parent
   return (
     <div
+      className="sidebar-container"
       style={{
         display: shouldShowSidebar ? "block" : "none",
       }}

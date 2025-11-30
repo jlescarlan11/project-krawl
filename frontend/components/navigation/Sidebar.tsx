@@ -133,9 +133,9 @@ export const Sidebar = memo(function Sidebar() {
     <aside
       className={cn(
         "fixed left-0 top-0 z-50 h-screen w-20",
-        "bg-gradient-to-b from-bg-white via-bg-white to-bg-light/50",
-        "border-r border-[var(--color-border-subtle)]",
-        "shadow-[0_4px_24px_rgba(0,0,0,0.06)]",
+        "bg-white",
+        "border-r border-gray-200",
+        "shadow-sm",
         "lg:block hidden" // Hidden on mobile, visible on desktop
       )}
       aria-label="Main navigation"

@@ -28,6 +28,7 @@ import {
 } from '@/lib/map/animationUtils';
 import { MapLoadingState } from './MapLoadingState';
 import { MapErrorState } from './MapErrorState';
+import { MapControls } from './MapControls';
 import { cn } from '@/lib/utils';
 import * as Sentry from '@sentry/nextjs';
 
@@ -80,6 +81,13 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
       loadingComponent,
       errorComponent,
       retryOnError = true,
+      showCustomControls = false,
+      showSearchControl = true,
+      showMyLocationControl = true,
+      customControlsPosition = 'top-right',
+      searchPlaceholder,
+      myLocationZoom = 15,
+      children,
     },
     ref
   ) => {
@@ -288,6 +296,12 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
             map.setMaxBounds(maxBounds);
           }
 
+          // Add padding for sidebar on desktop (80px sidebar width)
+          // This ensures map controls and center point account for sidebar
+          if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+            map.setPadding({ left: 80, top: 0, right: 0, bottom: 0 });
+          }
+
           // Configure optimal interactions for smooth UX
           configureOptimalInteractions(map);
 
@@ -482,6 +496,21 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
             />
           )
         )}
+
+        {/* Custom Controls */}
+        {showCustomControls && isLoaded && (
+          <MapControls
+            map={mapInstanceRef.current}
+            showSearch={showSearchControl}
+            showMyLocation={showMyLocationControl}
+            position={customControlsPosition}
+            searchPlaceholder={searchPlaceholder}
+            myLocationZoom={myLocationZoom}
+          />
+        )}
+
+        {/* Custom Children (overlays, popups, etc.) */}
+        {isLoaded && children}
       </div>
     );
   }
