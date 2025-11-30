@@ -7,6 +7,7 @@ import useEmblaCarousel from "embla-carousel-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { ROUTES } from "@/lib/routes";
 import { FeaturedKrawl } from "./types";
 import { FeaturedKrawlCard } from "./FeaturedKrawlCard";
@@ -48,10 +49,29 @@ export function FeaturedKrawlsCarousel({ featuredKrawls = [], loading }: Feature
 
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
-          <div key={idx} className="h-[320px] rounded-[1.75rem] bg-bg-medium/30 p-6 animate-pulse" />
-        ))}
+      <div className="space-y-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-4 flex-1">
+            <LoadingSkeleton variant="text" lines={1} className="h-4 w-40" />
+            <LoadingSkeleton variant="text" lines={1} className="h-10 w-64" />
+          </div>
+        </div>
+
+        {/* Cards skeleton */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: SKELETON_COUNT }).map((_, idx) => (
+            <LoadingSkeleton
+              key={`krawl-skeleton-${idx}`}
+              className="h-[320px] rounded-[1.75rem]"
+            />
+          ))}
+        </div>
+
+        {/* CTA button skeleton */}
+        <div className="flex justify-center sm:justify-end">
+          <LoadingSkeleton className="h-10 w-40 rounded-lg" />
+        </div>
       </div>
     );
   }

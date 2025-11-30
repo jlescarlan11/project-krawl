@@ -83,7 +83,7 @@ export function HeroStats({ stats }: HeroStatsProps) {
           className={cn(
             "rounded-2xl border border-[var(--color-border-subtle)] bg-bg-white p-4 shadow-[var(--shadow-elevation-1)] transition-all duration-200",
             "backdrop-blur",
-            isLoading && "animate-pulse"
+            isLoading && "animate-pulse skeleton-shimmer"
           )}
           aria-busy={isLoading}
         >
