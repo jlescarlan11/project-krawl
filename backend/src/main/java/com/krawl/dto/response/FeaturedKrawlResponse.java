@@ -24,3 +24,4 @@ public class FeaturedKrawlResponse {
     private Integer gemsCount;
 }
 
+

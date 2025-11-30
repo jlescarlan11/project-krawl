@@ -28,3 +28,4 @@ public class UserActivityItemResponse {
     private Integer gemsCount;
 }
 
+

@@ -19,3 +19,4 @@ public class StatisticsResponse {
     private Long activeUsers;
 }
 
+

@@ -32,6 +32,7 @@ export {
   useModal,
   useTheme,
   useLoading,
+  useSidebarCollapsed,
   type Theme,
 } from "./ui-store";
 
