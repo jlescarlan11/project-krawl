@@ -282,18 +282,71 @@ export function useGemMarkers(
             })),
         };
 
-        // Remove existing source and layers if they exist
-        if (map.getLayer("gem-markers")) {
-          map.removeLayer("gem-markers");
+        // Remove existing layers and source if they exist
+        const layersToRemove = [
+          "gem-markers",
+          "gem-cluster-count",
+          "gem-clusters",
+        ];
+        for (const layerId of layersToRemove) {
+          if (map.getLayer(layerId)) {
+            map.removeLayer(layerId);
+          }
         }
         if (map.getSource("gem-markers")) {
           map.removeSource("gem-markers");
         }
 
-        // Add source
+        // Add source with clustering enabled
         map.addSource("gem-markers", {
           type: "geojson",
           data: geojsonData,
+          cluster: true,
+          clusterRadius: 50,
+          clusterMaxZoom: 14, // Clusters break apart at zoom 14
+          clusterMinPoints: 2, // Minimum points to form cluster
+        });
+
+        // Add cluster circle layer
+        map.addLayer({
+          id: "gem-clusters",
+          type: "circle",
+          source: "gem-markers",
+          filter: ["has", "point_count"],
+          paint: {
+            // Primary Green (#2D7A3E) background
+            "circle-color": "#2D7A3E",
+            // Scale cluster size based on point count
+            "circle-radius": [
+              "step",
+              ["get", "point_count"],
+              20, // default size for < 10 points
+              10, 30, // 10-49 points
+              50, 40, // 50+ points
+            ],
+            "circle-opacity": 0.9,
+          },
+        });
+
+        // Add cluster count label layer
+        map.addLayer({
+          id: "gem-cluster-count",
+          type: "symbol",
+          source: "gem-markers",
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": [
+              "case",
+              [">=", ["get", "point_count"], 100],
+              "100+",
+              ["to-string", ["get", "point_count"]],
+            ],
+            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+            "text-size": 12,
+          },
+          paint: {
+            "text-color": "#ffffff",
+          },
         });
 
         // Load marker images
@@ -314,11 +367,12 @@ export function useGemMarkers(
           }
         }
 
-        // Add symbol layer
+        // Add unclustered symbol layer (individual markers)
         map.addLayer({
           id: "gem-markers",
           type: "symbol",
           source: "gem-markers",
+          filter: ["!", ["has", "point_count"]], // Only show unclustered points
           layout: {
             "icon-image": [
               "concat",
@@ -340,19 +394,38 @@ export function useGemMarkers(
             "text-halo-color": "#ffffff",
             "text-halo-width": 2,
           },
-          filter: [
-            "all",
-            [">=", ["zoom"], ZOOM_BREAKPOINTS.CITY_VIEW],
-            [
-              "any",
-              ["==", ["get", "status"], GemStatus.VERIFIED],
-              [">=", ["zoom"], ZOOM_BREAKPOINTS.STREET_VIEW],
-            ],
-          ],
         });
 
-        // Add click handler
-        const handleClick = (e: mapboxgl.MapMouseEvent) => {
+        // Add click handler for clusters
+        const handleClusterClick = (e: mapboxgl.MapMouseEvent) => {
+          const features = map.queryRenderedFeatures(e.point, {
+            layers: ["gem-clusters"],
+          });
+
+          if (features.length > 0) {
+            const feature = features[0];
+            const clusterId = feature.properties?.cluster_id;
+            const source = map.getSource("gem-markers") as mapboxgl.GeoJSONSource;
+
+            if (source && clusterId !== undefined) {
+              source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+                if (err) return;
+
+                const coordinates = (feature.geometry as GeoJSON.Point)
+                  .coordinates as [number, number];
+
+                map.easeTo({
+                  center: coordinates,
+                  zoom: zoom || map.getZoom() + 2,
+                  duration: 500,
+                });
+              });
+            }
+          }
+        };
+
+        // Add click handler for individual markers
+        const handleMarkerClick = (e: mapboxgl.MapMouseEvent) => {
           const features = map.queryRenderedFeatures(e.point, {
             layers: ["gem-markers"],
           });
@@ -369,25 +442,41 @@ export function useGemMarkers(
           }
         };
 
-        // Add hover cursor
-        const handleMouseEnter = () => {
+        // Add hover cursor for clusters
+        const handleClusterMouseEnter = () => {
           map.getCanvas().style.cursor = "pointer";
         };
 
-        const handleMouseLeave = () => {
+        const handleClusterMouseLeave = () => {
           map.getCanvas().style.cursor = "";
         };
 
-        map.on("click", "gem-markers", handleClick);
-        map.on("mouseenter", "gem-markers", handleMouseEnter);
-        map.on("mouseleave", "gem-markers", handleMouseLeave);
+        // Add hover cursor for markers
+        const handleMarkerMouseEnter = () => {
+          map.getCanvas().style.cursor = "pointer";
+        };
+
+        const handleMarkerMouseLeave = () => {
+          map.getCanvas().style.cursor = "";
+        };
+
+        // Attach event listeners
+        map.on("click", "gem-clusters", handleClusterClick);
+        map.on("click", "gem-markers", handleMarkerClick);
+        map.on("mouseenter", "gem-clusters", handleClusterMouseEnter);
+        map.on("mouseleave", "gem-clusters", handleClusterMouseLeave);
+        map.on("mouseenter", "gem-markers", handleMarkerMouseEnter);
+        map.on("mouseleave", "gem-markers", handleMarkerMouseLeave);
 
         // Cleanup
         return () => {
           active = false;
-          map.off("click", "gem-markers", handleClick);
-          map.off("mouseenter", "gem-markers", handleMouseEnter);
-          map.off("mouseleave", "gem-markers", handleMouseLeave);
+          map.off("click", "gem-clusters", handleClusterClick);
+          map.off("click", "gem-markers", handleMarkerClick);
+          map.off("mouseenter", "gem-clusters", handleClusterMouseEnter);
+          map.off("mouseleave", "gem-clusters", handleClusterMouseLeave);
+          map.off("mouseenter", "gem-markers", handleMarkerMouseEnter);
+          map.off("mouseleave", "gem-markers", handleMarkerMouseLeave);
         };
       } catch (err) {
         console.error("Error adding markers to map:", err);

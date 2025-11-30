@@ -32,10 +32,7 @@ export default function MapPage() {
       <DynamicMap
         className="h-full w-full"
         maxBounds={CEBU_CITY_MAX_BOUNDS}
-        showBoundary={true}
-        boundaryLineColor="#3b82f6"
-        boundaryLineWidth={2}
-        boundaryFillOpacity={0.05}
+        showBoundary={false}
         showGemMarkers={true}
         onGemMarkerClick={(gem) => {
           console.log('Gem clicked:', gem.name);

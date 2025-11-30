@@ -176,41 +176,39 @@ export const Sidebar = memo(function Sidebar() {
               hideLabel={true}
               className="w-full justify-center"
             />
-            <div suppressHydrationWarning>
-              <ProtectedActionGate
-                context="create"
-                message="Sign in to unlock creator tools"
-                promptOptions={{
-                  redirectTo: ROUTES.GEM_CREATE,
-                  preserveFilters: false,
-                }}
-              >
-                {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-                  isGuest ? (
-                    <div className="flex items-center justify-center">
-                      <button
-                        type="button"
-                        className={guestNavClasses}
-                        onClick={() => requestSignIn()}
-                        aria-describedby={promptId}
-                        title={promptMessage}
-                      >
-                        <Plus className="w-5 h-5 flex-shrink-0" />
-                      </button>
-                      <span className="sr-only">{Prompt}</span>
-                    </div>
-                  ) : (
-                    <NavLink 
-                      href={ROUTES.GEM_CREATE} 
-                      label="Create" 
-                      icon={Plus}
-                      hideLabel={true}
-                      className="w-full justify-center"
-                    />
-                  )
-                }
-              </ProtectedActionGate>
-            </div>
+            <ProtectedActionGate
+              context="create"
+              message="Sign in to unlock creator tools"
+              promptOptions={{
+                redirectTo: ROUTES.GEM_CREATE,
+                preserveFilters: false,
+              }}
+            >
+              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
+                isGuest ? (
+                  <>
+                    <button
+                      type="button"
+                      className={guestNavClasses}
+                      onClick={() => requestSignIn()}
+                      aria-describedby={promptId}
+                      title={promptMessage}
+                    >
+                      <Plus className="w-5 h-5 flex-shrink-0" />
+                    </button>
+                    <span className="sr-only">{Prompt}</span>
+                  </>
+                ) : (
+                  <NavLink
+                    href={ROUTES.GEM_CREATE}
+                    label="Create"
+                    icon={Plus}
+                    hideLabel={true}
+                    className="w-full justify-center"
+                  />
+                )
+              }
+            </ProtectedActionGate>
           </div>
         </nav>
 
