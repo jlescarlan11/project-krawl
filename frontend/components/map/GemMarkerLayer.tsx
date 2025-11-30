@@ -6,10 +6,13 @@
 
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import type mapboxgl from "mapbox-gl";
 import { useGemMarkers } from "./useGemMarkers";
 import type { MapGem } from "./gem-types";
+
+// Dynamic import for mapboxgl to ensure it's available in browser
+let mapboxglLib: typeof mapboxgl | null = null;
 
 export interface GemMarkerLayerProps {
   /**
@@ -65,6 +68,17 @@ export const GemMarkerLayer: React.FC<GemMarkerLayerProps> = ({
   showInfoPopup = true,
 }) => {
   const [popup, setPopup] = useState<mapboxgl.Popup | null>(null);
+
+  /**
+   * Load mapboxgl library
+   */
+  useEffect(() => {
+    if (typeof window !== "undefined" && !mapboxglLib) {
+      import("mapbox-gl").then((mod) => {
+        mapboxglLib = mod.default;
+      });
+    }
+  }, []);
 
   /**
    * Handle marker click
@@ -126,7 +140,12 @@ export const GemMarkerLayer: React.FC<GemMarkerLayerProps> = ({
         `;
 
         // Create and add new popup
-        const newPopup = new (window as any).mapboxgl.Popup({
+        if (!mapboxglLib) {
+          console.warn("Mapbox GL JS not loaded yet");
+          return;
+        }
+
+        const newPopup = new mapboxglLib.Popup({
           closeButton: true,
           closeOnClick: false,
           maxWidth: "300px",
