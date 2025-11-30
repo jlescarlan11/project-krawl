@@ -61,9 +61,13 @@ export function ProtectedActionGate({
   message,
   promptOptions,
 }: ProtectedActionGateProps) {
-  const { isGuest, showSignInPrompt } = useGuestMode();
+  const { isGuest: isGuestFromHook, showSignInPrompt } = useGuestMode();
   const promptId = useId();
   const promptMessage = message ?? getSignInMessage(context);
+  
+  // Store now initializes with optimistic state, so useGuestMode will have correct state immediately
+  // No need for local state management - just use the hook directly
+  const isGuest = isGuestFromHook;
 
   const requestSignIn = (options?: GuestSignInOptions) => {
     showSignInPrompt(context, { ...promptOptions, ...options });

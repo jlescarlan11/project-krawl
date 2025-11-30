@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import {
-  Header,
   Footer,
   BottomNav,
 } from "@/components/navigation";
@@ -17,10 +16,13 @@ export interface NavigationWrapperProps {
  * NavigationWrapper component
  *
  * Conditionally renders navigation components based on the current route.
- * Hides all navigation on the sign-in and onboarding pages.
+ * Hides navigation on the sign-in and onboarding pages.
+ * 
+ * Note: Header is now rendered separately in layout.tsx with ConditionalHeader
+ * to persist across page navigation and only re-render on auth changes.
  * 
  * Note: This component returns fragments that should be placed in the layout
- * at the appropriate positions (Header/MobileMenu before main, Footer/BottomNav after).
+ * at the appropriate positions (GuestBanner before main, Footer/BottomNav after).
  */
 export function NavigationWrapper({
   showGuestBanner = true,
@@ -37,7 +39,6 @@ export function NavigationWrapper({
   return (
     <>
       {showGuestBanner && <GuestModeBanner />}
-      <Header />
     </>
   );
 }

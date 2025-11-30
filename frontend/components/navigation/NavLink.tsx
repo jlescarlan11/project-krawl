@@ -31,7 +31,10 @@ export function NavLink({
   const pathname = usePathname();
 
   // Determine if link is active
-  const isActive = exact ? pathname === href : pathname.startsWith(href);
+  // Handle case where pathname might be null during SSR
+  const isActive = pathname 
+    ? (exact ? pathname === href : pathname.startsWith(href))
+    : false;
 
   return (
     <Link

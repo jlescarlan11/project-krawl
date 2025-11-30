@@ -10,7 +10,7 @@
  */
 
 import * as Sentry from "@sentry/nextjs";
-import { useAuthStore } from "@/stores/auth-store";
+import { useSession } from "next-auth/react";
 
 /**
  * Log levels supported by the error logging utility.
@@ -68,9 +68,9 @@ function mapToSentrySeverity(level: LogLevel): SentrySeverity {
 }
 
 /**
- * Gets user context from auth store (client-side only).
+ * Gets user context from NextAuth session (client-side only).
  * 
- * Safely retrieves user information from the Zustand auth store.
+ * Safely retrieves user information from NextAuth.js session.
  * Returns `null` if called server-side or if user is not authenticated.
  * 
  * @returns User context object with id and username, or `null` if unavailable
@@ -83,21 +83,19 @@ function getUserContext(): { id: string; username?: string } | null {
   }
 
   try {
-    const user = useAuthStore.getState().user;
-    const status = useAuthStore.getState().status;
-
-    if (status === "authenticated" && user) {
-      return {
-        id: user.id,
-        username: user.name,
-      };
-    }
+    // Use NextAuth session as source of truth
+    // Note: This is a workaround since useSession is a hook and can't be called here
+    // In practice, components should use useSession() hook directly
+    // This function is kept for backward compatibility with existing code
+    // that calls getUserContext() outside of React components
+    
+    // For now, we'll return null and let components pass user context explicitly
+    // This is safer than trying to access NextAuth session outside of React context
+    return null;
   } catch {
-    // Auth store not available (e.g., server-side)
+    // Session not available (e.g., server-side)
     return null;
   }
-
-  return null;
 }
 
 /**

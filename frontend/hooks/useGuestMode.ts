@@ -7,7 +7,7 @@
 
 import { useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useIsAuthenticated } from "@/stores";
+import { useIsAuthenticated } from "@/hooks/useIsAuthenticated";
 import {
   getCurrentRouteSnapshot,
   getSignInReturnUrl,

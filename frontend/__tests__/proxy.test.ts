@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
-import { middleware } from "@/middleware";
+import { proxy } from "@/proxy";
 import { ROUTES } from "@/lib/routes";
 
 // Mock NextAuth.js auth function
@@ -16,7 +16,7 @@ vi.mock("@/lib/session-utils", () => ({
 
 import { isSessionExpired } from "@/lib/session-utils";
 
-describe("middleware", () => {
+describe("proxy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -30,7 +30,7 @@ describe("middleware", () => {
       mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest(new URL("http://localhost:3000/"));
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response).toBeInstanceOf(NextResponse);
       expect(mockAuth).not.toHaveBeenCalled();
@@ -40,7 +40,7 @@ describe("middleware", () => {
       mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest(new URL("http://localhost:3000/map"));
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response).toBeInstanceOf(NextResponse);
       expect(mockAuth).not.toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe("middleware", () => {
       const request = new NextRequest(
         new URL("http://localhost:3000/gems/create")
       );
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response).toBeInstanceOf(NextResponse);
       expect(mockAuth).toHaveBeenCalled();
@@ -72,7 +72,7 @@ describe("middleware", () => {
       const request = new NextRequest(
         new URL("http://localhost:3000/gems/create")
       );
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response).toBeInstanceOf(NextResponse);
       expect(response.status).toBe(307); // Redirect status
@@ -94,7 +94,7 @@ describe("middleware", () => {
       const request = new NextRequest(
         new URL("http://localhost:3000/krawls/create")
       );
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response).toBeInstanceOf(NextResponse);
       expect(response.status).toBe(307);
@@ -111,7 +111,7 @@ describe("middleware", () => {
       const request = new NextRequest(
         new URL("http://localhost:3000/users/settings")
       );
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       const location = response.headers.get("location");
       expect(location).toContain("returnUrl=%2Fusers%2Fsettings");
@@ -130,7 +130,7 @@ describe("middleware", () => {
         const request = new NextRequest(
           new URL(`http://localhost:3000${route}`)
         );
-        const response = await middleware(request);
+        const response = await proxy(request);
 
         expect(response.status).toBe(307);
         const location = response.headers.get("location");
@@ -150,7 +150,7 @@ describe("middleware", () => {
       const request = new NextRequest(
         new URL("http://localhost:3000/gems/create")
       );
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       // Should allow access if expires check is skipped
       expect(response).toBeInstanceOf(NextResponse);
@@ -164,16 +164,9 @@ describe("middleware", () => {
         new URL("http://localhost:3000/gems/create")
       );
 
-      // Should handle error gracefully (middleware should not throw)
-      await expect(middleware(request)).rejects.toThrow();
+      // Should handle error gracefully (proxy should not throw)
+      await expect(proxy(request)).rejects.toThrow();
     });
   });
 });
-
-
-
-
-
-
-
 

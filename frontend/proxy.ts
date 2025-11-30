@@ -5,7 +5,7 @@ import { ROUTES, PROTECTED_ROUTES } from "@/lib/routes";
 import { isSessionExpired } from "@/lib/session-utils";
 
 /**
- * NextAuth.js Middleware for Route Protection
+ * NextAuth.js Proxy for Route Protection
  * 
  * Protects routes by validating NextAuth.js session before page load.
  * Redirects unauthenticated users to sign-in page with return URL.
@@ -14,9 +14,14 @@ import { isSessionExpired } from "@/lib/session-utils";
  * Uses NextAuth.js v5 `auth()` function to properly validate sessions,
  * ensuring expired or invalid sessions are rejected.
  * 
+ * **Note:** This middleware handles the primary route protection and redirects.
+ * The `ProtectedRoute` component (see `frontend/components/navigation/ProtectedRoute.tsx`)
+ * is only used for showing loading states while the session is being validated.
+ * The middleware will redirect unauthenticated users before the component renders.
+ * 
  * Protected routes are defined in @/lib/routes (PROTECTED_ROUTES).
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Check if route is protected
@@ -30,7 +35,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // For protected routes, validate session using NextAuth.js auth() function
-  // In NextAuth.js v5, auth() automatically reads from the request context in middleware
+  // In NextAuth.js v5, auth() automatically reads from the request context in proxy
   // This properly validates the session, not just checks cookie presence
   const session = await auth();
 

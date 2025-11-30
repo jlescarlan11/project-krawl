@@ -1,4 +1,5 @@
 export { Header } from "./Header";
+export { ConditionalHeader } from "./ConditionalHeader";
 export { Footer } from "./Footer";
 export { BottomNav } from "./BottomNav";
 export { NavLink } from "./NavLink";
