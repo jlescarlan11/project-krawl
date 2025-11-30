@@ -288,19 +288,20 @@ export function useGemMarkers(
             })),
         };
 
-        // Remove existing layers and source if they exist
-        const layersToRemove = [
-          "gem-markers",
-          "gem-cluster-count",
-          "gem-clusters",
-        ];
-        for (const layerId of layersToRemove) {
-          if (map.getLayer(layerId)) {
-            map.removeLayer(layerId);
-          }
+        // Check if source exists - if so, just update the data instead of removing/re-adding
+        const existingSource = map.getSource("gem-markers") as mapboxgl.GeoJSONSource;
+        if (existingSource) {
+          // Update existing source data (prevents flickering)
+          existingSource.setData(geojsonData);
+          return;
         }
-        if (map.getSource("gem-markers")) {
-          map.removeSource("gem-markers");
+
+        // Only create layers if they don't exist yet
+        const layersExist = map.getLayer("gem-markers") !== undefined;
+
+        if (layersExist) {
+          // Layers already exist, shouldn't reach here, but guard anyway
+          return;
         }
 
         // Add source with clustering enabled
@@ -474,7 +475,7 @@ export function useGemMarkers(
         map.on("mouseenter", "gem-markers", handleMarkerMouseEnter);
         map.on("mouseleave", "gem-markers", handleMarkerMouseLeave);
 
-        // Cleanup
+        // Cleanup function
         return () => {
           active = false;
           map.off("click", "gem-clusters", handleClusterClick);
@@ -489,10 +490,35 @@ export function useGemMarkers(
       }
     };
 
-    addMarkersToMap();
+    const cleanup = addMarkersToMap();
 
+    // Component cleanup: remove layers and source when unmounting
     return () => {
       active = false;
+
+      // Execute addMarkersToMap cleanup if it exists
+      if (cleanup && typeof cleanup.then === 'function') {
+        cleanup.then((fn: any) => fn?.());
+      } else if (typeof cleanup === 'function') {
+        cleanup();
+      }
+
+      // Remove layers and source on unmount
+      if (map) {
+        const layersToRemove = [
+          "gem-markers",
+          "gem-cluster-count",
+          "gem-clusters",
+        ];
+        for (const layerId of layersToRemove) {
+          if (map.getLayer(layerId)) {
+            map.removeLayer(layerId);
+          }
+        }
+        if (map.getSource("gem-markers")) {
+          map.removeSource("gem-markers");
+        }
+      }
     };
   }, [map, enabled, gems, onMarkerClick]);
 

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { MapWithBoundary } from "@/components/map";
 import { MapSearchControl } from "@/components/map";
+import { BottomNav } from "@/components/navigation/BottomNav";
 import { CEBU_CITY_MAX_BOUNDS } from "@/lib/map/constants";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -81,10 +82,11 @@ export default function MapPage() {
   };
 
   return (
-    <div className="flex h-screen w-full">
-      <div className="relative h-full w-full lg:ml-0">
-        {/* Floating Controls */}
-        <div className="absolute top-6 left-6 right-6 z-20 pointer-events-none lg:left-6">
+    <>
+      <div className="flex h-screen w-full">
+        <div className="relative h-full w-full lg:ml-0 pb-16 lg:pb-0">
+          {/* Floating Controls */}
+          <div className="absolute top-6 left-6 right-6 z-20 pointer-events-none lg:left-6">
           <div className="max-w-screen-2xl mx-auto">
             <div className="flex items-start gap-4 pointer-events-auto">
               {/* Search Bar */}
@@ -180,7 +182,11 @@ export default function MapPage() {
             console.log(`Loaded ${krawls.length} krawl trails`);
           }}
         />
+        </div>
       </div>
-    </div>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
+    </>
   );
 }
