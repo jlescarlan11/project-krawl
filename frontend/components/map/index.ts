@@ -22,6 +22,12 @@ export type { UseGemMarkersOptions, UseGemMarkersResult } from './useGemMarkers'
 export { GemStatus, MARKER_STYLES, ZOOM_BREAKPOINTS } from './gem-types';
 export type { MapGem, Coordinates, FetchGemsParams, FetchGemsResponse, MarkerStyleConfig } from './gem-types';
 export { getMarkerIcon, getMarkerSize, getMarkerAnchor, preloadMarkerIcons } from './marker-icons';
+export { KrawlTrailLayer } from './KrawlTrailLayer';
+export type { KrawlTrailLayerProps } from './KrawlTrailLayer';
+export { useKrawlTrails } from './useKrawlTrails';
+export type { UseKrawlTrailsOptions, UseKrawlTrailsResult } from './useKrawlTrails';
+export { DEFAULT_TRAIL_STYLE, TRAIL_COLORS, getTrailColor, krawlToGeoJSON, krawlToGeoJSONWithRouting } from './krawl-types';
+export type { MapKrawl, FetchKrawlsParams, FetchKrawlsResponse, TrailStyleConfig } from './krawl-types';
 export type {
   MapProps,
   MapError,

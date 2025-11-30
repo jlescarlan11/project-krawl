@@ -18,6 +18,7 @@ import {
   MAX_RETRY_ATTEMPTS,
   RETRY_DELAY
 } from '@/lib/map/constants';
+import { CustomNavigationControl } from '@/lib/map/CustomNavigationControl';
 import { ERROR_MESSAGES } from '@/lib/map/errorMessages';
 import { MapLoadingState } from './MapLoadingState';
 import { MapErrorState } from './MapErrorState';
@@ -269,7 +270,7 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
         // 9. Add controls
         if (showNavigationControl) {
           map.addControl(
-            new mapboxgl.NavigationControl(),
+            new CustomNavigationControl({ resetPitch: 40 }),
             navigationControlPosition
           );
         }

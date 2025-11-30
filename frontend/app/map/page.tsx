@@ -34,11 +34,18 @@ export default function MapPage() {
         maxBounds={CEBU_CITY_MAX_BOUNDS}
         showBoundary={false}
         showGemMarkers={true}
+        showKrawlTrails={true}
         onGemMarkerClick={(gem) => {
           console.log('Gem clicked:', gem.name);
         }}
         onGemMarkersLoad={(gems) => {
           console.log(`Loaded ${gems.length} gems`);
+        }}
+        onKrawlTrailClick={(krawl) => {
+          console.log('Krawl trail clicked:', krawl.name);
+        }}
+        onKrawlTrailsLoad={(krawls) => {
+          console.log(`Loaded ${krawls.length} krawl trails`);
         }}
       />
     </div>
