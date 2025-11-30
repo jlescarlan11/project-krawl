@@ -20,6 +20,12 @@ import {
 } from '@/lib/map/constants';
 import { CustomNavigationControl } from '@/lib/map/CustomNavigationControl';
 import { ERROR_MESSAGES } from '@/lib/map/errorMessages';
+import {
+  configureOptimalInteractions,
+  MapPerformanceMonitor,
+  easingFunctions,
+  ANIMATION_DURATIONS,
+} from '@/lib/map/animationUtils';
 import { MapLoadingState } from './MapLoadingState';
 import { MapErrorState } from './MapErrorState';
 import { cn } from '@/lib/utils';
@@ -55,6 +61,8 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
       dragRotate = false,
       doubleClickZoom = true,
       touchZoomRotate = true,
+      boxZoom = true,
+      keyboard = true,
       showNavigationControl = true,
       showGeolocateControl = true,
       showScaleControl = false,
@@ -80,6 +88,7 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
     const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
     const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const initializeMapRef = useRef<(() => Promise<void>) | undefined>(undefined);
+    const performanceMonitorRef = useRef<MapPerformanceMonitor | null>(null);
 
     // State
     const [mapState, setMapState] = useState<MapState>({
@@ -200,23 +209,61 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
         // 4. Set access token
         mapboxgl.accessToken = accessToken;
 
-        // 5. Create map instance
+        // 5. Create map instance with smooth interaction settings
         const map = new mapboxgl.Map({
           container,
           style: style || process.env.NEXT_PUBLIC_MAPBOX_STYLE || 'mapbox://styles/mapbox/standard',
           center: initialCenter,
           zoom: initialZoom,
           interactive,
+
+          // Smooth panning with inertia/momentum
+          dragPan: dragPan ? {
+            linearity: 0.3, // Lower = more inertia (0-1, default 0)
+            easing: (t: number) => t * (2 - t), // Ease-out easing for smooth deceleration
+            maxSpeed: 1400, // Maximum pan speed (pixels per second)
+            deceleration: 2500, // Deceleration rate (pixels per second²)
+          } : false,
+
+          // Smooth zooming with scroll wheel (boolean enables default smooth behavior)
           scrollZoom,
-          dragPan,
+
+          // Rotation disabled by default for cleaner UX
           dragRotate,
+
+          // Box zoom for desktop power users (shift + drag to zoom to selection)
+          boxZoom,
+
+          // Keyboard navigation (arrow keys to pan, +/- to zoom)
+          keyboard,
+
+          // Double-click zoom with smooth animation
           doubleClickZoom,
-          touchZoomRotate,
+
+          // Touch gestures for mobile with smooth animations
+          touchZoomRotate: touchZoomRotate ? {
+            around: 'center', // Zoom around center for predictable behavior
+          } : false,
+
+          // Pitch configuration for 3D effects (limited to prevent disorientation)
+          pitchWithRotate: false, // Disable pitch to maintain flat map view
+          touchPitch: false, // Disable touch pitch for cleaner mobile UX
+
+          // Bounds and zoom limits
           maxBounds,
           minZoom,
           maxZoom,
+
+          // Performance optimizations
           preserveDrawingBuffer,
           failIfMajorPerformanceCaveat,
+
+          // Render world copies for smoother panning across date line
+          renderWorldCopies: true,
+
+          // Optimize rendering for 60fps
+          refreshExpiredTiles: true,
+          fadeDuration: 300, // Smooth tile fade-in (ms)
         });
 
         // 6. Set up load timeout
@@ -241,13 +288,28 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
             map.setMaxBounds(maxBounds);
           }
 
+          // Configure optimal interactions for smooth UX
+          configureOptimalInteractions(map);
+
+          // Initialize performance monitoring in development
+          if (process.env.NODE_ENV === 'development') {
+            performanceMonitorRef.current = new MapPerformanceMonitor((fps) => {
+              // Log FPS updates every second during development
+              if (fps < 50) {
+                console.debug(`[Map] FPS: ${fps}`);
+              }
+            });
+            performanceMonitorRef.current.start(map);
+          }
+
           // Smooth animation to center after map loads
           // This ensures the map gracefully centers on the initial position
           map.flyTo({
             center: initialCenter,
             zoom: initialZoom,
-            duration: 1500, // 1.5 seconds animation
+            duration: ANIMATION_DURATIONS.VERY_SLOW, // 1.5 seconds animation
             essential: true, // Animation will happen even if user prefers reduced motion
+            easing: easingFunctions.easeInOutCubic, // Smooth easing
           });
 
           setMapState(prev => ({
