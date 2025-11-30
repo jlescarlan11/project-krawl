@@ -13,6 +13,8 @@ export { LocationPicker } from './LocationPicker';
 export type { LocationPickerProps } from './LocationPicker';
 export { useBoundaryLayer } from './useBoundaryLayer';
 export type { BoundaryLayerOptions } from './useBoundaryLayer';
+export { useMapInstance } from './useMapInstance';
+export type { MapInstanceState } from './useMapInstance';
 export type {
   MapProps,
   MapError,
