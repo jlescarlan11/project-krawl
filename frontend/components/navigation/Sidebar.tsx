@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useCallback } from "react";
+import { memo, useMemo, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { User, Home, Map, Search, Plus } from "lucide-react";
@@ -49,21 +49,25 @@ function useOptimisticAuth() {
 }
 
 /**
- * Sidebar component - OPTIMIZED FOR ZERO FLICKER
+ * Sidebar component - OPTIMIZED FOR ZERO FLICKER WITH HYDRATION SAFETY
  *
  * Desktop left sidebar navigation with logo, main nav links, and user menu.
  * Hidden on mobile (replaced by BottomNav).
  * Fixed in collapsed (icon-only) state with tooltips for all icons.
- * 
+ *
  * Now uses optimistic rendering to completely eliminate flicker:
  * 1. Immediately reads cached state from localStorage (synchronous)
  * 2. Shows avatar/Sign In based on cached state (no skeleton needed)
  * 3. Updates seamlessly when NextAuth confirms state
+ *
+ * HYDRATION SAFETY:
+ * Uses useSyncExternalStore to ensure server and client render the same initial HTML.
+ * Server always renders as "not mounted" state, client renders actual user state after mount.
  */
 export const Sidebar = memo(function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Get optimistic state first (synchronous, no delay)
   // Reads from localStorage immediately on first render to prevent flicker
   // Returns user data if available, or { user: null, isLoading: false } if not authenticated
@@ -75,17 +79,28 @@ export const Sidebar = memo(function Sidebar() {
   // Note: We don't use useSession() here anymore - optimistic state is sufficient
   // The session will sync via useSessionRefresh hook in the background
 
+  // Use useSyncExternalStore to handle hydration safely
+  // Server: always returns false (not mounted)
+  // Client: returns false on initial render, then true after mount
+  const isMounted = useSyncExternalStore(
+    () => () => {}, // subscribe (no-op)
+    () => true, // getSnapshot (client)
+    () => false // getServerSnapshot (server)
+  );
+
   // Use optimistic state until Zustand hydrates, then use actual state
   // This ensures we show the correct UI immediately without waiting for Zustand
-  const currentUser = hasHydrated ? user : optimistic.user;
+  // On server and initial client render, use null to match ProtectedActionGate behavior
+  const currentUser = isMounted ? (hasHydrated ? user : optimistic.user) : null;
 
   // Show loading skeleton only if we're truly loading (should rarely happen now)
   // Optimistic state typically has isLoading: false since we read from localStorage immediately
-  const isLoading = hasHydrated ? false : optimistic.isLoading;
+  const isLoading = isMounted ? (hasHydrated ? false : optimistic.isLoading) : false;
 
-  // Determine guest status immediately from optimistic state
-  // This bypasses ProtectedActionGate's useGuestMode hook which doesn't use optimistic state
-  const isGuest = !currentUser;
+  // Determine guest status - must match ProtectedActionGate's behavior
+  // On server and initial render: assume not guest (false)
+  // After mount: use actual user state
+  const isGuest = isMounted ? !currentUser : false;
   
   // Handle sign-in navigation (simplified version of showSignInPrompt)
   const handleSignIn = useCallback(() => {

@@ -52,3 +52,20 @@ export {
 } from './constants';
 
 export { ERROR_MESSAGES } from './errorMessages';
+
+export {
+  easingFunctions,
+  ANIMATION_DURATIONS,
+  smoothFlyTo,
+  smoothEaseTo,
+  smoothPanTo,
+  smoothZoomTo,
+  smoothFitBounds,
+  smoothResetView,
+  MapPerformanceMonitor,
+  isTouchDevice,
+  getOptimalDuration,
+  configureOptimalInteractions,
+} from './animationUtils';
+
+export type { AnimationOptions } from './animationUtils';

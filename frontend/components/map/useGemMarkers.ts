@@ -175,6 +175,9 @@ export function useGemMarkers(
     const bounds = map.getBounds();
     const zoom = map.getZoom();
 
+    // Bounds should always exist when map is loaded, but guard against null
+    if (!bounds) return;
+
     debouncedFetchGems(bounds, zoom);
   }, [map, enabled, debouncedFetchGems]);
 
@@ -186,6 +189,9 @@ export function useGemMarkers(
 
     const bounds = map.getBounds();
     const zoom = map.getZoom();
+
+    // Bounds should always exist when map is loaded, but guard against null
+    if (!bounds) return;
 
     fetchGems(bounds, zoom);
   }, [map, enabled, fetchGems]);

@@ -26,6 +26,15 @@ export interface MapProps {
   dragRotate?: boolean;
   doubleClickZoom?: boolean;
   touchZoomRotate?: boolean;
+  boxZoom?: boolean;
+  keyboard?: boolean;
+
+  // Animation Configuration
+  animationDuration?: number; // Default animation duration in ms
+  easeToOptions?: {
+    duration?: number;
+    easing?: (t: number) => number;
+  };
 
   // Control Configuration
   showNavigationControl?: boolean;

@@ -118,7 +118,7 @@ export function KrawlTrailLayer({
 
       // Create GeoJSON source
       const sourceId = 'krawl-trails';
-      const source: mapboxgl.GeoJSONSourceRaw = {
+      const sourceData: mapboxgl.AnySourceData = {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
@@ -128,7 +128,7 @@ export function KrawlTrailLayer({
 
       // Add source
       if (!map.getSource(sourceId)) {
-        map.addSource(sourceId, source);
+        map.addSource(sourceId, sourceData);
       }
 
       // Add trail lines layer
