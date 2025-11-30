@@ -296,10 +296,16 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
             map.setMaxBounds(maxBounds);
           }
 
-          // Add padding for sidebar on desktop (80px sidebar width)
-          // This ensures map controls and center point account for sidebar
-          if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-            map.setPadding({ left: 80, top: 0, right: 0, bottom: 0 });
+          // Add padding for sidebar on desktop and bottom nav on mobile
+          // This ensures map controls and center point account for UI elements
+          if (typeof window !== 'undefined') {
+            if (window.innerWidth >= 1024) {
+              // Desktop: account for sidebar
+              map.setPadding({ left: 80, top: 0, right: 0, bottom: 0 });
+            } else {
+              // Mobile: account for bottom nav (64px = h-16)
+              map.setPadding({ left: 0, top: 0, right: 0, bottom: 64 });
+            }
           }
 
           // Configure optimal interactions for smooth UX
