@@ -235,6 +235,11 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
             clearTimeout(loadTimeoutRef.current);
           }
 
+          // Enforce maxBounds after load for stricter boundary control
+          if (maxBounds) {
+            map.setMaxBounds(maxBounds);
+          }
+
           setMapState(prev => ({
             ...prev,
             isLoaded: true,
