@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type mapboxgl from 'mapbox-gl';
 import { useKrawlTrails } from './useKrawlTrails';
 import { krawlToGeoJSONWithRouting, DEFAULT_TRAIL_STYLE } from './krawl-types';
@@ -70,11 +70,22 @@ export function KrawlTrailLayer({
   });
 
   // Notify when trails are loaded
+  const onTrailsLoadRef = React.useRef(onTrailsLoad);
+  useEffect(() => {
+    onTrailsLoadRef.current = onTrailsLoad;
+  }, [onTrailsLoad]);
+
   useEffect(() => {
     if (!isLoading && krawls.length > 0) {
-      onTrailsLoad?.(krawls);
+      onTrailsLoadRef.current?.(krawls);
     }
-  }, [krawls, isLoading, onTrailsLoad]);
+  }, [krawls, isLoading]);
+
+  // Store callback in ref to prevent effect reruns
+  const onTrailClickRef = React.useRef(onTrailClick);
+  useEffect(() => {
+    onTrailClickRef.current = onTrailClick;
+  }, [onTrailClick]);
 
   // Add trails to map
   useEffect(() => {
@@ -204,7 +215,7 @@ export function KrawlTrailLayer({
       if (krawlId) {
         const krawl = krawls.find((k) => k.id === krawlId);
         if (krawl) {
-          onTrailClick?.(krawl);
+          onTrailClickRef.current?.(krawl);
         }
       }
     }
@@ -212,32 +223,36 @@ export function KrawlTrailLayer({
     function removeTrailLayers() {
       if (!map) return;
 
-      const layerIds = ['krawl-trail-lines', 'krawl-trail-arrows'];
-      const sourceIds = ['krawl-trails'];
+      try {
+        const layerIds = ['krawl-trail-lines', 'krawl-trail-arrows'];
+        const sourceIds = ['krawl-trails'];
 
-      layerIds.forEach((layerId) => {
-        if (map.getLayer(layerId)) {
-          map.off('click', layerId, handleTrailClick);
-          map.off('mouseenter', layerId, () => {});
-          map.off('mouseleave', layerId, () => {});
-          map.removeLayer(layerId);
-        }
-      });
+        layerIds.forEach((layerId) => {
+          if (map && map.getLayer && map.getLayer(layerId)) {
+            map.off('click', layerId, handleTrailClick);
+            map.off('mouseenter', layerId, () => {});
+            map.off('mouseleave', layerId, () => {});
+            map.removeLayer(layerId);
+          }
+        });
 
-      sourceIds.forEach((sourceId) => {
-        if (map.getSource(sourceId)) {
-          map.removeSource(sourceId);
-        }
-      });
+        sourceIds.forEach((sourceId) => {
+          if (map && map.getSource && map.getSource(sourceId)) {
+            map.removeSource(sourceId);
+          }
+        });
 
-      setLayersAdded(false);
+        setLayersAdded(false);
+      } catch (error) {
+        console.warn('Error removing trail layers:', error);
+      }
     }
 
     // Cleanup on unmount
     return () => {
       removeTrailLayers();
     };
-  }, [map, krawls, isLoading, showTrails, selectedKrawlId, onTrailClick, routingProfile]);
+  }, [map, krawls, isLoading, showTrails, selectedKrawlId, routingProfile]);
 
   // Update trail styling when selection changes
   useEffect(() => {

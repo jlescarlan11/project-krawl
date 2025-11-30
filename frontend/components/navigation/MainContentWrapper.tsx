@@ -23,7 +23,7 @@ export function MainContentWrapper({
       className={cn(
         "flex-1 bg-bg-white",
         // Desktop: fixed margin for collapsed sidebar (64px)
-        "lg:ml-16",
+        "lg:ml-20",
         // Mobile: no margin (sidebar is hidden)
         "ml-0",
         className

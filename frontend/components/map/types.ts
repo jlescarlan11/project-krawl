@@ -62,6 +62,22 @@ export interface MapProps {
   loadingComponent?: React.ReactNode;
   errorComponent?: React.ReactNode;
   retryOnError?: boolean;
+
+  // Custom Controls
+  /** Enable custom map controls (search, my location) */
+  showCustomControls?: boolean;
+  /** Show search control */
+  showSearchControl?: boolean;
+  /** Show my location control */
+  showMyLocationControl?: boolean;
+  /** Position of custom controls */
+  customControlsPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  /** Search control placeholder text */
+  searchPlaceholder?: string;
+  /** My location zoom level */
+  myLocationZoom?: number;
+  /** Children to render inside the map container (for custom overlays) */
+  children?: React.ReactNode;
 }
 
 /**

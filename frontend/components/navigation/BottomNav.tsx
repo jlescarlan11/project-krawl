@@ -7,6 +7,7 @@ import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { ProtectedActionGate } from "@/components/guest";
 import { useAuthUser } from "@/stores";
+import { useEffect, useState } from "react";
 
 /**
  * BottomNav component
@@ -17,9 +18,17 @@ import { useAuthUser } from "@/stores";
 export function BottomNav() {
   const pathname = usePathname();
   const user = useAuthUser();
-  const profileHref = user ? ROUTES.USER_PROFILE(user.id) : "";
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component only uses user data after hydration
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Only compute user-dependent values after mount to avoid hydration mismatch
+  const profileHref = isMounted && user ? ROUTES.USER_PROFILE(user.id) : "";
   const isProfileActive =
-    user && profileHref ? pathname.startsWith(profileHref) : false;
+    isMounted && user && profileHref ? pathname.startsWith(profileHref) : false;
   const isSearchActive = pathname.startsWith(ROUTES.SEARCH);
 
   const navItems = [

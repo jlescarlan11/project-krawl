@@ -1,18 +1,15 @@
 /**
  * GemMarkerLayer Component
  *
- * Displays Gem markers on the map with click interactions and info popups.
+ * Displays Gem markers on the map with click interactions.
  */
 
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import type mapboxgl from "mapbox-gl";
 import { useGemMarkers } from "./useGemMarkers";
 import type { MapGem } from "./gem-types";
-
-// Dynamic import for mapboxgl to ensure it's available in browser
-let mapboxglLib: typeof mapboxgl | null = null;
 
 export interface GemMarkerLayerProps {
   /**
@@ -40,12 +37,6 @@ export interface GemMarkerLayerProps {
    * Callback when markers are loaded
    */
   onMarkersLoad?: (gems: MapGem[]) => void;
-
-  /**
-   * Show gem info popup on click
-   * @default true
-   */
-  showInfoPopup?: boolean;
 }
 
 /**
@@ -65,99 +56,40 @@ export const GemMarkerLayer: React.FC<GemMarkerLayerProps> = ({
   categories,
   onMarkerClick,
   onMarkersLoad,
-  showInfoPopup = true,
 }) => {
-  const [popup, setPopup] = useState<mapboxgl.Popup | null>(null);
-
   /**
-   * Load mapboxgl library
+   * Store callbacks in refs to prevent effect reruns
    */
-  useEffect(() => {
-    if (typeof window !== "undefined" && !mapboxglLib) {
-      import("mapbox-gl").then((mod) => {
-        mapboxglLib = mod.default;
-      });
-    }
-  }, []);
+  const onMarkerClickRef = React.useRef(onMarkerClick);
+  const onMarkersLoadRef = React.useRef(onMarkersLoad);
+
+  React.useEffect(() => {
+    onMarkerClickRef.current = onMarkerClick;
+  }, [onMarkerClick]);
+
+  React.useEffect(() => {
+    onMarkersLoadRef.current = onMarkersLoad;
+  }, [onMarkersLoad]);
 
   /**
-   * Handle marker click
+   * Handle marker click - simplified to just call the callback
+   * Popup management is now handled by parent (MapWithBoundary)
    */
   const handleMarkerClick = useCallback(
     (gem: MapGem) => {
-      // Call user's callback
-      onMarkerClick?.(gem);
-
-      // Show info popup if enabled
-      if (showInfoPopup && map) {
-        // Remove existing popup
-        if (popup) {
-          popup.remove();
-        }
-
-        // Create popup HTML
-        const popupHtml = `
-          <div style="padding: 8px; max-width: 200px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #333;">
-              ${gem.name}
-            </h3>
-            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-              <strong>Category:</strong> ${gem.category}
-            </div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-              <strong>District:</strong> ${gem.district}
-            </div>
-            ${
-              gem.rating
-                ? `<div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-                     <strong>Rating:</strong> ${gem.rating.toFixed(1)} ⭐
-                   </div>`
-                : ""
-            }
-            ${
-              gem.vouchCount !== undefined
-                ? `<div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-                     <strong>Vouches:</strong> ${gem.vouchCount}
-                   </div>`
-                : ""
-            }
-            ${
-              gem.shortDescription
-                ? `<div style="font-size: 12px; color: #555; margin-top: 8px; font-style: italic;">
-                     ${gem.shortDescription}
-                   </div>`
-                : ""
-            }
-            <div style="margin-top: 8px; text-align: center;">
-              <a
-                href="/gems/${gem.id}"
-                style="display: inline-block; padding: 6px 12px; background: #2D7A3E; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: 500;"
-              >
-                View Details
-              </a>
-            </div>
-          </div>
-        `;
-
-        // Create and add new popup
-        if (!mapboxglLib) {
-          console.warn("Mapbox GL JS not loaded yet");
-          return;
-        }
-
-        const newPopup = new mapboxglLib.Popup({
-          closeButton: true,
-          closeOnClick: false,
-          maxWidth: "300px",
-        })
-          .setLngLat(gem.coordinates)
-          .setHTML(popupHtml)
-          .addTo(map);
-
-        setPopup(newPopup);
-      }
+      onMarkerClickRef.current?.(gem);
     },
-    [map, popup, onMarkerClick, showInfoPopup]
+    []
+  );
+
+  /**
+   * Stable callback for markers load
+   */
+  const handleMarkersLoad = useCallback(
+    (gems: MapGem[]) => {
+      onMarkersLoadRef.current?.(gems);
+    },
+    []
   );
 
   /**
@@ -167,19 +99,8 @@ export const GemMarkerLayer: React.FC<GemMarkerLayerProps> = ({
     enabled,
     categories,
     onMarkerClick: handleMarkerClick,
-    onMarkersLoad,
+    onMarkersLoad: handleMarkersLoad,
   });
-
-  /**
-   * Cleanup popup on unmount
-   */
-  React.useEffect(() => {
-    return () => {
-      if (popup) {
-        popup.remove();
-      }
-    };
-  }, [popup]);
 
   // This component doesn't render anything visible
   // It just manages the markers on the map
