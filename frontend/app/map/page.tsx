@@ -24,6 +24,7 @@ const DynamicMap = dynamic(
  * Displays an interactive map view of Cebu City with Mapbox GL JS.
  * The map is optimized for mobile and desktop viewing.
  * Map view is restricted to Cebu City boundaries with visual indicators.
+ * Shows Gem markers with zoom-dependent visibility and click interactions.
  */
 export default function MapPage() {
   return (
@@ -35,6 +36,13 @@ export default function MapPage() {
         boundaryLineColor="#3b82f6"
         boundaryLineWidth={2}
         boundaryFillOpacity={0.05}
+        showGemMarkers={true}
+        onGemMarkerClick={(gem) => {
+          console.log('Gem clicked:', gem.name);
+        }}
+        onGemMarkersLoad={(gems) => {
+          console.log(`Loaded ${gems.length} gems`);
+        }}
       />
     </div>
   );
