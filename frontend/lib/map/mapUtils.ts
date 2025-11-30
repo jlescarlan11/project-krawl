@@ -13,8 +13,9 @@ import { MIN_CONTAINER_WIDTH, MIN_CONTAINER_HEIGHT } from './constants';
  */
 export function isValidMapboxToken(token: string | undefined): boolean {
   if (!token) return false;
-  // Mapbox public tokens start with 'pk.'
-  return /^pk\.[a-zA-Z0-9_-]{50,}$/.test(token);
+  // Mapbox public tokens start with 'pk.' and are JWT tokens (can contain dots)
+  // Format: pk.eyJ... (JWT base64 encoded)
+  return /^pk\.[a-zA-Z0-9_.-]{50,}$/.test(token);
 }
 
 /**
