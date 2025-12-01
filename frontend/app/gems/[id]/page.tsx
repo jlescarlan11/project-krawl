@@ -7,6 +7,7 @@ import { GemActions } from "@/components/gems/GemActions";
 import { GemRatingsVouches } from "@/components/gems/GemRatingsVouches";
 import { GemComments } from "@/components/gems/GemComments";
 import { RelatedGems } from "@/components/gems/RelatedGems";
+import { RelatedKrawls } from "@/components/krawls/RelatedKrawls";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { getMockGemDetail } from "@/lib/data/mockGems";
 
@@ -135,8 +136,9 @@ export default async function GemDetailPage({
             </div>
           </div>
 
-          {/* Related Gems Section - Full Width */}
-          <div className="mt-8 px-4 lg:px-0">
+          {/* Related Content Sections - Full Width */}
+          <div className="mt-8 px-4 lg:px-0 space-y-6">
+            <RelatedKrawls currentGem={gem} />
             <RelatedGems currentGem={gem} />
           </div>
         </article>
