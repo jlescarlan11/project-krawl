@@ -233,8 +233,21 @@ export const useGemCreationStore = create<GemCreationStore>()(
                 (state.duplicateCheckStatus === "idle" ||
                   state.duplicateCheckStatus === "dismissed")
               );
-            case 2: // Media step (future)
-              return !!(media && media.photos.length > 0);
+            case 2: // Media step
+              if (!media || !media.photos || media.photos.length === 0) {
+                return false;
+              }
+              if (media.photos.length > 5) {
+                return false;
+              }
+              // Validate thumbnail index
+              if (
+                media.thumbnailIndex < 0 ||
+                media.thumbnailIndex >= media.photos.length
+              ) {
+                return false;
+              }
+              return true;
             case 3: // Review step (future)
               return true;
             default:
