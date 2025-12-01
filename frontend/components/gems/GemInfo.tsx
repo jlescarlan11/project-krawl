@@ -1,11 +1,10 @@
 "use client";
 
 import { GemDetail } from "@/types/gem-detail";
-import { MapPin, Clock, Phone, Globe, Calendar, User, History } from "lucide-react";
+import { MapPin, Clock, Phone, Globe, User, History } from "lucide-react";
 import { GemStatus } from "@/components/map/gem-types";
-import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
 import { useState } from "react";
+import { GemLocationMap } from "./GemLocationMap";
 
 interface GemInfoProps {
   gem: GemDetail;
@@ -89,7 +88,7 @@ export function GemInfo({ gem }: GemInfoProps) {
         <div className="space-y-3">
           {/* Category */}
           <div className="flex items-start gap-3">
-            <div className="w-5 h-5 mt-0.5 flex-shrink-0">
+            <div className="w-5 h-5 mt-0.5 shrink-0">
               <div className="w-2 h-2 rounded-full bg-primary-green mt-1.5" />
             </div>
             <div>
@@ -100,7 +99,7 @@ export function GemInfo({ gem }: GemInfoProps) {
 
           {/* District */}
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0 text-text-tertiary" />
+            <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-text-tertiary" />
             <div>
               <p className="text-sm text-text-tertiary">Location</p>
               <p className="text-text-primary font-medium">{gem.district}, Cebu City</p>
@@ -110,7 +109,7 @@ export function GemInfo({ gem }: GemInfoProps) {
           {/* Address */}
           {gem.address && (
             <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0 text-text-tertiary" />
+              <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-text-tertiary" />
               <div>
                 <p className="text-sm text-text-tertiary">Address</p>
                 <p className="text-text-primary">{gem.address}</p>
@@ -121,7 +120,7 @@ export function GemInfo({ gem }: GemInfoProps) {
           {/* Hours */}
           {gem.hours && (
             <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 mt-0.5 flex-shrink-0 text-text-tertiary" />
+              <Clock className="w-5 h-5 mt-0.5 shrink-0 text-text-tertiary" />
               <div>
                 <p className="text-sm text-text-tertiary">Hours</p>
                 <p className="text-text-primary">{gem.hours}</p>
@@ -132,7 +131,7 @@ export function GemInfo({ gem }: GemInfoProps) {
           {/* Phone */}
           {gem.phone && (
             <div className="flex items-start gap-3">
-              <Phone className="w-5 h-5 mt-0.5 flex-shrink-0 text-text-tertiary" />
+              <Phone className="w-5 h-5 mt-0.5 shrink-0 text-text-tertiary" />
               <div>
                 <p className="text-sm text-text-tertiary">Phone</p>
                 <a
@@ -148,7 +147,7 @@ export function GemInfo({ gem }: GemInfoProps) {
           {/* Website */}
           {gem.website && (
             <div className="flex items-start gap-3">
-              <Globe className="w-5 h-5 mt-0.5 flex-shrink-0 text-text-tertiary" />
+              <Globe className="w-5 h-5 mt-0.5 shrink-0 text-text-tertiary" />
               <div>
                 <p className="text-sm text-text-tertiary">Website</p>
                 <a
@@ -186,28 +185,14 @@ export function GemInfo({ gem }: GemInfoProps) {
         </div>
       </div>
 
-      {/* Location Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-text-primary mb-4">
-          Location
-        </h2>
-
-        {/* Coordinates */}
-        <div className="mb-4 text-sm text-text-secondary">
-          <p>
-            Coordinates: {gem.coordinates[1].toFixed(4)}, {gem.coordinates[0].toFixed(4)}
-          </p>
-        </div>
-
-        {/* View on Map Link */}
-        <Link
-          href={`${ROUTES.MAP}?center=${gem.coordinates[0]},${gem.coordinates[1]}&zoom=16&selected=${gem.id}`}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-primary-green/90 transition-colors"
-        >
-          <MapPin className="w-4 h-4" />
-          View on Map
-        </Link>
-      </div>
+      {/* Location Map */}
+      <GemLocationMap
+        coordinates={gem.coordinates}
+        address={gem.address}
+        district={gem.district}
+        gemName={gem.name}
+        gemId={gem.id}
+      />
 
       {/* Creator Info */}
       {gem.createdBy && (

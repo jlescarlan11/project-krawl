@@ -99,3 +99,32 @@ export function formatBearing(degrees: number): string {
   const index = Math.round(degrees / 45) % 8;
   return directions[index];
 }
+
+/**
+ * Format coordinates for display with cardinal directions
+ *
+ * @param coordinates - [longitude, latitude] tuple
+ * @param precision - Number of decimal places (default: 4)
+ * @returns Formatted string (e.g., "10.3157° N, 123.8854° E")
+ *
+ * @example
+ * formatCoordinates([123.8854, 10.3157]);      // "10.3157° N, 123.8854° E"
+ * formatCoordinates([123.8854, 10.3157], 2);   // "10.32° N, 123.89° E"
+ * formatCoordinates([-123.8854, -10.3157]);    // "10.3157° S, 123.8854° W"
+ */
+export function formatCoordinates(
+  coordinates: [number, number],
+  precision: number = 4
+): string {
+  const [lng, lat] = coordinates;
+
+  // Determine cardinal directions
+  const latDir = lat >= 0 ? 'N' : 'S';
+  const lngDir = lng >= 0 ? 'E' : 'W';
+
+  // Format with absolute values and cardinal directions
+  const formattedLat = `${Math.abs(lat).toFixed(precision)}° ${latDir}`;
+  const formattedLng = `${Math.abs(lng).toFixed(precision)}° ${lngDir}`;
+
+  return `${formattedLat}, ${formattedLng}`;
+}

@@ -7,27 +7,15 @@ import { GemActions } from "@/components/gems/GemActions";
 import { GemComments } from "@/components/gems/GemComments";
 import { RelatedGems } from "@/components/gems/RelatedGems";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { ROUTES } from "@/lib/routes";
+import { getMockGemDetail } from "@/lib/data/mockGems";
 
 /**
- * Fetch gem detail from API
+ * Fetch gem detail
+ * TODO: Replace with actual API call when backend is ready
  */
 async function fetchGemById(id: string): Promise<GemDetail | null> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/gems/${id}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
-
-    if (!res.ok) {
-      return null;
-    }
-
-    return res.json();
-  } catch (error) {
-    console.error("Error fetching gem:", error);
-    return null;
-  }
+  // For now, use mock data directly to avoid SSR fetch issues
+  return getMockGemDetail(id);
 }
 
 /**
@@ -166,6 +154,6 @@ export async function generateStaticParams() {
 }
 
 /**
- * Enable Incremental Static Regeneration
+ * Force dynamic rendering during development
  */
-export const revalidate = 3600; // Revalidate every hour
+export const dynamic = 'force-dynamic';
