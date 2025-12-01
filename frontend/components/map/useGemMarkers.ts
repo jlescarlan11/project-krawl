@@ -86,6 +86,14 @@ export function useGemMarkers(
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const onMarkerClickRef = useRef(onMarkerClick);
+  const gemsRef = useRef<MapGem[]>(gems);
+
+  // Keep refs in sync
+  useEffect(() => {
+    onMarkerClickRef.current = onMarkerClick;
+    gemsRef.current = gems;
+  }, [onMarkerClick, gems]);
 
   /**
    * Fetch gems from API based on map bounds
@@ -236,23 +244,14 @@ export function useGemMarkers(
   }, [map, enabled, handleMapUpdate]);
 
   /**
-   * Add marker layers to map
+   * Update gem marker data when gems change (without recreating layers)
    */
   useEffect(() => {
-    if (!map || !enabled || gems.length === 0) return;
+    if (!map || !enabled) return;
 
-    let active = true;
-
-    const addMarkersToMap = async () => {
+    const updateMarkerData = () => {
       try {
-        // Wait for style to load
-        if (!map.isStyleLoaded()) {
-          await new Promise<void>((resolve) => {
-            map.once("styledata", () => resolve());
-          });
-        }
-
-        if (!active) return;
+        if (!map.isStyleLoaded()) return;
 
         const currentZoom = map.getZoom();
 
@@ -288,11 +287,41 @@ export function useGemMarkers(
             })),
         };
 
-        // Check if source exists - if so, just update the data instead of removing/re-adding
+        // Update existing source data (prevents flickering)
         const existingSource = map.getSource("gem-markers") as mapboxgl.GeoJSONSource;
         if (existingSource) {
-          // Update existing source data (prevents flickering)
           existingSource.setData(geojsonData);
+        }
+      } catch (error) {
+        console.debug("Error updating marker data:", error);
+      }
+    };
+
+    updateMarkerData();
+  }, [map, enabled, gems]); // This effect only updates data, not layers
+
+  /**
+   * Initialize marker layers on map (one-time setup)
+   */
+  useEffect(() => {
+    if (!map || !enabled) return;
+
+    let active = true;
+
+    const addMarkersToMap = async () => {
+      try {
+        // Wait for style to load
+        if (!map.isStyleLoaded()) {
+          await new Promise<void>((resolve) => {
+            map.once("styledata", () => resolve());
+          });
+        }
+
+        if (!active) return;
+
+        // Check if source exists - if so, layers are already initialized
+        const existingSource = map.getSource("gem-markers");
+        if (existingSource) {
           return;
         }
 
@@ -304,10 +333,13 @@ export function useGemMarkers(
           return;
         }
 
-        // Add source with clustering enabled
+        // Add source with clustering enabled (with empty initial data)
         map.addSource("gem-markers", {
           type: "geojson",
-          data: geojsonData,
+          data: {
+            type: "FeatureCollection",
+            features: [],
+          },
           cluster: true,
           clusterRadius: 50,
           clusterMaxZoom: 14, // Clusters break apart at zoom 14
@@ -440,11 +472,11 @@ export function useGemMarkers(
           if (features.length > 0) {
             const feature = features[0];
             const gemId = feature.properties?.id;
-            const gem = gems.find((g) => g.id === gemId);
+            const gem = gemsRef.current.find((g) => g.id === gemId);
 
             if (gem) {
               setSelectedGemId(gemId);
-              onMarkerClick?.(gem);
+              onMarkerClickRef.current?.(gem);
             }
           }
         };
@@ -497,30 +529,40 @@ export function useGemMarkers(
       active = false;
 
       // Execute addMarkersToMap cleanup if it exists
-      if (cleanup && typeof cleanup.then === 'function') {
-        cleanup.then((fn: any) => fn?.());
-      } else if (typeof cleanup === 'function') {
-        cleanup();
+      if (cleanup) {
+        if (typeof cleanup.then === 'function') {
+          cleanup.then((fn: any) => fn?.());
+        } else if (typeof cleanup === 'function') {
+          (cleanup as () => void)();
+        }
       }
 
       // Remove layers and source on unmount
       if (map) {
-        const layersToRemove = [
-          "gem-markers",
-          "gem-cluster-count",
-          "gem-clusters",
-        ];
-        for (const layerId of layersToRemove) {
-          if (map.getLayer(layerId)) {
-            map.removeLayer(layerId);
+        try {
+          // Extra guard: style might be gone already
+          if (!map?.isStyleLoaded()) return;
+
+          const layersToRemove = [
+            "gem-markers",
+            "gem-cluster-count",
+            "gem-clusters",
+          ];
+          for (const layerId of layersToRemove) {
+            if (map.getLayer(layerId)) {
+              map.removeLayer(layerId);
+            }
           }
-        }
-        if (map.getSource("gem-markers")) {
-          map.removeSource("gem-markers");
+          if (map.getSource("gem-markers")) {
+            map.removeSource("gem-markers");
+          }
+        } catch (e) {
+          // Ignore — map may already be destroyed
+          console.debug("Gem markers cleanup skipped, map already destroyed.");
         }
       }
     };
-  }, [map, enabled, gems, onMarkerClick]);
+  }, [map, enabled]); // Removed gems and onMarkerClick from dependencies to prevent flickering
 
   return {
     gems,

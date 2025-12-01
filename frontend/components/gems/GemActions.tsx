@@ -1,0 +1,117 @@
+"use client";
+
+import { useState } from "react";
+import { GemDetail } from "@/types/gem-detail";
+import { ThumbsUp, Share2, Flag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface GemActionsProps {
+  gem: GemDetail;
+}
+
+export function GemActions({ gem }: GemActionsProps) {
+  const [isVouched, setIsVouched] = useState(false);
+  const [vouchCount, setVouchCount] = useState(gem.vouchCount || 0);
+  const [isVouching, setIsVouching] = useState(false);
+
+  const handleVouch = async () => {
+    setIsVouching(true);
+
+    try {
+      // TODO: Replace with actual API call
+      // await fetch(`/api/gems/${gem.id}/vouch`, { method: isVouched ? 'DELETE' : 'POST' });
+
+      // Optimistic update
+      setIsVouched(!isVouched);
+      setVouchCount((prev) => (isVouched ? prev - 1 : prev + 1));
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error("Error vouching gem:", error);
+      // Revert on error
+      setIsVouched(isVouched);
+      setVouchCount(vouchCount);
+    } finally {
+      setIsVouching(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: gem.name,
+      text: `Check out ${gem.name} on Krawl! ${gem.shortDescription || ""}`,
+      url: window.location.href,
+    };
+
+    try {
+      // Try Web Share API first (mobile)
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
+      }
+    } catch (error) {
+      // User cancelled or error occurred
+      console.log("Error sharing:", error);
+    }
+  };
+
+  const handleReport = () => {
+    // TODO: Implement report modal
+    const reason = prompt(
+      "Why are you reporting this gem?\n\nReasons:\n1. Inappropriate content\n2. Closed/Doesn't exist\n3. Wrong information\n4. Spam\n5. Other"
+    );
+
+    if (reason) {
+      alert("Thank you for your report. We'll review this gem.");
+      // TODO: Send report to API
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 className="text-xl font-semibold text-text-primary mb-4">Actions</h2>
+
+      <div className="space-y-3">
+        {/* Vouch Button */}
+        <Button
+          onClick={handleVouch}
+          disabled={isVouching}
+          className={`w-full justify-start gap-2 ${
+            isVouched
+              ? "bg-primary-green text-white hover:bg-primary-green/90"
+              : "bg-white text-text-primary border border-gray-300 hover:bg-gray-50"
+          }`}
+        >
+          <ThumbsUp className={`w-5 h-5 ${isVouched ? "fill-white" : ""}`} />
+          <span>
+            {isVouched ? "Vouched" : "Vouch"} ({vouchCount})
+          </span>
+        </Button>
+
+        {/* Share Button */}
+        <Button
+          onClick={handleShare}
+          variant="outline"
+          className="w-full justify-start gap-2"
+        >
+          <Share2 className="w-5 h-5" />
+          Share
+        </Button>
+
+        {/* Report Button */}
+        <Button
+          onClick={handleReport}
+          variant="outline"
+          className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+        >
+          <Flag className="w-5 h-5" />
+          Report
+        </Button>
+      </div>
+    </div>
+  );
+}

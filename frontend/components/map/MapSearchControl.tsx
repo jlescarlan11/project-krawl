@@ -138,7 +138,7 @@ export function MapSearchControl({
           }
 
           return fetch(url.toString(), {
-            signal: abortControllerRef.current.signal,
+            signal: abortControllerRef.current?.signal,
           }).catch(() => null);
         })(),
       ]);
