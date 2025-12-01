@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import Captions from "yet-another-react-lightbox/plugins/captions";
@@ -18,6 +19,7 @@ interface GemPhotoGalleryProps {
 export function GemPhotoGallery({ photos, gemName }: GemPhotoGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
+  const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set(photos.map(p => p.id)));
 
   if (!photos || photos.length === 0) {
     return null;
@@ -26,6 +28,14 @@ export function GemPhotoGallery({ photos, gemName }: GemPhotoGalleryProps) {
   // Show only first 5 photos in gallery grid
   const displayPhotos = photos.slice(0, 5);
   const hasMorePhotos = photos.length > 5;
+
+  const handleImageLoad = (photoId: string) => {
+    setLoadingImages(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(photoId);
+      return newSet;
+    });
+  };
 
   const handlePhotoClick = (index: number) => {
     setInitialIndex(index);
@@ -51,53 +61,69 @@ export function GemPhotoGallery({ photos, gemName }: GemPhotoGalleryProps) {
           "lg:gap-6 lg:grid-cols-3"
         )}
       >
-        {displayPhotos.map((photo, index) => (
-          <div
-            key={photo.id}
-            className={cn(
-              "relative cursor-pointer overflow-hidden rounded-lg",
-              "transition-transform hover:scale-[1.02]",
-              // First image is larger
-              index === 0 && [
-                "col-span-1 row-span-1 h-[300px]",
-                "sm:col-span-2",
-                "lg:col-span-2 lg:row-span-2 lg:h-[400px]",
-              ],
-              // Other images
-              index > 0 && "h-[200px] sm:h-[250px]"
-            )}
-            onClick={() => handlePhotoClick(index)}
-          >
-            <Image
-              src={photo.url}
-              alt={photo.caption || `${gemName} - Photo ${index + 1}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              quality={75}
-              loading={index === 0 ? "eager" : "lazy"}
-            />
+        {displayPhotos.map((photo, index) => {
+          const isLoading = loadingImages.has(photo.id);
 
-            {/* "View All X Photos" overlay on 5th image if more photos exist */}
-            {index === 4 && hasMorePhotos && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <div className="text-white text-center">
-                  <p className="text-2xl font-bold">+{photos.length - 5}</p>
-                  <p className="text-sm">View All {photos.length} Photos</p>
+          return (
+            <div
+              key={photo.id}
+              className={cn(
+                "relative cursor-pointer overflow-hidden rounded-lg",
+                "transition-transform hover:scale-[1.02]",
+                "bg-bg-light",
+                // First image is larger
+                index === 0 && [
+                  "col-span-1 row-span-1 h-[300px]",
+                  "sm:col-span-2",
+                  "lg:col-span-2 lg:row-span-2 lg:h-[400px]",
+                ],
+                // Other images
+                index > 0 && "h-[200px] sm:h-[250px]"
+              )}
+              onClick={() => handlePhotoClick(index)}
+            >
+              {/* Loading Spinner Overlay */}
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center z-10 bg-bg-light">
+                  <Spinner size="lg" aria-label={`Loading image ${index + 1}`} />
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Caption overlay on hover */}
-            {photo.caption && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 hover:opacity-100 transition-opacity">
-                <p className="text-white text-sm line-clamp-2">
-                  {photo.caption}
-                </p>
-              </div>
-            )}
-          </div>
-        ))}
+              <Image
+                src={photo.url}
+                alt={photo.caption || `${gemName} - Photo ${index + 1}`}
+                fill
+                className={cn(
+                  "object-cover transition-opacity duration-300",
+                  isLoading ? "opacity-0" : "opacity-100"
+                )}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                quality={75}
+                loading={index === 0 ? "eager" : "lazy"}
+                onLoad={() => handleImageLoad(photo.id)}
+              />
+
+              {/* "View All X Photos" overlay on 5th image if more photos exist */}
+              {index === 4 && hasMorePhotos && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+                  <div className="text-white text-center">
+                    <p className="text-2xl font-bold">+{photos.length - 5}</p>
+                    <p className="text-sm">View All {photos.length} Photos</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Caption overlay on hover */}
+              {photo.caption && !isLoading && (
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 hover:opacity-100 transition-opacity z-20">
+                  <p className="text-white text-sm line-clamp-2">
+                    {photo.caption}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Lightbox */}
