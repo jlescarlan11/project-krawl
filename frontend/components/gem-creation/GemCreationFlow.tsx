@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { StepTransition } from "@/components/onboarding/StepTransition";
 import { LocationStep } from "./steps/LocationStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
+import { MediaStep } from "./steps/MediaStep";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
 import { ROUTES } from "@/lib/routes";
 
@@ -106,30 +107,9 @@ export function GemCreationFlow() {
           />
         )}
 
-        {/* Step 3: Media Upload (Future Implementation - TASK-089) */}
+        {/* Step 3: Media Upload (TASK-089) */}
         {currentStep === 2 && (
-          <div className="flex items-center justify-center h-full p-8">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-4">Media Upload</h2>
-              <p className="text-text-secondary mb-6">
-                This step will be implemented in TASK-089
-              </p>
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={goToPreviousStep}
-                  className="px-6 py-2 border border-border-subtle rounded-lg hover:bg-bg-light"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={goToNextStep}
-                  className="px-6 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
+          <MediaStep onNext={goToNextStep} onBack={goToPreviousStep} />
         )}
 
         {/* Step 4: Review & Submit (Future Implementation - TASK-090) */}

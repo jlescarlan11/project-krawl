@@ -131,3 +131,50 @@ export function isDescriptionApproachingLimit(
 ): boolean {
   return description.length >= warningThreshold;
 }
+
+/**
+ * Validate gem photos
+ *
+ * Rules:
+ * - At least 1 photo required
+ * - Maximum 5 photos
+ *
+ * @param photos - Array of File objects
+ * @returns Error message or null if valid
+ */
+export function validateGemPhotos(photos: File[]): string | null {
+  if (!photos || photos.length === 0) {
+    return "At least one photo is required";
+  }
+
+  if (photos.length > 5) {
+    return "Maximum 5 photos allowed";
+  }
+
+  return null;
+}
+
+/**
+ * Validate individual photo file
+ *
+ * Rules:
+ * - Must be image/jpeg, image/png, or image/webp
+ * - Maximum 5MB file size
+ *
+ * @param file - File to validate
+ * @returns Error message or null if valid
+ */
+export function validatePhotoFile(file: File): string | null {
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return `Invalid file type. Only JPG, PNG, and WebP allowed`;
+  }
+
+  if (file.size > MAX_SIZE) {
+    return `File size must be less than 5MB`;
+  }
+
+  return null;
+}
