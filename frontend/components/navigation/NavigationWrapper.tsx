@@ -47,16 +47,14 @@ export function NavigationWrapper({
  * NavigationFooter component
  *
  * Conditionally renders footer navigation components based on the current route.
- * Hides footer navigation on the sign-in, onboarding, and map pages.
+ * Only shows footer on the homepage ("/").
  */
 export function NavigationFooter() {
   const pathname = usePathname();
-  const isSignInPage = pathname === ROUTES.SIGN_IN;
-  const isOnboardingPage = pathname === ROUTES.ONBOARDING;
-  const isMapPage = pathname === ROUTES.MAP;
+  const isHomePage = pathname === ROUTES.HOME;
 
-  // Hide navigation on sign-in, onboarding, and map pages
-  if (isSignInPage || isOnboardingPage || isMapPage) {
+  // Only show footer on homepage
+  if (!isHomePage) {
     return null;
   }
 

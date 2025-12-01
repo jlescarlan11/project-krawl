@@ -26,9 +26,10 @@ export function ConditionalSidebar() {
   const pathname = usePathname();
   const isSignInPage = pathname === ROUTES.SIGN_IN;
   const isOnboardingPage = pathname === ROUTES.ONBOARDING;
+  const isGemCreatePage = pathname === "/gems/create";
 
-  // Hide sidebar on sign-in and onboarding pages
-  const shouldShowSidebar = !isSignInPage && !isOnboardingPage;
+  // Hide sidebar on sign-in, onboarding, and gem creation pages
+  const shouldShowSidebar = !isSignInPage && !isOnboardingPage && !isGemCreatePage;
 
   // Use CSS to hide instead of conditional rendering
   // This keeps the Sidebar mounted and prevents re-initialization

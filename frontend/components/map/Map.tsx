@@ -349,7 +349,14 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
           handleError(mapError);
         });
 
-        // 9. Add controls
+        // 9. Add controls (without attribution)
+        // Disable default attribution control
+        map._controls.forEach((control: any) => {
+          if (control instanceof mapboxgl.AttributionControl) {
+            map.removeControl(control);
+          }
+        });
+
         if (showNavigationControl) {
           map.addControl(
             new CustomNavigationControl({ resetPitch: 40 }),
