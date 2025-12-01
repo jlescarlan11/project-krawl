@@ -14,7 +14,6 @@ import { GemMarkerLayer } from './GemMarkerLayer';
 import { KrawlTrailLayer } from './KrawlTrailLayer';
 import { GemPopup, GemPopupMobile, adjustPopupPosition } from './GemPopup';
 import { calculateDistance } from '@/lib/map/geoUtils';
-import { easingFunctions, ANIMATION_DURATIONS } from '@/lib/map/animationUtils';
 import type { MapProps } from './types';
 import type { MapGem } from './gem-types';
 import type { MapKrawl } from './krawl-types';
@@ -259,31 +258,20 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
           return;
         }
 
+        // Simply set the selected gem - popup will follow the marker
         setSelectedGem(gem);
 
         const isDesktop = window.innerWidth >= LAYOUT_CONSTANTS.MOBILE_BREAKPOINT;
 
         if (isDesktop) {
-          // Desktop: fixed popup position
+          // Desktop: fixed popup position (sidebar location)
           setPopupPosition({ x: 0, y: 0, placement: 'above' });
-        }
-
-        // Center gem in visible viewport area (both desktop and mobile)
-        if (mapInstance) {
-          const padding = calculateGemCenteringPadding(!isDesktop, bottomSheetHeight);
-
-          mapInstance.easeTo({
-            center: gem.coordinates,
-            padding,
-            duration: ANIMATION_DURATIONS.FAST,
-            easing: easingFunctions.easeOutCubic,
-          });
         }
 
         // Call user's callback
         onGemMarkerClick?.(gem);
       },
-      [mapInstance, bottomSheetHeight, onGemMarkerClick]
+      [onGemMarkerClick]
     );
 
     // Handle popup close
@@ -291,6 +279,12 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       setSelectedGem(null);
       setPopupPosition(null);
     }, []);
+
+    // Handle bottom sheet height change
+    const handleBottomSheetHeightChange = useCallback((height: number) => {
+      setBottomSheetHeight(height);
+    }, []);
+
 
     // Handle ESC key to close popup
     useEffect(() => {
@@ -323,20 +317,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       [selectedGem, mapInstance, handleClosePopup]
     );
 
-    // Close popup when user pans map (desktop only)
-    useEffect(() => {
-      const isDesktop = window.innerWidth >= 1024;
-      if (!mapInstance || !isDesktop || !selectedGem) return;
-
-      const handleMoveStart = () => {
-        handleClosePopup();
-      };
-
-      mapInstance.on('movestart', handleMoveStart);
-      return () => {
-        mapInstance.off('movestart', handleMoveStart);
-      };
-    }, [mapInstance, selectedGem, handleClosePopup]);
+    // REMOVED: Don't close popup on pan - let it follow the marker like Google Maps
 
     // Add click handler for close-on-outside-click
     useEffect(() => {
@@ -348,17 +329,26 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       };
     }, [mapInstance, handleMapClick]);
 
-    // Handle map load
+    // Store callbacks in refs to prevent re-renders
+    const onLoadRef = React.useRef(onLoad);
+    const boundaryLoadedRef = React.useRef(boundaryLoaded);
+
+    React.useEffect(() => {
+      onLoadRef.current = onLoad;
+      boundaryLoadedRef.current = boundaryLoaded;
+    }, [onLoad, boundaryLoaded]);
+
+    // Handle map load - stable callback that won't cause re-renders
     const handleMapLoad = useCallback(
       (map: mapboxgl.Map) => {
         setMapInstance(map);
 
         // Call user's onLoad after a brief delay to allow boundary to load
         setTimeout(() => {
-          onLoad?.(map, boundaryLoaded);
+          onLoadRef.current?.(map, boundaryLoadedRef.current);
         }, 100);
       },
-      [boundaryLoaded]
+      [] // Empty deps - callback is stable
     );
 
     // Handle boundary errors
@@ -393,6 +383,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
         {/* Desktop Popup (absolute positioned) */}
         {selectedGem && !isMobile && popupPosition && (
           <GemPopup
+            key={selectedGem.id}
             gem={selectedGem}
             position={{ x: popupPosition.x, y: popupPosition.y }}
             placement={popupPosition.placement}
@@ -408,6 +399,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
         {/* Mobile Bottom Sheet */}
         {selectedGem && isMobile && (
           <GemPopupMobile
+            key={selectedGem.id}
             gem={selectedGem}
             isOpen={true}
             distance={
@@ -416,7 +408,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
                 : undefined
             }
             onClose={handleClosePopup}
-            onHeightChange={setBottomSheetHeight}
+            onHeightChange={handleBottomSheetHeightChange}
           />
         )}
       </>

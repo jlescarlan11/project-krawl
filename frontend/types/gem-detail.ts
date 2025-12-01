@@ -6,6 +6,7 @@ import { MapGem, GemStatus } from "@/components/map/gem-types";
 export interface GemDetail extends MapGem {
   // Extended fields beyond MapGem
   fullDescription?: string;
+  culturalSignificance?: string;
   photos?: GemPhoto[];
   address?: string;
   hours?: string;
