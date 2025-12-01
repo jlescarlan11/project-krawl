@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { DuplicateGem } from "@/stores/gem-creation-store";
 import { getCategoryIcon } from "@/lib/constants/gem-categories";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 /**
  * Props for DuplicateWarningModal component
@@ -40,6 +41,55 @@ export function DuplicateWarningModal({
   onConfirmDifferent,
   existingGem,
 }: DuplicateWarningModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
+  // Store the previously focused element and restore focus on unmount
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement;
+
+      // Focus the modal when it opens
+      if (modalRef.current) {
+        modalRef.current.focus();
+      }
+
+      return () => {
+        // Restore focus when modal closes
+        if (previousActiveElementRef.current) {
+          previousActiveElementRef.current.focus();
+        }
+      };
+    }
+  }, [isOpen]);
+
+  // Handle Escape key press
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  // Focus trap: keep focus within modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleFocusTrap = (event: FocusEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        event.preventDefault();
+        modalRef.current.focus();
+      }
+    };
+
+    document.addEventListener("focusin", handleFocusTrap);
+    return () => document.removeEventListener("focusin", handleFocusTrap);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleViewExisting = () => {
@@ -65,11 +115,13 @@ export function DuplicateWarningModal({
 
       {/* Modal */}
       <div
+        ref={modalRef}
         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl max-w-md w-[calc(100%-2rem)] p-6 z-50 animate-in fade-in zoom-in-95"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
+        tabIndex={-1}
       >
         {/* Close Button */}
         <button
@@ -82,7 +134,7 @@ export function DuplicateWarningModal({
 
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-accent-orange/10 flex items-center justify-center">
+          <div className="shrink-0 w-12 h-12 rounded-full bg-accent-orange/10 flex items-center justify-center">
             <AlertTriangle className="w-6 h-6 text-accent-orange" />
           </div>
           <div>
@@ -106,7 +158,7 @@ export function DuplicateWarningModal({
           <div className="flex gap-3">
             {/* Thumbnail */}
             {existingGem.thumbnailUrl ? (
-              <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-bg-medium">
+              <div className="shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-bg-medium">
                 <Image
                   src={existingGem.thumbnailUrl}
                   alt={existingGem.name}
@@ -116,7 +168,7 @@ export function DuplicateWarningModal({
                 />
               </div>
             ) : (
-              <div className="flex-shrink-0 w-20 h-20 rounded-lg bg-bg-medium flex items-center justify-center">
+              <div className="shrink-0 w-20 h-20 rounded-lg bg-bg-medium flex items-center justify-center">
                 <MapPin className="w-8 h-8 text-text-tertiary" />
               </div>
             )}
@@ -142,7 +194,7 @@ export function DuplicateWarningModal({
 
           {/* Address */}
           <div className="flex items-start gap-2 mt-3 pt-3 border-t border-border-subtle">
-            <MapPin className="w-4 h-4 text-text-secondary flex-shrink-0 mt-0.5" />
+            <MapPin className="w-4 h-4 text-text-secondary shrink-0 mt-0.5" />
             <p className="text-sm text-text-secondary">{existingGem.address}</p>
           </div>
         </div>
