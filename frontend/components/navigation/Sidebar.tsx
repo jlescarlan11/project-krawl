@@ -142,7 +142,7 @@ export const Sidebar = memo(function Sidebar() {
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex items-center justify-center border-b border-[var(--color-border-subtle)] p-5 mb-2">
+        <div className="flex items-center justify-center border-b border-[var(--color-border-subtle)] p-4">
           <Link
             href={ROUTES.HOME}
             className={cn(
@@ -224,7 +224,7 @@ export const Sidebar = memo(function Sidebar() {
         </nav>
 
         {/* User Menu */}
-        <div className="border-t border-[var(--color-border-subtle)] p-4 mt-auto">
+        <div className="border-t border-border-subtle px-4 py-6 mt-auto">
           <div className="flex items-center justify-center">
             {isLoading ? (
               // Skeleton loading state - prevents flash on page refresh
