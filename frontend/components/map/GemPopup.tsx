@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
-import { X, Star, Eye, ThumbsUp, MapPin } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { X, Star, Eye, ThumbsUp, MapPin, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { MapGem } from './gem-types';
 import { cn } from '@/lib/utils';
 import { ROUTES } from '@/lib/routes';
@@ -38,8 +39,51 @@ export interface GemPopupProps {
  * ```
  */
 export function GemPopup({ gem, onClose, className, distance }: GemPopupProps) {
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+
   // Check if this is being used inside GemPopupMobile (for mobile rendering)
   const isMobileContext = className?.includes('rounded-none');
+
+  const handleViewDetails = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+
+    // Prevent multiple navigations
+    if (isNavigating) return;
+
+    setIsNavigating(true);
+
+    try {
+      // Validate gem ID
+      if (!gem.id || gem.id.trim() === '') {
+        console.error('Invalid gem ID');
+        alert('Unable to view gem details: Invalid gem ID');
+        setIsNavigating(false);
+        return;
+      }
+
+      // Get current map state for potential return navigation
+      const currentUrl = window.location.href;
+      const url = new URL(currentUrl);
+      const mapCenter = url.searchParams.get('center');
+      const mapZoom = url.searchParams.get('zoom');
+
+      // Build detail page URL with optional return state
+      let detailUrl = ROUTES.GEM_DETAIL(gem.id);
+
+      // Preserve map state in query params if available (for future back navigation)
+      if (mapCenter && mapZoom) {
+        detailUrl += `?returnTo=map&center=${mapCenter}&zoom=${mapZoom}`;
+      }
+
+      // Navigate using Next.js router
+      router.push(detailUrl);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      setIsNavigating(false);
+      alert('Unable to navigate to gem details. Please try again.');
+    }
+  };
 
   return (
     <div
@@ -161,15 +205,20 @@ export function GemPopup({ gem, onClose, className, distance }: GemPopupProps) {
         {/* View Details Button */}
         <Link
           href={ROUTES.GEM_DETAIL(gem.id)}
+          onClick={handleViewDetails}
           className={cn(
             "block w-full py-2.5 px-4 rounded-lg",
             "bg-primary-green hover:bg-primary-green/90",
             "text-white text-center font-medium text-sm",
             "transition-colors",
-            "focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2"
+            "focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
+            "flex items-center justify-center gap-2"
           )}
+          aria-disabled={isNavigating}
         >
-          View Details
+          {isNavigating && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isNavigating ? 'Loading...' : 'View Details'}
         </Link>
       </div>
     </div>
@@ -312,7 +361,8 @@ export function adjustPopupPosition(
   const markerOffset = 12; // Space between popup and marker
   const markerHeight = 40; // Approximate marker height
 
-  let { x, y } = position;
+  let { x } = position;
+  const { y } = position;
   let placement: 'above' | 'below' = 'above';
 
   // Calculate popup bounds with centered horizontal positioning

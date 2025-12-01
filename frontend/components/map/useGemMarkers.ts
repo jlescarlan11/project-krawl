@@ -88,6 +88,8 @@ export function useGemMarkers(
   const abortControllerRef = useRef<AbortController | null>(null);
   const onMarkerClickRef = useRef(onMarkerClick);
   const gemsRef = useRef<MapGem[]>(gems);
+  const lastClickTimeRef = useRef<number>(0);
+  const clickDebounceMs = 300; // Prevent rapid clicks
 
   // Keep refs in sync
   useEffect(() => {
@@ -417,7 +419,7 @@ export function useGemMarkers(
               "concat",
               "gem-marker-",
               ["get", "status"],
-            ] as any,
+            ] as mapboxgl.Expression,
             "icon-size": 1,
             "icon-allow-overlap": true,
             "icon-anchor": "bottom",
@@ -465,6 +467,13 @@ export function useGemMarkers(
 
         // Add click handler for individual markers
         const handleMarkerClick = (e: mapboxgl.MapMouseEvent) => {
+          // Prevent rapid clicks
+          const now = Date.now();
+          if (now - lastClickTimeRef.current < clickDebounceMs) {
+            return;
+          }
+          lastClickTimeRef.current = now;
+
           const features = map.queryRenderedFeatures(e.point, {
             layers: ["gem-markers"],
           });
@@ -472,11 +481,20 @@ export function useGemMarkers(
           if (features.length > 0) {
             const feature = features[0];
             const gemId = feature.properties?.id;
+
+            // Validate gem ID exists
+            if (!gemId) {
+              console.error("Marker clicked but no gem ID found");
+              return;
+            }
+
             const gem = gemsRef.current.find((g) => g.id === gemId);
 
             if (gem) {
               setSelectedGemId(gemId);
               onMarkerClickRef.current?.(gem);
+            } else {
+              console.error(`Gem with ID ${gemId} not found in current gems list`);
             }
           }
         };
@@ -531,7 +549,7 @@ export function useGemMarkers(
       // Execute addMarkersToMap cleanup if it exists
       if (cleanup) {
         if (typeof cleanup.then === 'function') {
-          cleanup.then((fn: any) => fn?.());
+          cleanup.then((fn: (() => void) | undefined) => fn?.());
         } else if (typeof cleanup === 'function') {
           (cleanup as () => void)();
         }
@@ -556,7 +574,7 @@ export function useGemMarkers(
           if (map.getSource("gem-markers")) {
             map.removeSource("gem-markers");
           }
-        } catch (e) {
+        } catch {
           // Ignore — map may already be destroyed
           console.debug("Gem markers cleanup skipped, map already destroyed.");
         }

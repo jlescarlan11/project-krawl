@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { MapWithBoundary } from "@/components/map";
 import { MapSearchControl } from "@/components/map";
+import { useMapStateUrl } from "@/components/map/useMapStateUrl";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { CEBU_CITY_MAX_BOUNDS } from "@/lib/map/constants";
 import { ROUTES } from "@/lib/routes";
@@ -70,6 +71,9 @@ export default function MapPage() {
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("all");
   const mapRef = useRef<HTMLDivElement>(null);
+
+  // Sync map state with URL for navigation preservation
+  useMapStateUrl(mapInstance, { enabled: true });
 
   const handleCategoryChange = (category: CategoryFilter) => {
     setSelectedCategory(category);
