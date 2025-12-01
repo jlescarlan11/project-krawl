@@ -153,11 +153,12 @@ export function GemPopup({ gem, onClose, className, distance }: GemPopupProps) {
           {gem.name}
         </h3>
 
-        {/* Category & District */}
-        <div className="flex items-center gap-2 text-sm text-text-secondary mb-3">
-          <span className="capitalize">{gem.category}</span>
-          <span>•</span>
-          <span>{gem.district}</span>
+        {/* Category Badge & District */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-green/10 text-primary-green capitalize">
+            {gem.category}
+          </span>
+          <span className="text-sm text-text-secondary">{gem.district}</span>
         </div>
 
         {/* Short Description */}
@@ -170,10 +171,15 @@ export function GemPopup({ gem, onClose, className, distance }: GemPopupProps) {
         {/* Stats */}
         <div className="flex items-center gap-4 mb-4 text-sm flex-wrap">
           {/* Rating */}
-          {gem.rating !== undefined && gem.rating > 0 && (
+          {gem.rating !== undefined && gem.rating > 0 ? (
             <div className="flex items-center gap-1 text-amber-600">
               <Star className="w-4 h-4 fill-current" />
               <span className="font-medium">{gem.rating.toFixed(1)}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-text-tertiary">
+              <Star className="w-4 h-4" />
+              <span className="text-xs">No ratings yet</span>
             </div>
           )}
 
@@ -255,6 +261,8 @@ export function GemPopupMobile({
 }: GemPopupMobileProps) {
   const [touchStart, setTouchStart] = React.useState(0);
   const [touchEnd, setTouchEnd] = React.useState(0);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragOffset, setDragOffset] = React.useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   // Track sheet height changes
@@ -278,20 +286,31 @@ export function GemPopupMobile({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientY);
+    setIsDragging(true);
+    setDragOffset(0);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientY);
+    const currentY = e.targetTouches[0].clientY;
+    setTouchEnd(currentY);
+
+    // Calculate drag offset (only allow dragging down)
+    const offset = Math.max(0, currentY - touchStart);
+    setDragOffset(offset);
   };
 
   const handleTouchEnd = () => {
+    setIsDragging(false);
+
     // Swiped down more than 50px
     if (touchStart && touchEnd && (touchEnd - touchStart) > 50) {
       onClose?.();
     }
+
     // Reset
     setTouchStart(0);
     setTouchEnd(0);
+    setDragOffset(0);
   };
 
   if (!isOpen) return null;
@@ -313,16 +332,24 @@ export function GemPopupMobile({
           "max-h-[80vh] overflow-y-auto",
           "lg:hidden",
           "pb-16", // Add bottom padding for nav clearance (64px = h-16)
-          "animate-in slide-in-from-bottom",
+          !isDragging && "animate-in slide-in-from-bottom",
+          isDragging && "transition-none", // Disable animation during drag
           className
         )}
+        style={{
+          transform: isDragging ? `translateY(${dragOffset}px)` : 'translateY(0)',
+          transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {/* Drag Handle */}
         <div className="bg-bg-white rounded-t-2xl pt-3 pb-1 flex justify-center">
-          <div className="w-12 h-1 bg-gray-300 rounded-full" />
+          <div className={cn(
+            "w-12 h-1 rounded-full transition-all duration-200",
+            isDragging ? "bg-primary-green w-16 h-1.5" : "bg-gray-300"
+          )} />
         </div>
 
         {/* Content */}
