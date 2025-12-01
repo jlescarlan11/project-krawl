@@ -434,3 +434,29 @@ body {
  *   }
  * }
  */
+
+/* ============================================
+ * LIGHTBOX STYLES
+ * ============================================ */
+
+/* Override yet-another-react-lightbox styles to match design tokens */
+.yarl__container {
+  --yarl__color_backdrop: rgba(0, 0, 0, 0.9);
+  --yarl__color_button: #ffffff;
+  --yarl__color_button_active: var(--color-primary-green);
+  z-index: var(--z-index-modal); /* 1300 */
+}
+
+.yarl__button {
+  transition: all var(--transition-normal);
+}
+
+.yarl__button:hover {
+  background-color: rgba(45, 122, 62, 0.2) !important;
+}
+
+.yarl__slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

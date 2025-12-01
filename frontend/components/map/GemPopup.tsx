@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { X, Star, Eye, ThumbsUp, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -193,6 +193,7 @@ export function GemPopup({ gem, onClose, className, distance }: GemPopupProps) {
  */
 export interface GemPopupMobileProps extends GemPopupProps {
   isOpen: boolean;
+  onHeightChange?: (height: number) => void;
 }
 
 export function GemPopupMobile({
@@ -201,9 +202,24 @@ export function GemPopupMobile({
   onClose,
   className,
   distance,
+  onHeightChange,
 }: GemPopupMobileProps) {
   const [touchStart, setTouchStart] = React.useState(0);
   const [touchEnd, setTouchEnd] = React.useState(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Track sheet height changes
+  useEffect(() => {
+    if (!sheetRef.current || !isOpen) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const height = entries[0].target.clientHeight;
+      onHeightChange?.(height);
+    });
+
+    observer.observe(sheetRef.current);
+    return () => observer.disconnect();
+  }, [isOpen, onHeightChange]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -242,6 +258,7 @@ export function GemPopupMobile({
 
       {/* Bottom Sheet */}
       <div
+        ref={sheetRef}
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50",
           "max-h-[80vh] overflow-y-auto",

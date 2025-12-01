@@ -20,6 +20,57 @@ import type { MapGem } from './gem-types';
 import type { MapKrawl } from './krawl-types';
 import type mapboxgl from 'mapbox-gl';
 
+// Layout constants for map centering calculations
+const LAYOUT_CONSTANTS = {
+  SIDEBAR_WIDTH: 80,        // w-20 from Sidebar
+  SIDEBAR_MARGIN: 24,       // gap between sidebar and popup
+  POPUP_WIDTH: 360,         // w-[360px] from GemPopup
+  POPUP_TOP: 140,           // top-[140px] from GemPopup
+  EDGE_PADDING: 50,         // Minimum edge clearance
+  MOBILE_BREAKPOINT: 1024,  // lg: breakpoint
+} as const;
+
+/**
+ * Calculate padding for map centering based on device type and UI elements
+ *
+ * @param isMobile - Whether the device is mobile
+ * @param bottomSheetHeight - Current height of the bottom sheet on mobile
+ * @returns Padding options for map.easeTo()
+ */
+function calculateGemCenteringPadding(
+  isMobile: boolean,
+  bottomSheetHeight: number
+): mapboxgl.PaddingOptions {
+  if (isMobile) {
+    // Mobile: use actual bottom sheet height or fallback to 40% conservative estimate
+    const bottomPadding = bottomSheetHeight > 0
+      ? bottomSheetHeight + 20
+      : Math.floor(window.innerHeight * 0.4) + 20;
+
+    return {
+      left: 20,
+      right: 20,
+      top: 100,
+      bottom: bottomPadding,
+    };
+  } else {
+    // Desktop: popup on left side occupies 464px
+    // To center the marker in the VISIBLE area (not under the popup),
+    // we need to add extra padding on the RIGHT side equal to the left side
+    // This shifts the map's center point to the right, making the marker
+    // appear centered in the visible viewport
+    const { SIDEBAR_WIDTH, SIDEBAR_MARGIN, POPUP_WIDTH, POPUP_TOP, EDGE_PADDING } = LAYOUT_CONSTANTS;
+    const leftOccupiedSpace = SIDEBAR_WIDTH + SIDEBAR_MARGIN + POPUP_WIDTH; // 464px
+
+    return {
+      left: leftOccupiedSpace,  // 464px - space occupied by sidebar + popup
+      right: leftOccupiedSpace, // 464px - same as left to center marker in visible area
+      top: POPUP_TOP + 60,      // 200px - position gem higher on screen
+      bottom: EDGE_PADDING + 150, // 200px - add more bottom padding to push gem upward
+    };
+  }
+}
+
 export interface MapWithBoundaryProps extends Omit<MapProps, 'onLoad'> {
   /**
    * Whether to show the boundary polygon on the map
@@ -154,6 +205,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
     const [popupPosition, setPopupPosition] = useState<{ x: number; y: number; placement: 'above' | 'below' } | null>(null);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [bottomSheetHeight, setBottomSheetHeight] = useState<number>(0);
 
     // Use boundary layer hook
     const { isLoaded: boundaryLoaded, error: boundaryError } = useBoundaryLayer(
@@ -209,23 +261,21 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
 
         setSelectedGem(gem);
 
-        // Desktop: Calculate popup position and center marker in visible area
-        // Use window.innerWidth directly instead of isMobile state
-        const isDesktop = window.innerWidth >= 1024;
-        if (isDesktop && mapInstance) {
-          // Popup is now fixed on left side, no need to calculate dynamic position
-          setPopupPosition({ x: 0, y: 0, placement: 'above' });
+        const isDesktop = window.innerWidth >= LAYOUT_CONSTANTS.MOBILE_BREAKPOINT;
 
-          // Center marker in the visible area (accounting for fixed popup width)
-          // Sidebar: 80px + Margin: 24px + Popup: 360px = 464px total left space
-          // Offset to the right to account for the popup taking up left side space
-          const totalLeftSpace = 464; // Sidebar (80px) + margin (24px) + popup width (360px)
-          const offsetX = totalLeftSpace / 2; // Shift map center right by half the total left space
+        if (isDesktop) {
+          // Desktop: fixed popup position
+          setPopupPosition({ x: 0, y: 0, placement: 'above' });
+        }
+
+        // Center gem in visible viewport area (both desktop and mobile)
+        if (mapInstance) {
+          const padding = calculateGemCenteringPadding(!isDesktop, bottomSheetHeight);
 
           mapInstance.easeTo({
             center: gem.coordinates,
-            offset: [offsetX, 0], // Shift right to center in visible area
-            duration: ANIMATION_DURATIONS.FAST, // 300ms
+            padding,
+            duration: ANIMATION_DURATIONS.FAST,
             easing: easingFunctions.easeOutCubic,
           });
         }
@@ -233,7 +283,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
         // Call user's callback
         onGemMarkerClick?.(gem);
       },
-      [mapInstance, onGemMarkerClick]
+      [mapInstance, bottomSheetHeight, onGemMarkerClick]
     );
 
     // Handle popup close
@@ -366,6 +416,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
                 : undefined
             }
             onClose={handleClosePopup}
+            onHeightChange={setBottomSheetHeight}
           />
         )}
       </>
