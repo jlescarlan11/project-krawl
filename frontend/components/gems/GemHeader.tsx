@@ -1,44 +1,29 @@
 import { GemDetail } from "@/types/gem-detail";
 import { Star, Eye, ThumbsUp } from "lucide-react";
-import Image from "next/image";
+import { GemPhotoGallery } from "./GemPhotoGallery";
 
 interface GemHeaderProps {
   gem: GemDetail;
 }
 
 export function GemHeader({ gem }: GemHeaderProps) {
-  // Get primary photo or use thumbnail
-  const primaryPhoto = gem.photos?.[0]?.url || gem.thumbnailUrl;
   const hasPhotos = gem.photos && gem.photos.length > 0;
 
   return (
     <div className="w-full">
       {/* Photo Section */}
-      <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
-        {primaryPhoto ? (
-          <Image
-            src={primaryPhoto}
-            alt={gem.name}
-            fill
-            className="object-cover"
-            priority
-          />
-        ) : (
+      {hasPhotos ? (
+        <GemPhotoGallery photos={gem.photos!} gemName={gem.name} />
+      ) : (
+        <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-text-tertiary">
               <Eye className="w-16 h-16 mx-auto mb-2 opacity-30" />
               <p>No photos available</p>
             </div>
           </div>
-        )}
-
-        {/* Photo Grid Indicator */}
-        {hasPhotos && gem.photos!.length > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-            {gem.photos!.length} photos
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Header Info */}
       <div className="px-4 lg:px-0 py-6">
