@@ -67,6 +67,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
 
   // Duplicate detection state
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(true);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
@@ -130,9 +131,11 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
         if (result.isDuplicate && result.existingGem) {
           setDuplicateGem(result.existingGem);
           setDuplicateCheckStatus("found");
+          setShowDuplicateModal(true); // Show modal when duplicate found
         } else {
           setDuplicateGem(null);
           setDuplicateCheckStatus("idle");
+          setShowDuplicateModal(true);
         }
       } catch (error: any) {
         if (error.name === "AbortError") {
@@ -172,7 +175,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   /**
    * Check if should show error for a field
    */
-  const shouldShowError = (field: keyof typeof errors): boolean => {
+  const shouldShowError = (field: keyof typeof touched): boolean => {
     return touched[field] && !!errors[field];
   };
 
@@ -207,11 +210,15 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   }, [name, category, description, isCheckingDuplicate, duplicateCheckStatus]);
 
   /**
-   * Handle duplicate modal close
+   * Handle duplicate modal close (backdrop click, X button, or Escape key)
    */
   const handleDuplicateModalClose = useCallback(() => {
-    // Just close modal, keep name field (user can edit)
-    // Don't change duplicate status
+    // Hide modal but keep duplicate status as "found"
+    // This allows user to close the modal temporarily, but Continue button stays disabled
+    // User must either:
+    // 1. Edit the name (triggers new duplicate check)
+    // 2. Click "This is Different" to dismiss warning and enable Continue
+    setShowDuplicateModal(false);
   }, []);
 
   /**
@@ -219,6 +226,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
    */
   const handleConfirmDifferent = useCallback(() => {
     dismissDuplicateWarning();
+    setShowDuplicateModal(false); // Close modal when user confirms
   }, [dismissDuplicateWarning]);
 
   /**
@@ -364,7 +372,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       {/* Duplicate Warning Modal */}
       {duplicateCheckStatus === "found" && duplicateGem && (
         <DuplicateWarningModal
-          isOpen={true}
+          isOpen={showDuplicateModal}
           onClose={handleDuplicateModalClose}
           onConfirmDifferent={handleConfirmDifferent}
           existingGem={duplicateGem}
