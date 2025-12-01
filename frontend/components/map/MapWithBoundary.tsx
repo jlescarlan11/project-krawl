@@ -209,21 +209,22 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
 
         setSelectedGem(gem);
 
-        // Desktop: Calculate popup position
+        // Desktop: Calculate popup position and center marker in visible area
         // Use window.innerWidth directly instead of isMobile state
         const isDesktop = window.innerWidth >= 1024;
         if (isDesktop && mapInstance) {
-          const screenPoint = mapInstance.project(gem.coordinates);
-          const adjustedPosition = adjustPopupPosition({
-            x: screenPoint.x,
-            y: screenPoint.y,
-          });
-          setPopupPosition(adjustedPosition);
+          // Popup is now fixed on left side, no need to calculate dynamic position
+          setPopupPosition({ x: 0, y: 0, placement: 'above' });
 
-          // Pan map to ensure marker + popup visible
+          // Center marker in the visible area (accounting for fixed popup width)
+          // Sidebar: 80px + Margin: 24px + Popup: 360px = 464px total left space
+          // Offset to the right to account for the popup taking up left side space
+          const totalLeftSpace = 464; // Sidebar (80px) + margin (24px) + popup width (360px)
+          const offsetX = totalLeftSpace / 2; // Shift map center right by half the total left space
+
           mapInstance.easeTo({
             center: gem.coordinates,
-            offset: [0, -150], // 150px up from center
+            offset: [offsetX, 0], // Shift right to center in visible area
             duration: ANIMATION_DURATIONS.FAST, // 300ms
             easing: easingFunctions.easeOutCubic,
           });

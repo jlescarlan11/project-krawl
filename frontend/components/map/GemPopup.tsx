@@ -37,28 +37,25 @@ export interface GemPopupProps {
  * />
  * ```
  */
-export function GemPopup({ gem, onClose, className, distance, position, placement = 'above' }: GemPopupProps) {
-  // Calculate positioning for desktop popups
-  const positioningStyles = position
-    ? {
-        position: 'fixed' as const,
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: placement === 'above'
-          ? 'translate(-50%, calc(-100% - 12px))' // Center horizontally, 12px above marker
-          : 'translate(-50%, 12px)', // Center horizontally, 12px below marker
-        zIndex: 50,
-      }
-    : {};
+export function GemPopup({ gem, onClose, className, distance }: GemPopupProps) {
+  // Check if this is being used inside GemPopupMobile (for mobile rendering)
+  const isMobileContext = className?.includes('rounded-none');
 
   return (
     <div
-      style={positioningStyles}
       className={cn(
         "bg-bg-white rounded-lg shadow-lg overflow-hidden",
-        "w-72 max-w-full",
-        // Add entry animation for positioned popups
-        position && "animate-in fade-in zoom-in-95 duration-200",
+        // Desktop: Fixed sidebar position below search bar, accounting for sidebar
+        // Only apply fixed positioning when NOT in mobile context
+        !isMobileContext && [
+          "hidden lg:block",
+          "fixed left-[104px] top-[140px]", // Sidebar width (80px) + margin (24px) = 104px
+          "w-[360px]", // Increased width to match search bar max-w-md
+          "max-h-[calc(100vh-160px)]", // Leave space for top offset and bottom margin
+          "overflow-y-auto",
+          "z-40",
+          "animate-in fade-in slide-in-from-left-3 duration-300",
+        ],
         className
       )}
       role="dialog"
@@ -249,6 +246,7 @@ export function GemPopupMobile({
           "fixed bottom-0 left-0 right-0 z-50",
           "max-h-[80vh] overflow-y-auto",
           "lg:hidden",
+          "pb-16", // Add bottom padding for nav clearance (64px = h-16)
           "animate-in slide-in-from-bottom",
           className
         )}
