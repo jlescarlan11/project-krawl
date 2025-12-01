@@ -26,6 +26,106 @@ export function getMockGemDetail(id: string): GemDetail | null {
       vouchCount: 15,
       viewCount: 234,
       shortDescription: "Historic cross planted by Ferdinand Magellan in 1521",
+      ratingsData: {
+        averageRating: 4.5,
+        totalRatings: 127,
+        breakdown: {
+          5: 85,
+          4: 30,
+          3: 8,
+          2: 3,
+          1: 1,
+        },
+      },
+      vouchesData: {
+        vouchCount: 15,
+        isVouchedByCurrentUser: false,
+        vouches: [
+          {
+            userId: "user-001",
+            userName: "Maria Santos",
+            userAvatar: "/images/avatars/maria.jpg",
+            createdAt: "2024-11-15T10:30:00Z",
+          },
+          {
+            userId: "user-003",
+            userName: "Pedro Reyes",
+            userAvatar: "/images/avatars/pedro.jpg",
+            createdAt: "2024-11-10T14:22:00Z",
+          },
+          {
+            userId: "user-004",
+            userName: "Ana Garcia",
+            createdAt: "2024-11-08T09:15:00Z",
+          },
+          {
+            userId: "user-005",
+            userName: "Carlos Martinez",
+            userAvatar: "/images/avatars/carlos.jpg",
+            createdAt: "2024-11-05T16:45:00Z",
+          },
+          {
+            userId: "user-006",
+            userName: "Isabel Cruz",
+            createdAt: "2024-10-28T11:20:00Z",
+          },
+          {
+            userId: "user-007",
+            userName: "Miguel Fernandez",
+            userAvatar: "/images/avatars/miguel.jpg",
+            createdAt: "2024-10-25T13:10:00Z",
+          },
+          {
+            userId: "user-008",
+            userName: "Sofia Lopez",
+            createdAt: "2024-10-20T08:30:00Z",
+          },
+          {
+            userId: "user-009",
+            userName: "Diego Ramirez",
+            userAvatar: "/images/avatars/diego.jpg",
+            createdAt: "2024-10-15T15:55:00Z",
+          },
+          {
+            userId: "user-010",
+            userName: "Elena Santos",
+            createdAt: "2024-10-10T12:40:00Z",
+          },
+          {
+            userId: "user-011",
+            userName: "Ricardo Torres",
+            userAvatar: "/images/avatars/ricardo.jpg",
+            createdAt: "2024-10-05T10:15:00Z",
+          },
+          {
+            userId: "user-012",
+            userName: "Carmen Diaz",
+            createdAt: "2024-09-30T14:25:00Z",
+          },
+          {
+            userId: "user-013",
+            userName: "Antonio Silva",
+            userAvatar: "/images/avatars/antonio.jpg",
+            createdAt: "2024-09-25T09:50:00Z",
+          },
+          {
+            userId: "user-014",
+            userName: "Laura Hernandez",
+            createdAt: "2024-09-20T16:30:00Z",
+          },
+          {
+            userId: "user-015",
+            userName: "Francisco Gomez",
+            userAvatar: "/images/avatars/francisco.jpg",
+            createdAt: "2024-09-15T11:05:00Z",
+          },
+          {
+            userId: "user-016",
+            userName: "Rosa Alvarez",
+            createdAt: "2024-09-10T13:45:00Z",
+          },
+        ],
+      },
       fullDescription:
         "Magellan's Cross is a Christian cross planted by Portuguese and Spanish explorers as ordered by Ferdinand Magellan upon arriving in Cebu in the Philippines on April 21, 1521. This cross is housed in a chapel next to the Basilica del Santo Niño on Magallanes Street. A sign below the cross states that the original cross is encased in Tindalo wood to protect it from people taking it away chip by chip. The cross is a significant symbol of Christianity in the Philippines and marks the birth of Christianity in the country.",
       culturalSignificance:
@@ -68,9 +168,43 @@ export function getMockGemDetail(id: string): GemDetail | null {
       status: GemStatus.VERIFIED,
       thumbnailUrl: "/images/gems/fort-san-pedro.jpg",
       rating: 4.3,
-      vouchCount: 12,
+      vouchCount: 3,
       viewCount: 189,
       shortDescription: "Spanish colonial fort and military defense structure",
+      ratingsData: {
+        averageRating: 4.3,
+        totalRatings: 45,
+        breakdown: {
+          5: 20,
+          4: 18,
+          3: 5,
+          2: 1,
+          1: 1,
+        },
+      },
+      vouchesData: {
+        vouchCount: 3,
+        isVouchedByCurrentUser: true,
+        vouches: [
+          {
+            userId: "user-002",
+            userName: "Juan Dela Cruz",
+            userAvatar: "/images/avatars/juan.jpg",
+            createdAt: "2024-11-18T11:45:00Z",
+          },
+          {
+            userId: "user-017",
+            userName: "Teresa Aquino",
+            createdAt: "2024-11-10T09:30:00Z",
+          },
+          {
+            userId: "user-018",
+            userName: "Roberto Mercado",
+            userAvatar: "/images/avatars/roberto.jpg",
+            createdAt: "2024-11-05T14:15:00Z",
+          },
+        ],
+      },
       fullDescription:
         "Fort San Pedro is a military defense structure built by the Spanish under the command of Miguel López de Legazpi, first governor of the Captaincy General of the Philippines. It is located in the area now called Plaza Indepedencia, in the pier area of the city. The fort is triangular in shape, with two sides facing the sea and one side facing land. It was built from stone taken from Mactan Island and coral stone. The fort served as the nucleus of the first Spanish settlement in the Philippines and is one of the oldest forts in the country.",
       culturalSignificance:

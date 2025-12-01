@@ -20,6 +20,8 @@ export interface GemDetail extends MapGem {
     avatar?: string;
   };
   tags?: string[];
+  ratingsData?: GemRatingsData;
+  vouchesData?: GemVouchesData;
 }
 
 export interface GemPhoto {
@@ -44,5 +46,27 @@ export interface GemComment {
 
 export interface GemVouch {
   userId: string;
+  userName: string;
+  userAvatar?: string;
   createdAt: string;
+}
+
+export interface RatingBreakdown {
+  1: number; // Count of 1-star ratings
+  2: number; // Count of 2-star ratings
+  3: number; // Count of 3-star ratings
+  4: number; // Count of 4-star ratings
+  5: number; // Count of 5-star ratings
+}
+
+export interface GemRatingsData {
+  averageRating: number;
+  totalRatings: number;
+  breakdown: RatingBreakdown;
+}
+
+export interface GemVouchesData {
+  vouchCount: number;
+  vouches: GemVouch[];
+  isVouchedByCurrentUser?: boolean;
 }

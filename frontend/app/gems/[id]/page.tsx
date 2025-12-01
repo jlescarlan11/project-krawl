@@ -4,6 +4,7 @@ import { GemDetail } from "@/types/gem-detail";
 import { GemHeader } from "@/components/gems/GemHeader";
 import { GemInfo } from "@/components/gems/GemInfo";
 import { GemActions } from "@/components/gems/GemActions";
+import { GemRatingsVouches } from "@/components/gems/GemRatingsVouches";
 import { GemComments } from "@/components/gems/GemComments";
 import { RelatedGems } from "@/components/gems/RelatedGems";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -129,6 +130,7 @@ export default async function GemDetailPage({
 
             {/* Right Column - Sidebar (1/3 width on desktop) */}
             <div className="lg:col-span-1 space-y-6">
+              <GemRatingsVouches gem={gem} isAuthenticated={false} />
               <GemActions gem={gem} />
             </div>
           </div>
