@@ -1,14 +1,22 @@
+"use client";
+
 import { GemDetail } from "@/types/gem-detail";
-import { MapPin, Clock, Phone, Globe, Calendar, User } from "lucide-react";
+import { MapPin, Clock, Phone, Globe, Calendar, User, History } from "lucide-react";
 import { GemStatus } from "@/components/map/gem-types";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
+import { useState } from "react";
 
 interface GemInfoProps {
   gem: GemDetail;
 }
 
 export function GemInfo({ gem }: GemInfoProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Calculate if text needs truncation (>300 chars ≈ 3-4 lines)
+  const isTruncated = (gem.culturalSignificance?.length || 0) > 300;
+
   return (
     <div className="space-y-6">
       {/* Status Banner (for Stale or Pending) */}
@@ -44,6 +52,34 @@ export function GemInfo({ gem }: GemInfoProps) {
           </div>
         )}
       </div>
+
+      {/* Cultural Significance Card */}
+      {gem.culturalSignificance && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <History className="w-5 h-5 text-accent-orange" />
+            Cultural Significance
+          </h2>
+
+          <div className="space-y-3">
+            <p className={`text-text-secondary leading-relaxed whitespace-pre-line ${
+              !isExpanded && isTruncated ? "line-clamp-3" : ""
+            }`}>
+              {gem.culturalSignificance}
+            </p>
+
+            {isTruncated && (
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-primary-green hover:text-primary-green/80 font-medium text-sm transition-colors"
+              >
+                {isExpanded ? "Read less" : "Read more"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Details Card */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
