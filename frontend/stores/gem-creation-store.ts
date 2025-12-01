@@ -37,6 +37,21 @@ export interface MediaData {
 }
 
 /**
+ * Duplicate gem data for duplicate detection
+ */
+export interface DuplicateGem {
+  id: string;
+  name: string;
+  category: string;
+  shortDescription: string;
+  thumbnailUrl?: string;
+  distance: number; // meters
+  similarity: number; // 0-1
+  coordinates: [number, number];
+  address: string;
+}
+
+/**
  * Gem Creation State
  * Stores form data across all steps with localStorage persistence
  */
@@ -55,6 +70,10 @@ interface GemCreationState {
   completedSteps: number[];
   lastSavedAt: string | null;
 
+  // Duplicate detection state
+  duplicateCheckStatus: "idle" | "checking" | "found" | "dismissed";
+  duplicateGem: DuplicateGem | null;
+
   // Hydration flag
   _hasHydrated: boolean;
 }
@@ -70,6 +89,12 @@ interface GemCreationActions {
   markStepCompleted: (step: number) => void;
   clearForm: () => void;
   validateCurrentStep: () => boolean;
+  setDuplicateCheckStatus: (
+    status: "idle" | "checking" | "found" | "dismissed"
+  ) => void;
+  setDuplicateGem: (gem: DuplicateGem | null) => void;
+  dismissDuplicateWarning: () => void;
+  resetDuplicateCheck: () => void;
 }
 
 /**
@@ -87,6 +112,8 @@ const defaultState: GemCreationState = {
   currentStep: 0,
   completedSteps: [],
   lastSavedAt: null,
+  duplicateCheckStatus: "idle",
+  duplicateGem: null,
   _hasHydrated: false,
 };
 
@@ -187,16 +214,24 @@ export const useGemCreationStore = create<GemCreationStore>()(
 
         validateCurrentStep: () => {
           const { currentStep, location, details, media } = get();
+          const state = get();
 
           switch (currentStep) {
             case 0: // Location step
               return !!(location && location.isValid && location.coordinates);
-            case 1: // Details step (future)
+            case 1: // Details step
               return !!(
                 details &&
                 details.name &&
+                details.name.length > 0 &&
+                details.name.length <= 100 &&
                 details.category &&
-                details.shortDescription
+                details.shortDescription &&
+                details.shortDescription.length >= 50 &&
+                details.shortDescription.length <= 500 &&
+                // Allow if no duplicate OR user dismissed warning
+                (state.duplicateCheckStatus === "idle" ||
+                  state.duplicateCheckStatus === "dismissed")
               );
             case 2: // Media step (future)
               return !!(media && media.photos.length > 0);
@@ -205,6 +240,30 @@ export const useGemCreationStore = create<GemCreationStore>()(
             default:
               return false;
           }
+        },
+
+        setDuplicateCheckStatus: (status) => {
+          set({ duplicateCheckStatus: status });
+        },
+
+        setDuplicateGem: (gem) => {
+          set({
+            duplicateGem: gem,
+            duplicateCheckStatus: gem ? "found" : "idle",
+          });
+        },
+
+        dismissDuplicateWarning: () => {
+          set({
+            duplicateCheckStatus: "dismissed",
+          });
+        },
+
+        resetDuplicateCheck: () => {
+          set({
+            duplicateCheckStatus: "idle",
+            duplicateGem: null,
+          });
         },
       }),
       {
