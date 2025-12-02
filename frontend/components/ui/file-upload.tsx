@@ -34,6 +34,7 @@ export interface FileUploadProps {
   disabled?: boolean;
   required?: boolean;
   fullWidth?: boolean;
+  customIcon?: React.ReactNode;
 }
 
 export function FileUpload({
@@ -48,6 +49,7 @@ export function FileUpload({
   disabled = false,
   required = false,
   fullWidth = true,
+  customIcon,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -210,12 +212,14 @@ export function FileUpload({
                 : undefined
           }
         />
-        <Upload
-          className={cn(
-            "w-8 h-8 mx-auto mb-2",
-            hasError ? "text-error" : "text-text-secondary"
-          )}
-        />
+        {customIcon || (
+          <Upload
+            className={cn(
+              "w-8 h-8 mx-auto mb-2",
+              hasError ? "text-error" : "text-text-secondary"
+            )}
+          />
+        )}
         <p
           className={cn(
             "text-sm font-medium mb-1",

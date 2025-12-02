@@ -248,7 +248,7 @@ export const useGemCreationStore = create<GemCreationStore>()(
                 return false;
               }
               return true;
-            case 3: // Review step (future)
+            case 3: // Additional Details step (all fields optional)
               return true;
             default:
               return false;

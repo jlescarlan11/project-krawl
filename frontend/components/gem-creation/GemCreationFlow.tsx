@@ -6,6 +6,7 @@ import { StepTransition } from "@/components/onboarding/StepTransition";
 import { LocationStep } from "./steps/LocationStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { MediaStep } from "./steps/MediaStep";
+import { AdditionalDetailsStep } from "./steps/AdditionalDetailsStep";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
 import { ROUTES } from "@/lib/routes";
 
@@ -23,8 +24,8 @@ const TOTAL_STEPS = 4;
  * Flow:
  * - Step 0: Location selection
  * - Step 1: Basic info (name, category, description)
- * - Step 2: Media upload (future)
- * - Step 3: Review & submit (future)
+ * - Step 2: Media upload
+ * - Step 3: Additional details (cultural significance, tags)
  */
 export function GemCreationFlow() {
   const router = useRouter();
@@ -89,7 +90,7 @@ export function GemCreationFlow() {
   }, [router]);
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-bg-white">
+    <div className="min-h-screen flex flex-col bg-bg-white">
       <StepTransition stepIndex={currentStep} direction={transitionDirection}>
         {/* Step 1: Location Selection */}
         {currentStep === 0 && (
@@ -112,30 +113,12 @@ export function GemCreationFlow() {
           <MediaStep onNext={goToNextStep} onBack={goToPreviousStep} />
         )}
 
-        {/* Step 4: Review & Submit (Future Implementation - TASK-090) */}
+        {/* Step 4: Additional Details (TASK-090) */}
         {currentStep === 3 && (
-          <div className="flex items-center justify-center h-full p-8">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-4">Review & Submit</h2>
-              <p className="text-text-secondary mb-6">
-                This step will be implemented in TASK-090
-              </p>
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={goToPreviousStep}
-                  className="px-6 py-2 border border-border-subtle rounded-lg hover:bg-bg-light"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => router.push(ROUTES.GEMS)}
-                  className="px-6 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600"
-                >
-                  Submit (Placeholder)
-                </button>
-              </div>
-            </div>
-          </div>
+          <AdditionalDetailsStep
+            onNext={() => router.push(ROUTES.GEMS)}
+            onBack={goToPreviousStep}
+          />
         )}
       </StepTransition>
     </div>

@@ -367,17 +367,6 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
           {/* Empty State - No Photos */}
           {selectedFiles.length === 0 && (
             <div>
-              <div className="text-center mb-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-green rounded-full mb-3">
-                  <Camera className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-lg font-semibold text-text-primary mb-1">
-                  Add Photos
-                </h2>
-                <p className="text-sm text-text-secondary">
-                  Tap to upload from your device
-                </p>
-              </div>
               <FileUpload
                 accept="image/jpeg,image/png,image/webp"
                 multiple={true}
@@ -387,6 +376,19 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
                 required={true}
                 helperText="Upload up to 5 photos. Accepted: JPG, PNG, WebP. Max 5MB per file."
                 error={touched && errors.photos ? errors.photos : undefined}
+                customIcon={
+                  <div className="mb-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-green rounded-full mb-3 mx-auto">
+                      <Camera className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-text-primary mb-1">
+                      Add Photos
+                    </h2>
+                    <p className="text-sm text-text-secondary">
+                      Tap to upload from your device
+                    </p>
+                  </div>
+                }
               />
             </div>
           )}
