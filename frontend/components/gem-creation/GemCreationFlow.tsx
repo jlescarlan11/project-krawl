@@ -9,6 +9,8 @@ import { MediaStep } from "./steps/MediaStep";
 import { AdditionalDetailsStep } from "./steps/AdditionalDetailsStep";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
 import { ROUTES } from "@/lib/routes";
+import { SaveDraftButton } from "./SaveDraftButton";
+import { useAutoSaveDraft } from "./hooks/useAutoSaveDraft";
 
 /**
  * Total number of steps in gem creation flow
@@ -36,6 +38,9 @@ export function GemCreationFlow() {
     "forward" | "backward"
   >("forward");
   const [isNavigating, setIsNavigating] = useState(false);
+
+  // Enable auto-save functionality
+  useAutoSaveDraft();
 
   /**
    * Navigate to a specific step
@@ -91,6 +96,11 @@ export function GemCreationFlow() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-white">
+      {/* Save Draft Button - Fixed Position */}
+      <div className="fixed top-20 right-6 z-50">
+        <SaveDraftButton />
+      </div>
+
       <StepTransition stepIndex={currentStep} direction={transitionDirection}>
         {/* Step 1: Location Selection */}
         {currentStep === 0 && (
