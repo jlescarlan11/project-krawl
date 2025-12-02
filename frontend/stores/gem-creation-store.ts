@@ -29,11 +29,24 @@ export interface DetailsData {
 }
 
 /**
+ * Upload status for a single photo
+ */
+export interface PhotoUploadStatus {
+  file: File;
+  progress: number; // 0-100
+  status: 'pending' | 'uploading' | 'success' | 'error';
+  url?: string;
+  error?: string;
+}
+
+/**
  * Media data for Step 3 (future implementation)
  */
 export interface MediaData {
   photos: File[];
   thumbnailIndex: number;
+  uploadStatuses?: PhotoUploadStatus[]; // Upload progress for each photo
+  uploadedUrls?: string[]; // URLs of successfully uploaded photos
 }
 
 /**
@@ -95,6 +108,14 @@ interface GemCreationActions {
   setDuplicateGem: (gem: DuplicateGem | null) => void;
   dismissDuplicateWarning: () => void;
   resetDuplicateCheck: () => void;
+
+  // Photo upload actions
+  updatePhotoUploadStatus: (
+    fileIndex: number,
+    status: Partial<PhotoUploadStatus>
+  ) => void;
+  setUploadedUrls: (urls: string[]) => void;
+  initializeUploadStatuses: (files: File[]) => void;
 }
 
 /**
@@ -276,6 +297,55 @@ export const useGemCreationStore = create<GemCreationStore>()(
           set({
             duplicateCheckStatus: "idle",
             duplicateGem: null,
+          });
+        },
+
+        // Photo upload actions
+        updatePhotoUploadStatus: (fileIndex, status) => {
+          const { media } = get();
+          if (!media || !media.uploadStatuses) return;
+
+          const updatedStatuses = [...media.uploadStatuses];
+          updatedStatuses[fileIndex] = {
+            ...updatedStatuses[fileIndex],
+            ...status,
+          };
+
+          set({
+            media: {
+              ...media,
+              uploadStatuses: updatedStatuses,
+            },
+          });
+        },
+
+        setUploadedUrls: (urls) => {
+          const { media } = get();
+          if (!media) return;
+
+          set({
+            media: {
+              ...media,
+              uploadedUrls: urls,
+            },
+          });
+        },
+
+        initializeUploadStatuses: (files) => {
+          const { media } = get();
+          if (!media) return;
+
+          const uploadStatuses: PhotoUploadStatus[] = files.map((file) => ({
+            file,
+            progress: 0,
+            status: 'pending',
+          }));
+
+          set({
+            media: {
+              ...media,
+              uploadStatuses,
+            },
           });
         },
       }),

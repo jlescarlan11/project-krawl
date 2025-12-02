@@ -1,19 +1,24 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { TagInput } from "../TagInput";
-import { useGemCreationStore } from "@/stores/gem-creation-store";
+import { UploadProgressIndicator } from "../UploadProgressIndicator";
+import { useGemCreationStore, PhotoUploadStatus } from "@/stores/gem-creation-store";
 import {
   validateCulturalSignificance,
   validateGemTags,
   getCharacterCountColor,
 } from "@/lib/validation/gem-validation";
 import { getTagSuggestionsByCategory } from "@/lib/constants/gem-tag-suggestions";
+import { uploadMultipleFiles, retryUpload, type UploadProgress } from "@/lib/cloudinary/upload";
+import { createGem } from "@/lib/api/gems";
+import { ROUTES } from "@/lib/routes";
 
 /**
  * Props for AdditionalDetailsStep component
@@ -39,7 +44,16 @@ export function AdditionalDetailsStep({
   onNext,
   onBack,
 }: AdditionalDetailsStepProps) {
-  const { details, setDetails } = useGemCreationStore();
+  const router = useRouter();
+  const {
+    details,
+    setDetails,
+    location,
+    media,
+    initializeUploadStatuses,
+    updatePhotoUploadStatus,
+    clearForm,
+  } = useGemCreationStore();
 
   // Form state
   const [culturalSignificance, setCulturalSignificance] = useState(
@@ -52,6 +66,11 @@ export function AdditionalDetailsStep({
   const [touched, setTouched] = useState({
     culturalSignificance: false,
   });
+
+  // Upload & submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadStatuses, setUploadStatuses] = useState<PhotoUploadStatus[]>([]);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Get tag suggestions based on selected category
   const tagSuggestions = useMemo(() => {
@@ -105,25 +124,175 @@ export function AdditionalDetailsStep({
    * Form is always valid since all fields are optional
    * Only show validation errors, but don't block submission
    */
-  const canProceed = true;
+  const canProceed = !isSubmitting;
 
   /**
-   * Handle continue button click
+   * Handle retry for failed upload
    */
-  const handleContinue = useCallback(() => {
+  const handleRetryUpload = useCallback(
+    async (fileIndex: number) => {
+      if (!media?.photos[fileIndex]) return;
+
+      const file = media.photos[fileIndex];
+
+      // Update status to uploading
+      setUploadStatuses((prev) => {
+        const updated = [...prev];
+        updated[fileIndex] = {
+          file,
+          progress: 0,
+          status: 'uploading',
+        };
+        return updated;
+      });
+
+      // Retry upload
+      const result = await retryUpload(file, fileIndex, {
+        onProgress: (progress: UploadProgress) => {
+          setUploadStatuses((prev) => {
+            const updated = [...prev];
+            updated[fileIndex] = {
+              file: progress.file,
+              progress: progress.progress,
+              status: progress.status,
+              url: progress.url,
+              error: progress.error,
+            };
+            return updated;
+          });
+        },
+      });
+
+      if (!result.success) {
+        setSubmissionError(`Failed to upload ${file.name}. Please try again.`);
+      }
+    },
+    [media?.photos]
+  );
+
+  /**
+   * Handle gem submission (upload photos + create gem)
+   */
+  const handleSubmit = useCallback(async () => {
+    // Validate all required data is present
+    if (!location || !details || !media || !media.photos || media.photos.length === 0) {
+      setSubmissionError('Missing required data. Please go back and complete all steps.');
+      return;
+    }
+
     // Mark all fields as touched to show any validation errors
     setTouched({ culturalSignificance: true });
 
-    // Save to store (even if empty - all fields optional)
+    // Save additional details to store
     setDetails({
-      ...details!,
+      ...details,
       culturalSignificance: culturalSignificance.trim() || undefined,
       tags: tags.length > 0 ? tags : [],
     });
 
-    // Navigate to next step (review/submit placeholder)
-    onNext();
-  }, [culturalSignificance, tags, details, setDetails, onNext]);
+    // Start submission process
+    setIsSubmitting(true);
+    setSubmissionError(null);
+
+    // Initialize upload statuses
+    const initialStatuses: PhotoUploadStatus[] = media.photos.map((file) => ({
+      file,
+      progress: 0,
+      status: 'pending',
+    }));
+    setUploadStatuses(initialStatuses);
+    initializeUploadStatuses(media.photos);
+
+    try {
+      // Step 1: Upload photos to Cloudinary
+      const uploadResult = await uploadMultipleFiles(media.photos, {
+        onProgress: (progress: UploadProgress) => {
+          setUploadStatuses((prev) => {
+            const updated = [...prev];
+            updated[progress.fileIndex] = {
+              file: progress.file,
+              progress: progress.progress,
+              status: progress.status,
+              url: progress.url,
+              error: progress.error,
+            };
+            return updated;
+          });
+
+          updatePhotoUploadStatus(progress.fileIndex, {
+            file: progress.file,
+            progress: progress.progress,
+            status: progress.status,
+            url: progress.url,
+            error: progress.error,
+          });
+        },
+      });
+
+      // Check if all uploads succeeded
+      if (!uploadResult.success || uploadResult.errors.length > 0) {
+        setSubmissionError(
+          `Failed to upload ${uploadResult.errors.length} photo(s). Please retry failed uploads.`
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Get uploaded URLs in correct order
+      const photoUrls = uploadResult.results.map((r) => r.url);
+
+      // Step 2: Create gem via API
+      const gemData = {
+        name: details.name,
+        category: details.category,
+        shortDescription: details.shortDescription,
+        fullDescription: (details.fullDescription?.trim() || details.shortDescription), // Fallback to shortDescription if empty
+        coordinates: {
+          longitude: location.coordinates[0],
+          latitude: location.coordinates[1],
+        },
+        address: location.address,
+        photos: photoUrls,
+        thumbnailIndex: media.thumbnailIndex,
+        culturalSignificance: culturalSignificance.trim() || undefined,
+        tags: tags.length > 0 ? tags : undefined,
+      };
+
+      console.log('[Gem Creation] Submitting gem data:', {
+        ...gemData,
+        photos: `[${gemData.photos.length} URLs]`, // Don't log full URLs
+      });
+
+      const createResponse = await createGem(gemData);
+
+      if (createResponse.success) {
+        // Success! Clear form and redirect to gem detail
+        clearForm();
+        router.push(ROUTES.GEM_DETAIL(createResponse.gemId));
+      } else {
+        throw new Error(createResponse.message || 'Failed to create gem');
+      }
+    } catch (error) {
+      console.error('Gem creation error:', error);
+      setSubmissionError(
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred. Please try again.'
+      );
+      setIsSubmitting(false);
+    }
+  }, [
+    location,
+    details,
+    media,
+    culturalSignificance,
+    tags,
+    setDetails,
+    initializeUploadStatuses,
+    updatePhotoUploadStatus,
+    clearForm,
+    router,
+  ]);
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
@@ -155,6 +324,23 @@ export function AdditionalDetailsStep({
       {/* Content Area (Scrollable) */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-6">
+          {/* Upload Progress Indicator */}
+          {isSubmitting && uploadStatuses.length > 0 && (
+            <div className="bg-bg-light border border-border-subtle rounded-lg p-4">
+              <UploadProgressIndicator
+                uploadStatuses={uploadStatuses}
+                onRetry={handleRetryUpload}
+              />
+            </div>
+          )}
+
+          {/* Submission Error */}
+          {submissionError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-800 font-medium">{submissionError}</p>
+            </div>
+          )}
+
           {/* Cultural Significance Textarea */}
           <div className="space-y-2">
             <Textarea
@@ -232,16 +418,25 @@ export function AdditionalDetailsStep({
         </div>
       </div>
 
-      {/* Footer - Continue Button */}
+      {/* Footer - Submit Button */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
         <Button
           variant="primary"
           size="lg"
-          onClick={handleContinue}
+          onClick={handleSubmit}
           disabled={!canProceed}
           className="w-full"
         >
-          Continue
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              {uploadStatuses.some((s) => s.status === 'uploading')
+                ? 'Uploading Photos...'
+                : 'Creating Gem...'}
+            </>
+          ) : (
+            'Submit Gem'
+          )}
         </Button>
       </div>
     </div>

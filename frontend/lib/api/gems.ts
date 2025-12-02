@@ -93,3 +93,64 @@ export async function checkForDuplicatesWithAbort(
 
   return response.json();
 }
+
+/**
+ * Request payload for creating a new gem
+ */
+export interface CreateGemRequest {
+  name: string;
+  category: string;
+  shortDescription: string;
+  fullDescription: string;
+  coordinates: {
+    longitude: number;
+    latitude: number;
+  };
+  address: string;
+  photos: string[]; // Cloudinary URLs
+  thumbnailIndex: number;
+  culturalSignificance?: string;
+  tags?: string[];
+  hours?: string;
+  website?: string;
+  phone?: string;
+}
+
+/**
+ * Response from create gem API
+ */
+export interface CreateGemResponse {
+  success: boolean;
+  gemId: string;
+  message?: string;
+}
+
+/**
+ * Create a new gem
+ *
+ * Calls POST /api/gems
+ *
+ * @param request - Gem data including photo URLs
+ * @returns Created gem ID
+ * @throws Error if API call fails
+ */
+export async function createGem(
+  request: CreateGemRequest
+): Promise<CreateGemResponse> {
+  const response = await fetch("/api/gems", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.message || `Failed to create gem: ${response.statusText}`
+    );
+  }
+
+  return response.json();
+}
