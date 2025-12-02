@@ -2,6 +2,7 @@
  * Gems API Route Handler
  *
  * Handles GET requests for fetching gems based on map bounds.
+ * Handles POST requests for creating new gems.
  * This is a temporary mock implementation until the backend API is ready.
  *
  * TODO: Replace with actual backend API call when TASK-085 is complete
@@ -9,6 +10,28 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { MapGem, GemStatus } from "@/components/map/gem-types";
+
+/**
+ * Request body for creating a new gem
+ */
+interface CreateGemRequestBody {
+  name: string;
+  category: string;
+  shortDescription: string;
+  fullDescription: string;
+  coordinates: {
+    longitude: number;
+    latitude: number;
+  };
+  address: string;
+  photos: string[]; // Cloudinary URLs
+  thumbnailIndex: number;
+  culturalSignificance?: string;
+  tags?: string[];
+  hours?: string;
+  website?: string;
+  phone?: string;
+}
 
 /**
  * Generate mock gems data for Cebu City area
@@ -307,6 +330,158 @@ export async function GET(request: NextRequest) {
         error: "Internal server error",
         gems: [],
         total: 0,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST /api/gems
+ *
+ * Create a new gem with uploaded photos
+ *
+ * Request body:
+ * - name: Gem name
+ * - category: Gem category
+ * - shortDescription: Short description
+ * - fullDescription: Full description
+ * - coordinates: { longitude, latitude }
+ * - address: Address string
+ * - photos: Array of Cloudinary URLs
+ * - thumbnailIndex: Index of thumbnail photo
+ * - culturalSignificance: Optional cultural significance
+ * - tags: Optional array of tags
+ * - hours: Optional hours
+ * - website: Optional website
+ * - phone: Optional phone
+ *
+ * TODO: Replace with actual backend API call
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body: CreateGemRequestBody = await request.json();
+
+    console.log('[POST /api/gems] Received body:', {
+      hasName: !!body.name,
+      hasCategory: !!body.category,
+      hasShortDescription: !!body.shortDescription,
+      hasFullDescription: !!body.fullDescription,
+      hasCoordinates: !!body.coordinates,
+      hasAddress: !!body.address,
+      hasPhotos: !!body.photos,
+      photoCount: body.photos?.length || 0,
+      hasThumbnailIndex: body.thumbnailIndex !== undefined,
+    });
+
+    // Validate required fields
+    const missingFields: string[] = [];
+    if (!body.name) missingFields.push('name');
+    if (!body.category) missingFields.push('category');
+    if (!body.shortDescription) missingFields.push('shortDescription');
+    if (!body.fullDescription) missingFields.push('fullDescription');
+    if (!body.coordinates) missingFields.push('coordinates');
+    if (!body.address) missingFields.push('address');
+    if (!body.photos || body.photos.length === 0) missingFields.push('photos');
+    if (body.thumbnailIndex === undefined) missingFields.push('thumbnailIndex');
+
+    if (missingFields.length > 0) {
+      console.error('[POST /api/gems] Missing fields:', missingFields);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required fields",
+          message: `Missing required fields: ${missingFields.join(', ')}`
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate photo URLs
+    if (!body.photos.every((url) => url.startsWith("https://"))) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid photo URLs",
+          message: "All photo URLs must be HTTPS"
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate thumbnail index
+    if (
+      body.thumbnailIndex < 0 ||
+      body.thumbnailIndex >= body.photos.length
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid thumbnail index",
+          message: "Thumbnail index must be within photo array bounds"
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate coordinates (Cebu City bounds)
+    const { longitude, latitude } = body.coordinates;
+    if (
+      latitude < 10.25 ||
+      latitude > 10.4 ||
+      longitude < 123.8 ||
+      longitude > 123.95
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid coordinates",
+          message: "Coordinates must be within Cebu City bounds"
+        },
+        { status: 400 }
+      );
+    }
+
+    // TODO: When backend is ready, forward request to backend API:
+    // const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    // const response = await fetch(`${API_URL}/api/v1/gems`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     // Add authentication headers if needed
+    //   },
+    //   body: JSON.stringify(body),
+    // });
+    // return NextResponse.json(await response.json(), { status: response.status });
+
+    // MOCK IMPLEMENTATION: Generate a mock gem ID
+    const gemId = `gem-${Date.now()}`;
+
+    console.log(`[MOCK] Created gem: ${gemId}`, {
+      name: body.name,
+      category: body.category,
+      coordinates: body.coordinates,
+      photoCount: body.photos.length,
+    });
+
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    return NextResponse.json(
+      {
+        success: true,
+        gemId,
+        message: "Gem created successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating gem:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+        message: "An error occurred while creating the gem"
       },
       { status: 500 }
     );
