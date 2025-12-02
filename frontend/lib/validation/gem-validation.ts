@@ -178,3 +178,109 @@ export function validatePhotoFile(file: File): string | null {
 
   return null;
 }
+
+/**
+ * Validate cultural significance text
+ *
+ * Rules:
+ * - Optional (can be empty)
+ * - Maximum 300 characters
+ *
+ * @param text - Cultural significance text to validate
+ * @returns Error message or null if valid
+ */
+export function validateCulturalSignificance(text: string): string | null {
+  if (!text) {
+    return null; // Optional field
+  }
+
+  const trimmed = text.trim();
+
+  if (trimmed.length > 300) {
+    return "Cultural significance must be 300 characters or less";
+  }
+
+  return null;
+}
+
+/**
+ * Check if cultural significance is approaching character limit
+ *
+ * @param text - Cultural significance text to check
+ * @param warningThreshold - Threshold for warning (default: 270)
+ * @returns True if text length is at or above warning threshold
+ */
+export function isCulturalSignificanceApproachingLimit(
+  text: string,
+  warningThreshold: number = 270
+): boolean {
+  return text.length >= warningThreshold;
+}
+
+/**
+ * Validate individual tag
+ *
+ * Rules:
+ * - Non-empty after trim
+ * - Maximum 30 characters
+ * - Alphanumeric characters, spaces, hyphens, and apostrophes only
+ *
+ * @param tag - Tag to validate
+ * @returns Error message or null if valid
+ */
+export function validateGemTag(tag: string): string | null {
+  const trimmed = tag.trim();
+
+  if (!trimmed) {
+    return "Tag cannot be empty";
+  }
+
+  if (trimmed.length > 30) {
+    return "Tag must be 30 characters or less";
+  }
+
+  // Allow alphanumeric, spaces, hyphens, apostrophes
+  const validFormat = /^[a-zA-Z0-9\s\-']+$/;
+  if (!validFormat.test(trimmed)) {
+    return "Tag contains invalid characters";
+  }
+
+  return null;
+}
+
+/**
+ * Validate tags array
+ *
+ * Rules:
+ * - Optional (can be empty array)
+ * - Maximum 5 tags
+ * - No duplicate tags (case-insensitive)
+ * - Each tag must pass individual validation
+ *
+ * @param tags - Array of tags to validate
+ * @returns Error message or null if valid
+ */
+export function validateGemTags(tags: string[]): string | null {
+  if (!tags || tags.length === 0) {
+    return null; // Optional field
+  }
+
+  if (tags.length > 5) {
+    return "Maximum 5 tags allowed";
+  }
+
+  // Check for duplicates (case-insensitive)
+  const lowerCaseTags = tags.map((t) => t.toLowerCase());
+  const uniqueTags = new Set(lowerCaseTags);
+  if (uniqueTags.size !== tags.length) {
+    return "Duplicate tags are not allowed";
+  }
+
+  // Validate each tag
+  for (const tag of tags) {
+    const error = validateGemTag(tag);
+    if (error) return error;
+  }
+
+  return null;
+}
