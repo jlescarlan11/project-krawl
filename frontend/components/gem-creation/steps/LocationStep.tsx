@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
-import { GemLocationPicker } from "../GemLocationPicker";
+import { GemLocationPicker, type GemLocationPickerRef } from "../GemLocationPicker";
 import { AddressSearch, reverseGeocode } from "../AddressSearch";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
 import { validateCoordinates, type BoundaryValidationResult } from "@/lib/map/boundaryValidation";
 import { CEBU_CITY_CENTER } from "@/lib/map/constants";
-import { ANIMATION_DURATIONS, easingFunctions } from "@/lib/map/animationUtils";
 import type { GeocodingFeature } from "../types";
 
 /**
@@ -34,6 +33,7 @@ export interface LocationStepProps {
  */
 export function LocationStep({ onNext, onBack }: LocationStepProps) {
   const { location, setLocation } = useGemCreationStore();
+  const mapPickerRef = useRef<GemLocationPickerRef>(null);
 
   const [validationResult, setValidationResult] =
     useState<BoundaryValidationResult | null>(null);
@@ -106,7 +106,8 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
           isValid: true,
         });
 
-        // Map will update when currentCoordinates changes
+        // Move marker to selected location with animation
+        mapPickerRef.current?.flyTo(coords, 16);
       } else {
         // Show error for invalid location
         setValidationResult(validation);
@@ -177,6 +178,7 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
       {/* Map Container */}
       <div className="flex-1 relative">
         <GemLocationPicker
+          ref={mapPickerRef}
           initialCoordinates={currentCoordinates}
           onLocationChange={handleLocationChange}
           onValidationChange={handleValidationChange}
