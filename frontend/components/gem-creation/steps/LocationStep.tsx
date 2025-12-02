@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef } from "react";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
@@ -173,6 +173,17 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
       {/* Search Bar */}
       <div className="shrink-0 p-4 border-b border-border-subtle bg-bg-white">
         <AddressSearch onSelect={handleAddressSelect} />
+
+        {/* Info Banner - Boundary Guidance */}
+        <div className="mt-3 flex items-start gap-2 p-3 bg-primary-green/5 border border-primary-green/20 rounded-lg">
+          <Info className="w-4 h-4 text-primary-green shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-xs text-text-secondary leading-relaxed">
+              Select a location within the <span className="font-medium text-primary-green">highlighted green area</span> on the map.
+              This ensures your Gem is located within Cebu City boundaries.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Map Container */}
