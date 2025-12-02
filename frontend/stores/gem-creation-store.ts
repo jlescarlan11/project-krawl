@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { safeLocalStorage } from "./utils";
+import { saveDraft as saveDraftApi, loadDraft as loadDraftApi, deleteDraft as deleteDraftApi } from "@/lib/api/drafts";
+import type { DraftData } from "@/lib/types/draft";
 
 /**
  * Location data for Step 1
@@ -87,6 +89,12 @@ interface GemCreationState {
   duplicateCheckStatus: "idle" | "checking" | "found" | "dismissed";
   duplicateGem: DuplicateGem | null;
 
+  // Draft state
+  currentDraftId: string | null;
+  draftSaveStatus: "idle" | "saving" | "saved" | "error";
+  draftSaveError: string | null;
+  lastDraftSavedAt: string | null;
+
   // Hydration flag
   _hasHydrated: boolean;
 }
@@ -116,6 +124,13 @@ interface GemCreationActions {
   ) => void;
   setUploadedUrls: (urls: string[]) => void;
   initializeUploadStatuses: (files: File[]) => void;
+
+  // Draft actions
+  saveDraftToBackend: () => Promise<void>;
+  loadDraftFromBackend: (draftId: string) => Promise<void>;
+  deleteDraftFromBackend: (draftId: string) => Promise<void>;
+  setDraftSaveStatus: (status: "idle" | "saving" | "saved" | "error") => void;
+  setDraftSaveError: (error: string | null) => void;
 }
 
 /**
@@ -135,6 +150,10 @@ const defaultState: GemCreationState = {
   lastSavedAt: null,
   duplicateCheckStatus: "idle",
   duplicateGem: null,
+  currentDraftId: null,
+  draftSaveStatus: "idle",
+  draftSaveError: null,
+  lastDraftSavedAt: null,
   _hasHydrated: false,
 };
 
@@ -230,6 +249,11 @@ export const useGemCreationStore = create<GemCreationStore>()(
           set({
             ...defaultState,
             _hasHydrated: true, // Preserve hydration flag
+            // Clear draft state as well
+            currentDraftId: null,
+            draftSaveStatus: "idle",
+            draftSaveError: null,
+            lastDraftSavedAt: null,
           });
         },
 
@@ -348,6 +372,135 @@ export const useGemCreationStore = create<GemCreationStore>()(
             },
           });
         },
+
+        // Draft actions
+        saveDraftToBackend: async () => {
+          const state = get();
+
+          // Set saving status
+          set({ draftSaveStatus: "saving", draftSaveError: null });
+
+          try {
+            // Prepare draft data
+            const draftData: DraftData = {
+              location: state.location || undefined,
+              details: state.details || undefined,
+              media: state.media
+                ? {
+                    photoUrls: state.media.uploadedUrls,
+                    thumbnailIndex: state.media.thumbnailIndex,
+                  }
+                : undefined,
+              currentStep: state.currentStep,
+              completedSteps: state.completedSteps,
+            };
+
+            // Save to backend
+            const response = await saveDraftApi(draftData);
+
+            if (response.success) {
+              set({
+                currentDraftId: response.draftId,
+                draftSaveStatus: "saved",
+                lastDraftSavedAt: new Date().toISOString(),
+                draftSaveError: null,
+              });
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[GemCreationStore] Draft saved to backend:", response.draftId);
+              }
+            } else {
+              throw new Error(response.error || "Failed to save draft");
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to save draft";
+            set({
+              draftSaveStatus: "error",
+              draftSaveError: errorMessage,
+            });
+
+            console.error("[GemCreationStore] Error saving draft:", error);
+          }
+        },
+
+        loadDraftFromBackend: async (draftId: string) => {
+          try {
+            const response = await loadDraftApi(draftId);
+
+            if (response.success && response.draft) {
+              const draft = response.draft;
+
+              // Restore state from draft
+              set({
+                location: draft.data.location || null,
+                details: draft.data.details || null,
+                media: draft.data.media
+                  ? {
+                      photos: [],
+                      thumbnailIndex: draft.data.media.thumbnailIndex || 0,
+                      uploadedUrls: draft.data.media.photoUrls,
+                    }
+                  : null,
+                currentStep: draft.data.currentStep || 0,
+                completedSteps: draft.data.completedSteps || [],
+                currentDraftId: draft.id,
+                lastSavedAt: draft.updatedAt,
+                lastDraftSavedAt: draft.updatedAt,
+                draftSaveStatus: "idle",
+                draftSaveError: null,
+              });
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[GemCreationStore] Draft loaded from backend:", draftId);
+              }
+            } else {
+              throw new Error(response.error || "Failed to load draft");
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to load draft";
+            set({
+              draftSaveStatus: "error",
+              draftSaveError: errorMessage,
+            });
+
+            console.error("[GemCreationStore] Error loading draft:", error);
+            throw error; // Re-throw so caller can handle it
+          }
+        },
+
+        deleteDraftFromBackend: async (draftId: string) => {
+          try {
+            const response = await deleteDraftApi(draftId);
+
+            if (response.success) {
+              // If we're deleting the current draft, clear the draft ID
+              const state = get();
+              if (state.currentDraftId === draftId) {
+                set({
+                  currentDraftId: null,
+                  lastDraftSavedAt: null,
+                });
+              }
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[GemCreationStore] Draft deleted from backend:", draftId);
+              }
+            } else {
+              throw new Error(response.error || "Failed to delete draft");
+            }
+          } catch (error) {
+            console.error("[GemCreationStore] Error deleting draft:", error);
+            throw error; // Re-throw so caller can handle it
+          }
+        },
+
+        setDraftSaveStatus: (status) => {
+          set({ draftSaveStatus: status });
+        },
+
+        setDraftSaveError: (error) => {
+          set({ draftSaveError: error });
+        },
       }),
       {
         name: "krawl:gem-creation:v1",
@@ -404,3 +557,27 @@ export const useIsStepCompleted = (step: number) =>
  */
 export const useLastSavedAt = () =>
   useGemCreationStore((state) => state.lastSavedAt);
+
+/**
+ * Selector: Get draft save status
+ */
+export const useDraftSaveStatus = () =>
+  useGemCreationStore((state) => state.draftSaveStatus);
+
+/**
+ * Selector: Get current draft ID
+ */
+export const useCurrentDraftId = () =>
+  useGemCreationStore((state) => state.currentDraftId);
+
+/**
+ * Selector: Get draft save error
+ */
+export const useDraftSaveError = () =>
+  useGemCreationStore((state) => state.draftSaveError);
+
+/**
+ * Selector: Get last draft saved timestamp
+ */
+export const useLastDraftSavedAt = () =>
+  useGemCreationStore((state) => state.lastDraftSavedAt);
