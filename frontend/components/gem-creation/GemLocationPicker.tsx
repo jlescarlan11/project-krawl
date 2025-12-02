@@ -9,7 +9,7 @@ import {
   loadBoundaryData,
   type BoundaryValidationResult,
 } from "@/lib/map/boundaryValidation";
-import { CEBU_CITY_CENTER, DEFAULT_MAP_STYLE } from "@/lib/map/constants";
+import { CEBU_CITY_CENTER, DEFAULT_MAP_STYLE, CEBU_CITY_MAX_BOUNDS } from "@/lib/map/constants";
 import { ANIMATION_DURATIONS, easingFunctions } from "@/lib/map/animationUtils";
 
 // Ensure Mapbox token is set
@@ -275,6 +275,7 @@ export const GemLocationPicker = forwardRef<GemLocationPickerRef, GemLocationPic
       center: initialCoordinates,
       zoom: initialZoom,
       attributionControl: false,
+      maxBounds: CEBU_CITY_MAX_BOUNDS, // Restrict panning to Cebu City only
     });
 
     // Create draggable marker
