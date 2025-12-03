@@ -83,6 +83,12 @@ export function getOptimizedUrl(
   publicIdOrUrl: string,
   options: CloudinaryTransformOptions = {}
 ): string {
+  // Return empty string for invalid input
+  if (!publicIdOrUrl || typeof publicIdOrUrl !== 'string') {
+    console.warn('[Cloudinary] Invalid publicIdOrUrl provided');
+    return '';
+  }
+
   // Extract public ID if URL is provided
   let publicId = publicIdOrUrl;
   if (publicIdOrUrl.startsWith('http')) {
@@ -90,15 +96,27 @@ export function getOptimizedUrl(
     if (extracted) {
       publicId = extracted;
     } else {
-      // If we can't extract, return original URL
-      return publicIdOrUrl;
+      // If we can't extract from URL, check if it's already a valid Cloudinary URL
+      // If it's a Cloudinary URL but extraction failed, return as-is
+      if (publicIdOrUrl.includes('res.cloudinary.com')) {
+        return publicIdOrUrl;
+      }
+      // Otherwise, log warning and return empty string
+      console.warn('[Cloudinary] Could not extract public ID from URL:', publicIdOrUrl);
+      return '';
     }
   }
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (!cloudName) {
     console.warn('[Cloudinary] Cloud name not configured, returning original URL');
-    return publicIdOrUrl;
+    return publicIdOrUrl.startsWith('http') ? publicIdOrUrl : '';
+  }
+
+  // Validate public ID doesn't contain invalid characters
+  if (!publicId || publicId.trim() === '') {
+    console.warn('[Cloudinary] Empty public ID');
+    return '';
   }
 
   const transformation = buildTransformationString(options);
@@ -210,5 +228,39 @@ export function getResponsiveSizes(
       return bp.size;
     })
     .join(', ');
+}
+
+/**
+ * Generate optimized avatar URL
+ * Transforms Cloudinary URLs to optimized versions, leaves other URLs as-is
+ * @param avatarUrl - Avatar URL (Cloudinary, Google, UI Avatars, etc.)
+ * @param size - Avatar size (default: 128)
+ * @returns Optimized avatar URL or original URL if not Cloudinary
+ */
+export function getAvatarUrl(
+  avatarUrl: string | null | undefined,
+  size: number = 128
+): string | undefined {
+  // Return undefined for null/undefined/empty strings
+  if (!avatarUrl || typeof avatarUrl !== 'string' || avatarUrl.trim() === '') {
+    return undefined;
+  }
+
+  // If it's a Cloudinary URL, transform it
+  if (avatarUrl.includes('res.cloudinary.com')) {
+    const optimizedUrl = getOptimizedUrl(avatarUrl, {
+      width: size,
+      height: size,
+      format: 'webp',
+      quality: 'auto',
+      crop: 'fill',
+      gravity: 'face', // Focus on face for avatars
+    });
+    // If optimization failed (empty string), return original URL
+    return optimizedUrl || avatarUrl;
+  }
+
+  // For non-Cloudinary URLs (Google profile pictures, UI Avatars, etc.), return as-is
+  return avatarUrl;
 }
 

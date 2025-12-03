@@ -123,16 +123,19 @@ public class JwtTokenService {
                 long skewMillis = clockSkewSeconds * 1000;
                 
                 if (expirationTime < (currentTime - skewMillis)) {
-                    log.warn("JWT token expired");
+                    log.warn("JWT token expired - Expiration: {}, Current: {}, Time difference: {} ms", 
+                        expiration, now, (currentTime - expirationTime));
                     throw new AuthException("Token expired", HttpStatus.UNAUTHORIZED);
                 }
             }
             
+            log.debug("JWT token validated successfully");
             return claims;
         } catch (AuthException e) {
             throw e;
         } catch (Exception e) {
-            log.error("JWT validation failed", e);
+            log.error("JWT validation failed - Exception type: {}, Message: {}", 
+                e.getClass().getSimpleName(), e.getMessage(), e);
             throw new AuthException("Invalid token", HttpStatus.UNAUTHORIZED);
         }
     }

@@ -9,15 +9,32 @@ import { GemComments } from "@/components/gems/GemComments";
 import { RelatedGems } from "@/components/gems/RelatedGems";
 import { RelatedKrawls } from "@/components/krawls/RelatedKrawls";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { getMockGemDetail } from "@/lib/data/mockGems";
-
 /**
- * Fetch gem detail
- * TODO: Replace with actual API call when backend is ready
+ * Fetch gem detail from API
+ * TODO: Replace with actual backend API call when backend is ready
  */
 async function fetchGemById(id: string): Promise<GemDetail | null> {
-  // For now, use mock data directly to avoid SSR fetch issues
-  return getMockGemDetail(id);
+  try {
+    // Construct absolute URL for server-side fetch
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const host = process.env.NEXT_PUBLIC_APP_URL || 
+                 process.env.VERCEL_URL || 
+                 "localhost:3000";
+    const baseUrl = host.startsWith("http") ? host : `${protocol}://${host}`;
+    
+    const response = await fetch(`${baseUrl}/api/gems/${id}`, {
+      cache: "no-store", // Always fetch fresh data
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching gem:", error);
+    return null;
+  }
 }
 
 /**

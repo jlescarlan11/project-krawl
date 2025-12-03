@@ -5,6 +5,28 @@ import { ThumbsUp, User, ChevronDown, ChevronUp } from "lucide-react";
 import { GemVouch } from "@/types/gem-detail";
 import { Button } from "@/components/ui/button";
 
+// Avatar component with error handling
+function Avatar({ src, alt, className }: { src?: string; alt: string; className?: string }) {
+  const [hasError, setHasError] = useState(false);
+  
+  if (!src || hasError) {
+    return (
+      <div className={`w-8 h-8 rounded-full bg-primary-green/10 flex items-center justify-center ${className || ''}`}>
+        <User className="w-4 h-4 text-primary-green" />
+      </div>
+    );
+  }
+  
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`w-8 h-8 rounded-full ${className || ''}`}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 interface VouchDisplayProps {
   vouches: GemVouch[];
   vouchCount: number;
@@ -88,17 +110,7 @@ export function VouchDisplay({
                 key={vouch.userId}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                {vouch.userAvatar ? (
-                  <img
-                    src={vouch.userAvatar}
-                    alt={vouch.userName}
-                    className="w-8 h-8 rounded-full"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary-green/10 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary-green" />
-                  </div>
-                )}
+                <Avatar src={vouch.userAvatar} alt={vouch.userName} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-text-primary truncate">
                     {vouch.userName}

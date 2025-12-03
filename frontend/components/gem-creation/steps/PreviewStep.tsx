@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, Loader2, Edit, AlertCircle, Info } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle, Info, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
@@ -12,10 +12,13 @@ import { GemInfo } from "@/components/gems/GemInfo";
 import { transformFormDataToGemDetail } from "../utils/transformFormDataToGemDetail";
 import { validatePreviewData } from "../utils/validatePreviewData";
 import { createGem, CreateGemRequest } from "@/lib/api/gems";
+import { deleteAllDrafts } from "@/lib/api/drafts";
 import { ROUTES } from "@/lib/routes";
 import { uploadMultipleFiles, type UploadProgress } from "@/lib/cloudinary/upload";
 import { cn } from "@/lib/utils";
 import { GemDetailSkeleton } from "@/components/gems/GemDetailSkeleton";
+import { SuccessScreen } from "../SuccessScreen";
+import { useToast } from "@/components";
 
 /**
  * Props for PreviewStep component
@@ -39,6 +42,7 @@ export interface PreviewStepProps {
 export function PreviewStep({ onBack }: PreviewStepProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { error: toastError } = useToast();
   const {
     location,
     details,
@@ -54,6 +58,10 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({});
+  const [successState, setSuccessState] = useState<{
+    gemId: string;
+    gemName: string;
+  } | null>(null);
 
   // Transform form data to GemDetail format
   const gemDetail = useMemo(() => {
@@ -79,25 +87,67 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
   }, [location, details, media]);
 
   /**
+   * Get user-friendly error message based on error type
+   */
+  const getErrorMessage = useCallback((error: unknown): string => {
+    if (error instanceof Error) {
+      const message = error.message.toLowerCase();
+      
+      // Network errors
+      if (message.includes("network") || message.includes("fetch") || message.includes("failed to fetch")) {
+        return "Network error. Please check your internet connection and try again.";
+      }
+      
+      // Timeout errors
+      if (message.includes("timeout") || message.includes("aborted")) {
+        return "Request timed out. Please try again.";
+      }
+      
+      // Validation errors
+      if (message.includes("validation") || message.includes("invalid") || message.includes("missing")) {
+        return error.message;
+      }
+      
+      // Server errors
+      if (message.includes("server") || message.includes("500") || message.includes("internal")) {
+        return "Server error. Please try again in a few moments.";
+      }
+      
+      // Authentication errors
+      if (message.includes("unauthorized") || message.includes("401") || message.includes("authentication")) {
+        return "Authentication required. Please sign in and try again.";
+      }
+      
+      // Return the original error message if it's user-friendly
+      return error.message;
+    }
+    
+    return "An unexpected error occurred. Please try again.";
+  }, []);
+
+  /**
    * Handle gem submission
    */
   const handleSubmit = useCallback(async () => {
     // Validate all required data is present
     if (!validation.isValid) {
-      setSubmissionError(
-        `Please complete all required fields: ${validation.missingFields.join(", ")}`
-      );
+      const errorMsg = `Please complete all required fields: ${validation.missingFields.join(", ")}`;
+      setSubmissionError(errorMsg);
+      toastError("Validation Error", errorMsg);
       return;
     }
 
     if (!location || !details || !media) {
-      setSubmissionError("Missing required data. Please go back and complete all steps.");
+      const errorMsg = "Missing required data. Please go back and complete all steps.";
+      setSubmissionError(errorMsg);
+      toastError("Missing Data", errorMsg);
       return;
     }
 
     // Start submission process
     setIsSubmitting(true);
     setSubmissionError(null);
+    setUploadProgress({});
 
     try {
       // Step 1: Upload photos to Cloudinary (if not already uploaded)
@@ -131,9 +181,14 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         });
 
         if (!uploadResult.success || uploadResult.errors.length > 0) {
-          throw new Error(
-            `Failed to upload ${uploadResult.errors.length} photo(s). Please try again.`
-          );
+          // Provide more detailed error information
+          const errorDetails = uploadResult.errors
+            .map((err) => `${err.file.name}: ${err.error}`)
+            .join('; ');
+          const errorMsg = uploadResult.errors.length === 1
+            ? `Failed to upload photo "${uploadResult.errors[0].file.name}": ${uploadResult.errors[0].error}`
+            : `Failed to upload ${uploadResult.errors.length} photo(s). ${errorDetails}`;
+          throw new Error(errorMsg);
         }
 
         photoUrls = uploadResult.results.map((r) => r.url);
@@ -156,7 +211,8 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         },
         address: location.address,
         photos: photoUrls,
-        photoPublicIds: photoPublicIds.length > 0 ? photoPublicIds : undefined,
+        // Always send photoPublicIds as an array (empty if none) to avoid JSON serialization issues
+        photoPublicIds: photoPublicIds.length > 0 ? photoPublicIds : [],
         thumbnailIndex: media.thumbnailIndex || 0,
         culturalSignificance: details.culturalSignificance?.trim() || undefined,
         tags: details.tags && details.tags.length > 0 ? details.tags : undefined,
@@ -172,21 +228,38 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
 
       const createResponse = await createGem(gemData);
 
-      if (createResponse.success) {
-        // Success! Clear form and redirect to gem detail
+      if (createResponse.success && createResponse.gemId) {
+        // Success! Delete all drafts and clear form state to start fresh
+        try {
+          await deleteAllDrafts();
+          console.log("[Gem Creation] All drafts deleted after successful gem creation");
+        } catch (draftError) {
+          // Log error but don't fail the gem creation
+          console.error("[Gem Creation] Failed to delete all drafts after gem creation:", draftError);
+        }
+
+        // Clear form state so user starts fresh when creating next gem
+        // Store gem name before clearing for success screen
+        const createdGemName = details.name;
         clearForm();
-        router.push(ROUTES.GEM_DETAIL(createResponse.gemId));
+
+        // Success! Show success screen
+        setSuccessState({
+          gemId: createResponse.gemId,
+          gemName: createdGemName,
+        });
+        setIsSubmitting(false);
+        // Form is cleared, so when user navigates back to create gem, it will be empty
       } else {
         throw new Error(createResponse.message || "Failed to create gem");
       }
     } catch (error) {
       console.error("Gem creation error:", error);
-      setSubmissionError(
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred. Please try again."
-      );
+      const errorMessage = getErrorMessage(error);
+      setSubmissionError(errorMessage);
+      toastError("Submission Failed", errorMessage);
       setIsSubmitting(false);
+      setUploadProgress({});
     }
   }, [
     validation,
@@ -195,9 +268,16 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
     media,
     initializeUploadStatuses,
     updatePhotoUploadStatus,
-    clearForm,
-    router,
+    setUploadedUrls,
+    setUploadedPublicIds,
+    getErrorMessage,
+    toastError,
   ]);
+
+  // Show success screen if submission was successful
+  if (successState) {
+    return <SuccessScreen gemId={successState.gemId} gemName={successState.gemName} />;
+  }
 
   // Show loading skeleton if data is incomplete
   if (!gemDetail) {
@@ -255,7 +335,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
           <div className="flex flex-row gap-3 items-center">
             <Button variant="outline" size="lg" onClick={onBack} className="flex-1 sm:flex-initial sm:min-w-[120px]">
-              Edit
+              Back
             </Button>
             <Button variant="primary" size="lg" disabled className="flex-1 sm:flex-1">
               Submit
@@ -345,7 +425,25 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         {submissionError && (
           <div className="p-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-800 font-medium">{submissionError}</p>
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800 mb-1">
+                    Submission Failed
+                  </p>
+                  <p className="text-sm text-red-700 mb-3">{submissionError}</p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !validation.isValid}
+                    icon={<RefreshCw className="w-4 h-4" />}
+                    iconPosition="left"
+                  >
+                    Retry Submission
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -374,7 +472,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
             disabled={isSubmitting}
             className="flex-1 sm:flex-initial sm:min-w-[120px]"
           >
-            Edit
+            Back
           </Button>
           <Button
             variant="primary"
@@ -384,12 +482,14 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
             className="flex-1 sm:flex-1"
           >
             {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                {Object.keys(uploadProgress).length > 0
-                  ? "Uploading Photos..."
-                  : "Creating Gem..."}
-              </>
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>
+                  {Object.keys(uploadProgress).length > 0
+                    ? "Uploading Photos..."
+                    : "Creating Gem..."}
+                </span>
+              </span>
             ) : (
               "Submit"
             )}

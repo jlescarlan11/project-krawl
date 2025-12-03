@@ -35,86 +35,75 @@ const difficultyColor = (difficulty?: string) => {
   }
 };
 
-// Mock function to get related krawls - TODO: Replace with API call
+/**
+ * Get related krawls from backend API
+ * Fetches featured krawls and filters client-side to show relevant ones
+ */
 async function getRelatedKrawls(gem: GemDetail): Promise<FeaturedKrawl[]> {
-  // Mock related krawls that include this gem
-  const mockRelatedKrawls: FeaturedKrawl[] = [
-    {
-      id: "krawl-001",
-      name: "Heritage Music Trail",
-      description: "A cultural journey through Cebu City's historic district, featuring traditional music venues and heritage sites.",
-      coverImage: "/images/krawls/heritage-music.jpg",
-      rating: 4.5,
-      difficulty: "Easy",
-      estimatedDurationMinutes: 180,
-      gemsCount: 5,
-    },
-    {
-      id: "krawl-002",
-      name: "Sunset Food Crawl",
-      description: "Experience Cebu's culinary delights as the sun sets. From street food to hidden gems, taste the city's flavors.",
-      coverImage: "/images/krawls/sunset-food.jpg",
-      rating: 4.8,
-      difficulty: "Medium",
-      estimatedDurationMinutes: 240,
-      gemsCount: 7,
-    },
-    {
-      id: "krawl-003",
-      name: "Rural Craft Loop",
-      description: "Discover traditional crafts and artisan workshops in the outskirts of Cebu City.",
-      coverImage: "/images/krawls/rural-craft.jpg",
-      rating: 4.2,
-      difficulty: "Hard",
-      estimatedDurationMinutes: 300,
-      gemsCount: 6,
-    },
-    {
-      id: "krawl-004",
-      name: "Downtown Historical Walk",
-      description: "Walk through centuries of history in Cebu City's downtown district, visiting iconic landmarks and hidden treasures.",
-      coverImage: "/images/krawls/downtown-historical.jpg",
-      rating: 4.6,
-      difficulty: "Easy",
-      estimatedDurationMinutes: 150,
-      gemsCount: 8,
-    },
-    {
-      id: "krawl-005",
-      name: "Coastal Adventure Trail",
-      description: "Experience the beautiful coastline of Cebu with beaches, seafood stops, and waterfront attractions.",
-      coverImage: "/images/krawls/coastal-adventure.jpg",
-      rating: 4.7,
-      difficulty: "Medium",
-      estimatedDurationMinutes: 360,
-      gemsCount: 9,
-    },
-  ];
+  try {
+    // Use environment variable or default to localhost
+    // Note: In server components, we can access process.env directly
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    
+    const backendResponse = await fetch(`${API_URL}/api/landing/featured-krawls?limit=10`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
 
-  // Filter to show krawls that would include this gem (based on category or district)
-  // For demo purposes, we'll show krawls based on gem's district or category
-  const relatedKrawls = mockRelatedKrawls.filter((krawl) => {
-    // If gem is in Downtown, show Heritage and Downtown krawls
-    if (gem.district.toLowerCase().includes("downtown")) {
-      return krawl.id === "krawl-001" || krawl.id === "krawl-004";
+    if (!backendResponse.ok) {
+      console.error(`[RelatedKrawls] Backend returned ${backendResponse.status}`);
+      return [];
     }
-    // If gem is Historical or Religious, show Heritage krawl
-    if (
-      gem.category.toLowerCase().includes("historical") ||
-      gem.category.toLowerCase().includes("religious")
-    ) {
-      return krawl.id === "krawl-001" || krawl.id === "krawl-004";
-    }
-    // If gem is Food-related, show Food crawl
-    if (gem.category.toLowerCase().includes("food")) {
-      return krawl.id === "krawl-002";
-    }
-    // Default: show first 3
-    return true;
-  });
 
-  // Limit to 3-5 krawls initially (requirement)
-  return relatedKrawls.slice(0, 5);
+    const backendData = await backendResponse.json();
+    const backendKrawls = backendData.featured || [];
+
+    // Map backend FeaturedKrawlResponse to frontend FeaturedKrawl interface
+    const allKrawls: FeaturedKrawl[] = backendKrawls.map((krawl: any) => ({
+      id: krawl.id || "",
+      name: krawl.name || "",
+      description: krawl.description || "",
+      coverImage: krawl.coverImage || "",
+      rating: krawl.rating ?? undefined,
+      difficulty: krawl.difficulty || undefined,
+      estimatedDurationMinutes: krawl.estimatedDurationMinutes ?? undefined,
+      gemsCount: krawl.gemsCount ?? undefined,
+    }));
+
+    // Filter to show krawls that might include this gem (based on category or district matching)
+    // This is a simple client-side filter - ideally backend would provide related krawls
+    const relatedKrawls = allKrawls.filter((krawl) => {
+      // If gem is in Downtown, show krawls with "heritage" or "historical" in description
+      if (gem.district.toLowerCase().includes("downtown")) {
+        const desc = (krawl.description || "").toLowerCase();
+        return desc.includes("heritage") || desc.includes("historical") || desc.includes("downtown");
+      }
+      // If gem is Historical or Religious, show heritage/historical krawls
+      if (
+        gem.category.toLowerCase().includes("historical") ||
+        gem.category.toLowerCase().includes("religious")
+      ) {
+        const desc = (krawl.description || "").toLowerCase();
+        return desc.includes("heritage") || desc.includes("historical");
+      }
+      // If gem is Food-related, show food krawls
+      if (gem.category.toLowerCase().includes("food")) {
+        const desc = (krawl.description || "").toLowerCase();
+        return desc.includes("food") || desc.includes("culinary");
+      }
+      // Default: show all (will be limited below)
+      return true;
+    });
+
+    // Limit to 3-5 krawls initially (requirement)
+    return relatedKrawls.slice(0, 5);
+  } catch (error) {
+    console.error("[RelatedKrawls] Error fetching related krawls:", error);
+    return [];
+  }
 }
 
 export async function RelatedKrawls({ currentGem }: RelatedKrawlsProps) {

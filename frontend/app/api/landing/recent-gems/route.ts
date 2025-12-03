@@ -1,62 +1,56 @@
 "use server";
 
 import { NextResponse } from "next/server";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 
 import type { PopularGem } from "@/components/landing/types";
 
 /**
- * Temporary mock data for "recent gems" fallback until backend Task-085
- * provides production landing endpoints. Remove after backend integration.
+ * Get recent gems from backend API
  */
-const RECENT_GEMS: PopularGem[] = [
-  {
-    id: "gem-mango-float-pop-up",
-    name: "Tisa Mango Float Pop-up",
-    category: "Food & Drink",
-    district: "Tisa",
-    thumbnailUrl: "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=900&q=80",
-    rating: 4.4,
-    vouchCount: 18,
-    viewCount: 420,
-    shortDescription: "Weekend-only dessert bar layering mangoes from Guadalupe farms.",
-  },
-  {
-    id: "gem-casal-doorway-mural",
-    name: "Casal Doorway Mural Series",
-    category: "Arts & Culture",
-    district: "Downtown",
-    thumbnailUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80",
-    rating: 4.3,
-    vouchCount: 21,
-    viewCount: 510,
-    shortDescription: "New murals rotating monthly that celebrate Cebuano door-making guilds.",
-  },
-  {
-    id: "gem-sikwate-mornings",
-    name: "Sikwate Sunrise Circle",
-    category: "Community",
-    district: "Talamban",
-    thumbnailUrl: "https://images.unsplash.com/photo-1481392604930-0e2b18a9f247?auto=format&fit=crop&w=900&q=80",
-    rating: 4.5,
-    vouchCount: 25,
-    viewCount: 580,
-    shortDescription: "Small gatherings serving tablea sikwate paired with oral history sharing.",
-  },
-  {
-    id: "gem-reclaimed-terracotta",
-    name: "Reclaimed Terracotta Studio",
-    category: "Arts & Crafts",
-    district: "Banilad",
-    thumbnailUrl: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80",
-    rating: 4.2,
-    vouchCount: 16,
-    viewCount: 360,
-    shortDescription: "Hands-on pottery open house using recycled building materials.",
-  },
-];
-
 export async function GET() {
-  return NextResponse.json({ recent: RECENT_GEMS });
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const session = await auth();
+    
+    const backendResponse = await fetch(`${API_URL}/api/gems`, {
+      headers: session?.jwt ? {
+        Authorization: `Bearer ${session.jwt}`,
+      } : {},
+    });
+
+    if (!backendResponse.ok) {
+      return NextResponse.json({ recent: [] });
+    }
+
+    const backendGemsData = await backendResponse.json();
+    const backendGemsList = Array.isArray(backendGemsData) ? backendGemsData : [];
+    
+    // Sort by creation date (most recent first) and limit to 4
+    const recentGems: PopularGem[] = backendGemsList
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 4)
+      .map((gem: any) => ({
+        id: gem.id,
+        name: gem.name,
+        category: gem.category,
+        district: gem.district || "Cebu City",
+        thumbnailUrl: gem.thumbnailUrl,
+        rating: gem.ratingsData?.averageRating || gem.rating || 0,
+        vouchCount: gem.vouchesData?.vouchCount || gem.vouchCount || 0,
+        viewCount: gem.viewCount || 0,
+        shortDescription: gem.shortDescription,
+      }));
+
+    return NextResponse.json({ recent: recentGems });
+  } catch (error) {
+    console.error("Error fetching recent gems:", error);
+    return NextResponse.json({ recent: [] });
+  }
 }
 
 

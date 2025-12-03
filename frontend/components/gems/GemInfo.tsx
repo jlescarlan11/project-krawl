@@ -6,6 +6,28 @@ import { GemStatus } from "@/components/map/gem-types";
 import { useState } from "react";
 import { GemLocationMap } from "./GemLocationMap";
 
+// Avatar component with error handling
+function Avatar({ src, alt, className }: { src?: string; alt: string; className?: string }) {
+  const [hasError, setHasError] = useState(false);
+  
+  if (!src || hasError) {
+    return (
+      <div className={`w-10 h-10 rounded-full bg-primary-green/10 flex items-center justify-center ${className || ''}`}>
+        <User className="w-5 h-5 text-primary-green" />
+      </div>
+    );
+  }
+  
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`w-10 h-10 rounded-full ${className || ''}`}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 interface GemInfoProps {
   gem: GemDetail;
 }
@@ -201,17 +223,7 @@ export function GemInfo({ gem }: GemInfoProps) {
             Added By
           </h2>
           <div className="flex items-center gap-3">
-            {gem.createdBy.avatar ? (
-              <img
-                src={gem.createdBy.avatar}
-                alt={gem.createdBy.name}
-                className="w-10 h-10 rounded-full"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-primary-green/10 flex items-center justify-center">
-                <User className="w-5 h-5 text-primary-green" />
-              </div>
-            )}
+            <Avatar src={gem.createdBy.avatar} alt={gem.createdBy.name} />
             <div>
               <p className="font-medium text-text-primary">
                 {gem.createdBy.name}

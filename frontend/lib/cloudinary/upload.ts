@@ -126,9 +126,8 @@ export async function uploadSingleFile(
       formData.append('upload_preset', uploadPreset);
       formData.append('folder', 'krawl-gems'); // Store in specific folder
       
-      // Add transformation parameters for optimization
-      // Convert to WebP format, resize to max dimensions, compress for web
-      formData.append('transformation', 'f_webp,q_auto,w_1920,h_1080,c_limit');
+      // Note: Transformations are not allowed in unsigned uploads
+      // Configure transformations in the upload preset or apply via URL transformations when displaying
 
       // Create XMLHttpRequest for progress tracking
       const result = await new Promise<UploadResult>((resolve, reject) => {
@@ -180,13 +179,55 @@ export async function uploadSingleFile(
             }
           } else {
             let errorMessage = `Upload failed with status ${xhr.status}`;
-            try {
-              const errorResponse = JSON.parse(xhr.responseText);
-              console.error('[Cloudinary] Error response:', errorResponse);
-              errorMessage = errorResponse.error?.message || errorMessage;
-            } catch {
-              console.error('[Cloudinary] Raw error:', xhr.responseText);
+            
+            // Handle different HTTP status codes
+            if (xhr.status === 400) {
+              errorMessage = 'Invalid request. Please check your file and try again.';
+            } else if (xhr.status === 401) {
+              errorMessage = 'Authentication failed. Please check your Cloudinary configuration.';
+            } else if (xhr.status === 403) {
+              errorMessage = 'Upload forbidden. Please check your upload preset permissions.';
+            } else if (xhr.status === 413) {
+              errorMessage = 'File too large. Maximum file size is 5MB.';
+            } else if (xhr.status >= 500) {
+              errorMessage = 'Cloudinary server error. Please try again in a few moments.';
             }
+            
+            // Try to parse error response for more details
+            const responseText = xhr.responseText?.trim();
+            
+            // Skip if response is empty or just an empty object
+            if (responseText && responseText !== '{}' && responseText !== '') {
+              try {
+                const errorResponse = JSON.parse(responseText);
+                
+                // Only process if there's actual content (not just empty object)
+                const hasContent = Object.keys(errorResponse).length > 0;
+                if (hasContent) {
+                  console.error('[Cloudinary] Error response:', errorResponse);
+                  
+                  // Extract error message from various possible structures
+                  if (errorResponse.error?.message) {
+                    errorMessage = errorResponse.error.message;
+                  } else if (errorResponse.message) {
+                    errorMessage = errorResponse.message;
+                  } else if (typeof errorResponse.error === 'string') {
+                    errorMessage = errorResponse.error;
+                  }
+                }
+                // If empty object, just use status-based message (already set above)
+              } catch (parseError) {
+                // If responseText is not valid JSON, log it for debugging
+                console.error('[Cloudinary] Raw error response (non-JSON):', responseText);
+                // Keep the status-based error message
+              }
+            }
+            
+            // Log the error with status code (only once, not for empty objects)
+            if (!responseText || responseText === '{}' || responseText === '') {
+              console.error(`[Cloudinary] Upload failed with status ${xhr.status} (no response body)`);
+            }
+            
             reject(new Error(errorMessage));
           }
         });

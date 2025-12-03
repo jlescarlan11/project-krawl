@@ -116,3 +116,27 @@ export async function deleteDraft(draftId: string): Promise<DeleteDraftResponse>
     throw error;
   }
 }
+
+/**
+ * Delete all drafts for the authenticated user
+ *
+ * @returns Promise<DeleteDraftResponse>
+ */
+export async function deleteAllDrafts(): Promise<DeleteDraftResponse> {
+  try {
+    const response = await fetch("/api/drafts", {
+      method: "DELETE",
+    });
+
+    const result: DeleteDraftResponse = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to delete all drafts");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error deleting all drafts:", error);
+    throw error;
+  }
+}

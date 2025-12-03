@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { MapGem, GemStatus } from "@/components/map/gem-types";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * Request body for creating a new gem
@@ -32,213 +33,6 @@ interface CreateGemRequestBody {
   hours?: string;
   website?: string;
   phone?: string;
-}
-
-/**
- * Generate mock gems data for Cebu City area
- * Coordinates are within Cebu City bounds
- */
-function generateMockGems(): MapGem[] {
-  const mockGems: MapGem[] = [
-    // Verified Gems (will show at all zoom levels)
-    {
-      id: "gem-001",
-      name: "Magellan's Cross",
-      category: "Historical Landmark",
-      district: "Downtown",
-      coordinates: [123.8897, 10.2933],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/magellans-cross.jpg",
-      rating: 4.5,
-      vouchCount: 15,
-      viewCount: 234,
-      shortDescription: "Historic cross planted by Ferdinand Magellan in 1521",
-    },
-    {
-      id: "gem-002",
-      name: "Fort San Pedro",
-      category: "Historical Landmark",
-      district: "Downtown",
-      coordinates: [123.8868, 10.2925],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/fort-san-pedro.jpg",
-      rating: 4.3,
-      vouchCount: 12,
-      viewCount: 189,
-      shortDescription: "Spanish colonial fort and military defense structure",
-    },
-    {
-      id: "gem-003",
-      name: "Basilica del Santo Niño",
-      category: "Religious Site",
-      district: "Downtown",
-      coordinates: [123.8897, 10.2942],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/basilica.jpg",
-      rating: 4.8,
-      vouchCount: 25,
-      viewCount: 456,
-      shortDescription: "Oldest Roman Catholic church in the Philippines",
-    },
-    {
-      id: "gem-004",
-      name: "Tops Lookout",
-      category: "Viewpoint",
-      district: "Busay",
-      coordinates: [123.8765, 10.3425],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/tops.jpg",
-      rating: 4.6,
-      vouchCount: 18,
-      viewCount: 312,
-      shortDescription: "Scenic mountain viewpoint overlooking Cebu City",
-    },
-    {
-      id: "gem-005",
-      name: "Sirao Flower Garden",
-      category: "Nature",
-      district: "Busay",
-      coordinates: [123.8689, 10.3512],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/sirao.jpg",
-      rating: 4.4,
-      vouchCount: 14,
-      viewCount: 287,
-      shortDescription: "Colorful flower garden with celosia flowers",
-    },
-
-    // Stale Gems (verified but need updates)
-    {
-      id: "gem-006",
-      name: "Carbon Market",
-      category: "Market",
-      district: "Downtown",
-      coordinates: [123.8956, 10.2978],
-      status: GemStatus.STALE,
-      thumbnailUrl: "/images/gems/carbon-market.jpg",
-      rating: 3.9,
-      vouchCount: 8,
-      viewCount: 145,
-      shortDescription: "Historic public market - information may be outdated",
-    },
-    {
-      id: "gem-007",
-      name: "Temple of Leah",
-      category: "Monument",
-      district: "Busay",
-      coordinates: [123.8723, 10.3478],
-      status: GemStatus.STALE,
-      thumbnailUrl: "/images/gems/temple-leah.jpg",
-      rating: 4.2,
-      vouchCount: 7,
-      viewCount: 198,
-      shortDescription: "Roman-inspired temple monument - needs verification",
-    },
-
-    // Pending Gems (only visible at zoom >= 12)
-    {
-      id: "gem-008",
-      name: "Hidden Café on Mango Ave",
-      category: "Food & Drink",
-      district: "Downtown",
-      coordinates: [123.8923, 10.3087],
-      status: GemStatus.PENDING,
-      thumbnailUrl: "/images/gems/cafe.jpg",
-      rating: 4.1,
-      vouchCount: 2,
-      viewCount: 67,
-      shortDescription: "Cozy café with local coffee - awaiting verification",
-    },
-    {
-      id: "gem-009",
-      name: "Street Art Wall - Colon St",
-      category: "Art",
-      district: "Downtown",
-      coordinates: [123.8912, 10.2998],
-      status: GemStatus.PENDING,
-      thumbnailUrl: "/images/gems/street-art.jpg",
-      rating: 3.8,
-      vouchCount: 1,
-      viewCount: 45,
-      shortDescription: "Vibrant street art mural - needs more vouches",
-    },
-    {
-      id: "gem-010",
-      name: "Local Bakery - Escario",
-      category: "Food & Drink",
-      district: "Lahug",
-      coordinates: [123.8934, 10.3156],
-      status: GemStatus.PENDING,
-      thumbnailUrl: "/images/gems/bakery.jpg",
-      rating: 4.0,
-      vouchCount: 2,
-      viewCount: 52,
-      shortDescription: "Family-owned bakery with fresh pandesal",
-    },
-    {
-      id: "gem-011",
-      name: "Sunset Spot - IT Park",
-      category: "Viewpoint",
-      district: "Lahug",
-      coordinates: [123.8876, 10.3189],
-      status: GemStatus.PENDING,
-      vouchCount: 1,
-      viewCount: 34,
-      shortDescription: "Great rooftop view - new submission",
-    },
-    {
-      id: "gem-012",
-      name: "Taoist Temple",
-      category: "Religious Site",
-      district: "Beverly Hills",
-      coordinates: [123.8654, 10.3234],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/taoist-temple.jpg",
-      rating: 4.5,
-      vouchCount: 16,
-      viewCount: 298,
-      shortDescription: "Colorful Taoist temple with city views",
-    },
-    {
-      id: "gem-013",
-      name: "JY Square Mall Food Court",
-      category: "Food & Drink",
-      district: "Lahug",
-      coordinates: [123.8912, 10.3201],
-      status: GemStatus.PENDING,
-      vouchCount: 2,
-      viewCount: 78,
-      shortDescription: "Popular local food court - new gem",
-    },
-    {
-      id: "gem-014",
-      name: "Fuente Osmeña Circle",
-      category: "Park",
-      district: "Downtown",
-      coordinates: [123.8945, 10.3123],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/fuente.jpg",
-      rating: 4.2,
-      vouchCount: 11,
-      viewCount: 234,
-      shortDescription: "Historic circular park and landmark",
-    },
-    {
-      id: "gem-015",
-      name: "Ayala Center Cebu",
-      category: "Shopping",
-      district: "Business Park",
-      coordinates: [123.9087, 10.3198],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/ayala.jpg",
-      rating: 4.4,
-      vouchCount: 20,
-      viewCount: 412,
-      shortDescription: "Premier shopping mall and lifestyle center",
-    },
-  ];
-
-  return mockGems;
 }
 
 /**
@@ -293,11 +87,84 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all mock gems
-    let gems = generateMockGems();
-
+    // Fetch gems from backend database
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const session = await auth();
+    
+    let gems: MapGem[] = [];
+    
+    try {
+      // Fetch all gems from backend
+      const backendResponse = await fetch(`${API_URL}/api/gems`, {
+        headers: session?.jwt ? {
+          Authorization: `Bearer ${session.jwt}`,
+        } : {},
+      });
+      
+      if (backendResponse.ok) {
+        const backendGemsData = await backendResponse.json();
+        const backendGemsList = Array.isArray(backendGemsData) ? backendGemsData : [];
+        
+        // Convert backend gems to MapGem format
+        gems = backendGemsList.map((gemData: any) => {
+          const longitude = gemData.coordinates?.longitude ?? gemData.longitude;
+          const latitude = gemData.coordinates?.latitude ?? gemData.latitude;
+          
+          if (!longitude || !latitude) {
+            console.warn(`[GET /api/gems] Gem ${gemData.id} missing coordinates`);
+            return null;
+          }
+          
+          const backendStatus = gemData.status?.toLowerCase() || 'pending';
+          const frontendStatus = backendStatus === 'verified' ? GemStatus.VERIFIED :
+                                 backendStatus === 'stale' ? GemStatus.STALE :
+                                 GemStatus.PENDING;
+          
+          return {
+            id: gemData.id,
+            name: gemData.name,
+            category: gemData.category,
+            district: gemData.district || "Cebu City",
+            coordinates: [longitude, latitude] as [number, number],
+            status: frontendStatus,
+            thumbnailUrl: gemData.thumbnailUrl,
+            rating: gemData.ratingsData?.averageRating || gemData.rating || 0,
+            vouchCount: gemData.vouchesData?.vouchCount || gemData.vouchCount || 0,
+            viewCount: gemData.viewCount || 0,
+            shortDescription: gemData.shortDescription,
+          } as MapGem;
+        }).filter((g): g is MapGem => g !== null);
+        
+        console.log(`[GET /api/gems] Fetched ${gems.length} gems from backend database`);
+      } else {
+        console.error(`[GET /api/gems] Backend returned ${backendResponse.status}`);
+        return NextResponse.json(
+          {
+            error: "Failed to fetch gems from backend",
+            gems: [],
+            total: 0,
+          },
+          { status: backendResponse.status }
+        );
+      }
+    } catch (backendError) {
+      console.error('[GET /api/gems] Failed to fetch from backend:', backendError);
+      return NextResponse.json(
+        {
+          error: "Backend unavailable",
+          gems: [],
+          total: 0,
+        },
+        { status: 503 }
+      );
+    }
+    
+    console.log(`[GET /api/gems] Total gems before bounds filter: ${gems.length}`);
+    
     // Filter by bounds
     gems = filterGemsByBounds(gems, { north, south, east, west });
+    
+    console.log(`[GET /api/gems] After bounds filter: ${gems.length} gems`);
 
     // Filter by categories if provided
     if (categoriesParam) {
@@ -311,6 +178,14 @@ export async function GET(request: NextRequest) {
     // Simulate network delay (remove in production)
     await new Promise((resolve) => setTimeout(resolve, 100));
 
+    console.log(`[GET /api/gems] Returning ${gems.length} gems for bounds:`, {
+      north,
+      south,
+      east,
+      west,
+      gemIds: gems.map(g => g.id),
+    });
+
     return NextResponse.json(
       {
         gems,
@@ -320,7 +195,8 @@ export async function GET(request: NextRequest) {
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+          // Reduced cache time to ensure fresh data - especially important for newly created gems
+          "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
         },
       }
     );
@@ -443,46 +319,405 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: When backend is ready, forward request to backend API:
-    // const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    // const response = await fetch(`${API_URL}/api/v1/gems`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     // Add authentication headers if needed
-    //   },
-    //   body: JSON.stringify(body),
-    // });
-    // return NextResponse.json(await response.json(), { status: response.status });
+    // Get session for authentication
+    const session = await auth();
+    if (!session?.jwt) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Authentication required",
+          message: "Please sign in to create a gem",
+        },
+        { status: 401 }
+      );
+    }
 
-    // MOCK IMPLEMENTATION: Generate a mock gem ID
-    const gemId = `gem-${Date.now()}`;
+    // Check token expiration status
+    let expirationStatus = "unknown";
+    let timeUntilExpiration: number | null = null;
+    let isExpired = false;
+    
+    if (session.expires) {
+      const expiresDate = typeof session.expires === "string" 
+        ? new Date(session.expires) 
+        : session.expires;
+      
+      const now = new Date();
+      timeUntilExpiration = expiresDate.getTime() - now.getTime();
+      
+      if (isNaN(expiresDate.getTime()) || expiresDate < now) {
+        isExpired = true;
+        expirationStatus = "expired";
+      } else if (timeUntilExpiration < 5 * 60 * 1000) {
+        expirationStatus = "expiring_soon";
+      } else {
+        expirationStatus = "valid";
+      }
+      
+      console.log('[POST /api/gems] Token expiration check:', {
+        expirationStatus,
+        expiresAt: expiresDate.toISOString(),
+        currentTime: now.toISOString(),
+        timeUntilExpiration: timeUntilExpiration > 0 ? `${Math.floor(timeUntilExpiration / 1000 / 60)} minutes` : 'expired',
+        isExpired,
+      });
+    }
 
-    console.log(`[MOCK] Created gem: ${gemId}`, {
+    // Extract district from address (backend requires it)
+    const extractDistrict = (address: string): string => {
+      const districts = [
+        "Downtown",
+        "Lahug",
+        "Mabolo",
+        "Banilad",
+        "Talamban",
+        "Apas",
+        "Busay",
+        "Capitol Site",
+        "Cebu Business Park",
+        "IT Park",
+        "Beverly Hills",
+      ];
+      const addressLower = address.toLowerCase();
+      for (const district of districts) {
+        if (addressLower.includes(district.toLowerCase())) {
+          return district;
+        }
+      }
+      return "Cebu City"; // Default fallback
+    };
+
+    const district = extractDistrict(body.address);
+
+    // Forward request to backend API
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    // Backend endpoint is /api/gems (not /api/v1/gems)
+    const BACKEND_ENDPOINT = `${API_URL}/api/gems`;
+    // Build request object - ensure all required fields are present
+    // Note: Category values now match between frontend and backend
+    const backendRequest: any = {
       name: body.name,
       category: body.category,
-      coordinates: body.coordinates,
+      district: district,
+      coordinates: {
+        latitude: body.coordinates.latitude,
+        longitude: body.coordinates.longitude,
+      },
+      photos: body.photos,
+      thumbnailIndex: body.thumbnailIndex,
+      tags: Array.isArray(body.tags) && body.tags.length > 0 ? body.tags : [],
+    };
+
+    // Add optional fields only if they have values (to avoid sending empty strings/null)
+    if (body.shortDescription) {
+      backendRequest.shortDescription = body.shortDescription;
+    }
+    if (body.fullDescription) {
+      backendRequest.fullDescription = body.fullDescription;
+    }
+    if (body.culturalSignificance) {
+      backendRequest.culturalSignificance = body.culturalSignificance;
+    }
+    if (body.address) {
+      backendRequest.address = body.address;
+    }
+    if (body.hours) {
+      backendRequest.hours = body.hours;
+    }
+    if (body.website) {
+      backendRequest.website = body.website;
+    }
+    if (body.phone) {
+      backendRequest.phone = body.phone;
+    }
+    // photoPublicIds is optional - only include if present and has values
+    if (body.photoPublicIds && Array.isArray(body.photoPublicIds) && body.photoPublicIds.length > 0) {
+      backendRequest.photoPublicIds = body.photoPublicIds;
+    }
+
+    // Log full request for debugging (be careful with sensitive data)
+    const jwtPreview = session.jwt ? (session.jwt.length > 50 ? session.jwt.substring(0, 50) + '...' : session.jwt) : null;
+    console.log('[POST /api/gems] Forwarding to backend:', {
+      apiUrl: BACKEND_ENDPOINT,
+      hasJWT: !!session.jwt,
+      jwtLength: session.jwt?.length,
+      jwtPreview,
+      userId: session?.user?.id,
+      sessionExpires: session?.expires ? (typeof session.expires === 'string' ? session.expires : session.expires.toISOString()) : null,
+      isExpired,
+      expirationStatus,
+      timeUntilExpiration: timeUntilExpiration !== null ? timeUntilExpiration : null,
+      district,
+      category: body.category,
       photoCount: body.photos.length,
+      photoUrls: body.photos.map((url, idx) => ({
+        index: idx,
+        url: url.substring(0, 100) + (url.length > 100 ? '...' : ''),
+        isComplete: url.length > 100, // Check if URL seems complete
+      })),
+      photoPublicIds: body.photoPublicIds,
+      requestBody: {
+        name: backendRequest.name,
+        category: backendRequest.category,
+        district: backendRequest.district,
+        shortDescription: backendRequest.shortDescription?.substring(0, 50),
+        fullDescription: backendRequest.fullDescription?.substring(0, 50),
+        coordinates: backendRequest.coordinates,
+        address: backendRequest.address?.substring(0, 50),
+        photoCount: backendRequest.photos.length,
+        thumbnailIndex: backendRequest.thumbnailIndex,
+        hasTags: !!backendRequest.tags && backendRequest.tags.length > 0,
+        hasCulturalSignificance: !!backendRequest.culturalSignificance,
+      },
+      fullRequestBody: JSON.stringify(backendRequest).substring(0, 1000),
     });
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Validate request before sending
+    const validationErrors: string[] = [];
+    if (!backendRequest.name || backendRequest.name.trim().length < 3) {
+      validationErrors.push('Name must be at least 3 characters');
+    }
+    if (!backendRequest.category) {
+      validationErrors.push('Category is required');
+    }
+    if (!backendRequest.district) {
+      validationErrors.push('District is required');
+    }
+    if (!backendRequest.coordinates || !backendRequest.coordinates.latitude || !backendRequest.coordinates.longitude) {
+      validationErrors.push('Coordinates are required');
+    }
+    if (!backendRequest.photos || backendRequest.photos.length === 0) {
+      validationErrors.push('At least one photo is required');
+    }
+    if (backendRequest.thumbnailIndex === undefined || backendRequest.thumbnailIndex < 0) {
+      validationErrors.push('Thumbnail index is required');
+    }
+    if (backendRequest.thumbnailIndex >= backendRequest.photos.length) {
+      validationErrors.push('Thumbnail index is out of bounds');
+    }
+    
+    if (validationErrors.length > 0) {
+      console.error('[POST /api/gems] Validation errors:', validationErrors);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "VALIDATION_ERROR",
+          message: validationErrors.join('; '),
+        },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json(
-      {
-        success: true,
-        gemId,
-        message: "Gem created successfully",
-      },
-      { status: 201 }
-    );
+    try {
+      const requestBodyString = JSON.stringify(backendRequest);
+      
+      // Validate JSON is complete and valid
+      let parsedRequest;
+      try {
+        parsedRequest = JSON.parse(requestBodyString);
+      } catch (e) {
+        console.error('[POST /api/gems] Invalid JSON generated!', e);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "INVALID_REQUEST",
+            message: "Failed to serialize request body",
+          },
+          { status: 500 }
+        );
+      }
+      
+      // Validate photo URL lengths (backend has 500 char limit)
+      const longUrls = parsedRequest.photos?.filter((url: string) => url.length > 500) || [];
+      if (longUrls.length > 0) {
+        console.error('[POST /api/gems] Photo URLs exceed 500 character limit:', {
+          longUrls: longUrls.map((url: string) => ({ url: url.substring(0, 100) + '...', length: url.length })),
+        });
+        return NextResponse.json(
+          {
+            success: false,
+            error: "VALIDATION_ERROR",
+            message: `Photo URL(s) exceed maximum length of 500 characters`,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Log full request details for debugging
+      console.log('[POST /api/gems] Sending request to backend:', {
+        url: BACKEND_ENDPOINT,
+        bodyLength: requestBodyString.length,
+        userId: session?.user?.id,
+        requestFields: {
+          name: parsedRequest.name,
+          category: parsedRequest.category,
+          district: parsedRequest.district,
+          hasCoordinates: !!parsedRequest.coordinates,
+          latitude: parsedRequest.coordinates?.latitude,
+          longitude: parsedRequest.coordinates?.longitude,
+          photoCount: parsedRequest.photos?.length || 0,
+          photoUrls: parsedRequest.photos?.map((url: string) => ({
+            preview: url.substring(0, 80) + '...',
+            length: url.length,
+            exceedsLimit: url.length > 500,
+          })) || [],
+          hasPhotoPublicIds: !!parsedRequest.photoPublicIds,
+          photoPublicIds: parsedRequest.photoPublicIds || [],
+          thumbnailIndex: parsedRequest.thumbnailIndex,
+          tags: parsedRequest.tags || [],
+          hasAddress: !!parsedRequest.address,
+          hasShortDescription: !!parsedRequest.shortDescription,
+          hasFullDescription: !!parsedRequest.fullDescription,
+        },
+        fullRequestBody: requestBodyString, // Log complete JSON string
+      });
+
+      const backendResponse = await fetch(BACKEND_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.jwt}`,
+        },
+        body: requestBodyString,
+      });
+
+      console.log('[POST /api/gems] Backend response received:', {
+        status: backendResponse.status,
+        statusText: backendResponse.statusText,
+        ok: backendResponse.ok,
+        headers: Object.fromEntries(backendResponse.headers.entries()),
+      });
+
+      let backendData: any;
+      let responseText: string = '';
+      try {
+        responseText = await backendResponse.text();
+        const previewText = responseText ? responseText.substring(0, 500) : '(empty)';
+        console.log('[POST /api/gems] Raw response text:', previewText);
+        
+        if (responseText && responseText.trim()) {
+          try {
+            backendData = JSON.parse(responseText);
+          } catch (jsonError) {
+            console.error('[POST /api/gems] Response is not valid JSON:', {
+              error: jsonError,
+              preview: previewText,
+              status: backendResponse.status,
+            });
+            backendData = { 
+              error: 'Invalid JSON response',
+              rawResponse: previewText,
+            };
+          }
+        } else {
+          console.warn('[POST /api/gems] Empty response from backend');
+          backendData = {};
+        }
+      } catch (readError) {
+        console.error('[POST /api/gems] Failed to read backend response:', {
+          error: readError,
+          errorMessage: readError instanceof Error ? readError.message : String(readError),
+          status: backendResponse.status,
+          statusText: backendResponse.statusText,
+        });
+        backendData = { 
+          error: 'Failed to read response',
+          errorDetails: readError instanceof Error ? readError.message : String(readError),
+        };
+      }
+
+      if (!backendResponse.ok) {
+        const previewText = responseText ? responseText.substring(0, 500) : '(empty)';
+        console.error('[POST /api/gems] Backend error:', {
+          status: backendResponse.status,
+          statusText: backendResponse.statusText,
+          data: backendData,
+          rawResponse: previewText,
+          url: BACKEND_ENDPOINT,
+          requestBody: JSON.stringify(backendRequest).substring(0, 500),
+        });
+
+        // Extract error message from various possible structures
+        const errorMessage = 
+          backendData.message || 
+          backendData.error || 
+          backendData.error?.message ||
+          `Backend returned ${backendResponse.status}: ${backendResponse.statusText}`;
+
+        // Log full error details for debugging
+        console.error('[POST /api/gems] Full backend error details:', {
+          status: backendResponse.status,
+          statusText: backendResponse.statusText,
+          backendData,
+          fullResponseText: responseText.substring(0, 1000),
+          requestPreview: JSON.stringify(backendRequest).substring(0, 500),
+        });
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: backendData.error || "Backend error",
+            message: errorMessage,
+            // Include backend error code for debugging
+            ...(backendData.error && { errorCode: backendData.error }),
+          },
+          { status: backendResponse.status }
+        );
+      }
+
+      // Backend returns gemId as UUID string
+      const gemId = backendData.gemId;
+
+      console.log(`[POST /api/gems] Successfully created gem: ${gemId}`, {
+        name: body.name,
+        category: body.category,
+        district,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          gemId: gemId.toString(), // Ensure it's a string
+          message: backendData.message || "Gem created successfully",
+        },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error('[POST /api/gems] Error calling backend:', error);
+      
+      // Check if it's a network error (backend not reachable)
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('[POST /api/gems] Network error - backend not reachable:', {
+          apiUrl: BACKEND_ENDPOINT,
+          error: error.message,
+        });
+        
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Backend unavailable",
+            message: "Unable to connect to backend. Please try again later.",
+          },
+          { status: 503 }
+        );
+      }
+
+      // Other errors (not network errors)
+      throw error;
+    }
   } catch (error) {
     console.error("Error creating gem:", error);
+    
+    // If error is already a Response, return it
+    if (error instanceof Response) {
+      return error;
+    }
+    
     return NextResponse.json(
       {
         success: false,
         error: "Internal server error",
-        message: "An error occurred while creating the gem"
+        message: error instanceof Error ? error.message : "An error occurred while creating the gem"
       },
       { status: 500 }
     );

@@ -17,8 +17,11 @@ public class CreateGemRequest {
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String name;
 
-    @Schema(description = "Category of the Gem", example = "religious", required = true,
-            allowableValues = {"historic", "cultural", "food", "nature", "art", "religious", "market", "other"})
+    @Schema(description = "Category of the Gem", example = "religious-site", required = true,
+            allowableValues = {
+                "food-drink", "historical-site", "art-music", "nature", "culture",
+                "shopping", "religious-site", "viewpoint", "monument", "park"
+            })
     @NotBlank(message = "Category is required")
     private String category;
 

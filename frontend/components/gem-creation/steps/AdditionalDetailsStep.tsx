@@ -290,17 +290,27 @@ export function AdditionalDetailsStep({
         </div>
       </div>
 
-      {/* Footer - Preview Button */}
+      {/* Footer - Back and Preview Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleNext}
-          disabled={!canProceed}
-          className="w-full"
-        >
-          Preview
-        </Button>
+        <div className="flex flex-row gap-3 items-center">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            className="flex-1 sm:flex-initial sm:min-w-[120px]"
+          >
+            Back
+          </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleNext}
+            disabled={!canProceed}
+            className="flex-1 sm:flex-1"
+          >
+            Preview
+          </Button>
+        </div>
       </div>
     </div>
   );

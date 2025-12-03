@@ -527,18 +527,29 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
         </div>
       </div>
 
-      {/* Footer - Continue Button */}
+      {/* Footer - Back and Continue Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={!canProceed}
-          className="w-full"
-          type="button"
-        >
-          Continue
-        </Button>
+        <div className="flex flex-row gap-3 items-center">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            className="flex-1 sm:flex-initial sm:min-w-[120px]"
+            type="button"
+          >
+            Back
+          </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleContinue}
+            disabled={!canProceed}
+            className="flex-1 sm:flex-1"
+            type="button"
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     </div>
   );
