@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -100,10 +100,49 @@ export function AdditionalDetailsStep({
   };
 
   /**
+   * Handle cultural significance change (real-time validation)
+   */
+  const handleCulturalSignificanceChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setCulturalSignificance(e.target.value);
+      // Mark as touched on change for immediate feedback
+      if (!touched.culturalSignificance) {
+        setTouched((prev) => ({ ...prev, culturalSignificance: true }));
+      }
+    },
+    [touched.culturalSignificance]
+  );
+
+  /**
+   * Handle tags change (real-time validation)
+   */
+  const handleTagsChange = useCallback((newTags: string[]) => {
+    setTags(newTags);
+  }, []);
+
+  /**
    * Check if should show error for a field
    */
   const shouldShowError = (field: keyof typeof touched): boolean => {
     return touched[field] && !!errors[field];
+  };
+
+  /**
+   * Check if field is valid (for success indicators)
+   */
+  const isFieldValid = (
+    field: keyof typeof touched,
+    value: string | string[]
+  ): boolean => {
+    if (!touched[field]) return false;
+    if (field === "culturalSignificance") {
+      return (
+        !errors[field] &&
+        typeof value === "string" &&
+        value.trim().length > 0
+      );
+    }
+    return !errors[field];
   };
 
   /**
@@ -165,7 +204,7 @@ export function AdditionalDetailsStep({
             <Textarea
               label="Cultural Significance (Optional)"
               value={culturalSignificance}
-              onChange={(e) => setCulturalSignificance(e.target.value)}
+              onChange={handleCulturalSignificanceChange}
               onBlur={() => handleBlur("culturalSignificance")}
               error={
                 shouldShowError("culturalSignificance")
@@ -179,7 +218,10 @@ export function AdditionalDetailsStep({
               maxLength={301} // Allow typing to 301 to show error
             />
             {/* Character Counter */}
-            <div className="flex justify-end">
+            <div className="flex justify-end items-center gap-2">
+              {isFieldValid("culturalSignificance", culturalSignificance) && (
+                <CheckCircle className="w-4 h-4 text-success" />
+              )}
               <span
                 className={cn("text-xs font-medium", culturalSigCounterColor)}
               >
@@ -189,15 +231,26 @@ export function AdditionalDetailsStep({
           </div>
 
           {/* Tags/Keywords Input */}
-          <TagInput
-            label="Tags / Keywords (Optional)"
-            value={tags}
-            onChange={setTags}
-            suggestions={tagSuggestions}
-            maxTags={5}
-            error={errors.tags}
-            helperText="Add up to 5 tags to help people discover this gem. Suggestions are based on your selected category."
-          />
+          <div className="space-y-2">
+            <TagInput
+              label="Tags / Keywords (Optional)"
+              value={tags}
+              onChange={handleTagsChange}
+              suggestions={tagSuggestions}
+              maxTags={5}
+              error={errors.tags}
+              helperText="Add up to 5 tags to help people discover this gem. Suggestions are based on your selected category."
+            />
+            {/* Success Indicator for Tags */}
+            {tags.length > 0 &&
+              !errors.tags &&
+              tags.length <= 5 && (
+                <div className="flex items-center gap-2 text-sm text-success">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>{tags.length} tag{tags.length !== 1 ? "s" : ""} added</span>
+                </div>
+              )}
+          </div>
 
           {/* Tips Section */}
           <div className="bg-bg-light rounded-lg p-4">

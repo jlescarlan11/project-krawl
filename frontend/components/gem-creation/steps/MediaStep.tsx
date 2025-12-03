@@ -12,6 +12,7 @@ import {
   Camera,
   GripVertical,
   X,
+  CheckCircle,
 } from "lucide-react";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import {
@@ -150,6 +151,7 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
 
   // Ref for additional file input
   const additionalFileInputRef = useRef<HTMLInputElement>(null);
@@ -204,16 +206,30 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
   }, [selectedFiles, thumbnailIndex, setMedia]);
 
   /**
-   * Validate photos
+   * Validate photos (with debounce for better UX)
    */
   useEffect(() => {
-    const error = validateGemPhotos(selectedFiles);
-    if (error) {
-      setErrors({ photos: error });
-    } else {
-      setErrors({});
+    if (selectedFiles.length === 0 && !touched) {
+      // Don't show errors until user has interacted
+      return;
     }
-  }, [selectedFiles]);
+
+    setIsValidating(true);
+    const timer = setTimeout(() => {
+      const error = validateGemPhotos(selectedFiles);
+      if (error) {
+        setErrors({ photos: error });
+      } else {
+        setErrors({});
+      }
+      setIsValidating(false);
+    }, 300); // Debounce validation
+
+    return () => {
+      clearTimeout(timer);
+      setIsValidating(false);
+    };
+  }, [selectedFiles, touched]);
 
   /**
    * Handle file upload from FileUpload component (initial upload)
@@ -301,15 +317,22 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
   );
 
   /**
-   * Check if can proceed to next step
+   * Check if photos are valid
    */
-  const canProceed = useMemo(() => {
+  const isValid = useMemo(() => {
     return (
       selectedFiles.length > 0 &&
       selectedFiles.length <= 5 &&
       Object.keys(errors).length === 0
     );
   }, [selectedFiles, errors]);
+
+  /**
+   * Check if can proceed to next step
+   */
+  const canProceed = useMemo(() => {
+    return isValid && !isValidating;
+  }, [isValid, isValidating]);
 
   /**
    * Handle continue button click
@@ -395,13 +418,43 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
             <div className="space-y-4">
               {/* Uploaded Media Header */}
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-text-primary">
-                  Uploaded Media
-                </h3>
-                <span className="text-sm text-text-secondary">
-                  {selectedFiles.length}/5
-                </span>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-text-primary">
+                    Uploaded Media
+                  </h3>
+                  {isValid && !isValidating && (
+                    <CheckCircle className="w-4 h-4 text-success" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      isValid ? "text-success" : "text-text-secondary"
+                    )}
+                  >
+                    {selectedFiles.length}/5
+                  </span>
+                </div>
               </div>
+
+              {/* Success Message */}
+              {isValid && !isValidating && touched && (
+                <div className="flex items-center gap-2 p-3 bg-success/5 border border-success/20 rounded-lg">
+                  <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
+                  <p className="text-sm text-success">
+                    Photos uploaded successfully
+                  </p>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {errors.photos && touched && (
+                <div className="flex items-center gap-2 p-3 bg-error/5 border border-error/20 rounded-lg">
+                  <X className="w-4 h-4 text-error flex-shrink-0" />
+                  <p className="text-sm text-error">{errors.photos}</p>
+                </div>
+              )}
 
               {/* Photo Grid with Drag-and-Drop */}
               <DndContext

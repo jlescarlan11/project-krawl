@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GEM_CATEGORIES, type GemCategory } from "@/lib/constants/gem-categories";
 
@@ -92,8 +93,21 @@ export function CategoryChipSelector({
 
       {/* Error Message */}
       {error && (
-        <p id={errorId} className="text-sm text-error" role="alert">
+        <p
+          id={errorId}
+          className="text-sm text-error flex items-center gap-1"
+          role="alert"
+        >
+          <XCircle className="w-4 h-4" />
           {error}
+        </p>
+      )}
+
+      {/* Success Indicator */}
+      {!error && value && value.trim() !== "" && (
+        <p className="text-sm text-success flex items-center gap-1">
+          <CheckCircle className="w-4 h-4" />
+          Category selected
         </p>
       )}
     </div>

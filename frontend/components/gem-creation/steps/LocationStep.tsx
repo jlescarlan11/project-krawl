@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
-import { ArrowLeft, MapPin, Info } from "lucide-react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { ArrowLeft, MapPin, Info, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
@@ -44,6 +44,14 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
     location?.address || null
   );
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
+
+  // Mark as touched when user interacts with map or search
+  useEffect(() => {
+    if (currentCoordinates && currentAddress) {
+      setTouched(true);
+    }
+  }, [currentCoordinates, currentAddress]);
 
   /**
    * Handle location change from map
@@ -213,14 +221,15 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
 
       {/* Selected Location Display */}
       {currentAddress && validationResult?.isValid && (
-        <div className="flex-shrink-0 p-4 border-t border-border-subtle bg-bg-light">
+        <div className="flex-shrink-0 p-4 border-t border-border-subtle bg-success/5 border-success/20">
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-primary-green flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-text-primary truncate">
-                Selected Location
+              <p className="font-medium text-text-primary truncate flex items-center gap-2">
+                <span>Location Selected</span>
+                <span className="text-xs text-success font-normal">✓ Valid</span>
               </p>
-              <p className="text-sm text-text-secondary truncate">
+              <p className="text-sm text-text-secondary truncate mt-1">
                 {currentAddress}
               </p>
               <p className="text-xs text-text-secondary font-mono mt-1">
@@ -233,15 +242,15 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
       )}
 
       {/* Validation Error Display */}
-      {validationResult && !validationResult.isValid && (
-        <div className="flex-shrink-0 p-4 border-t border-border-subtle bg-red-50">
+      {validationResult && !validationResult.isValid && touched && (
+        <div className="flex-shrink-0 p-4 border-t border-border-subtle bg-error/5 border-error/20">
           <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-xs font-bold">!</span>
-            </div>
+            <XCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-medium text-red-700">Invalid Location</p>
-              <p className="text-sm text-red-600">
+              <p className="font-medium text-error flex items-center gap-2">
+                <span>Invalid Location</span>
+              </p>
+              <p className="text-sm text-error mt-1">
                 {validationResult.message ||
                   "This location is outside Cebu City boundaries"}
               </p>
