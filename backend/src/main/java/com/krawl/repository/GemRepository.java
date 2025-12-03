@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -60,4 +61,33 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
      */
     @Query("SELECT COUNT(v) > 0 FROM Vouch v WHERE v.gem.id = :gemId AND v.user.id = :userId")
     Boolean hasUserVouchedForGem(@Param("gemId") UUID gemId, @Param("userId") UUID userId);
+
+    /**
+     * Find Gems within a specified distance using PostGIS ST_DWithin.
+     * Returns Gem entities and their distance in meters.
+     * 
+     * @param latitude Latitude coordinate
+     * @param longitude Longitude coordinate
+     * @param distanceMeters Distance in meters
+     * @return List of Object arrays: [Gem, distance_in_meters]
+     */
+    @Query(value = """
+            SELECT g, 
+                   ST_Distance(
+                       ST_MakePoint(g.longitude, g.latitude)::geography,
+                       ST_MakePoint(:longitude, :latitude)::geography
+                   ) AS distance
+            FROM gems g
+            WHERE ST_DWithin(
+                ST_MakePoint(g.longitude, g.latitude)::geography,
+                ST_MakePoint(:longitude, :latitude)::geography,
+                :distanceMeters
+            )
+            ORDER BY distance ASC
+            """, nativeQuery = true)
+    List<Object[]> findGemsWithinDistance(
+            @Param("latitude") Double latitude,
+            @Param("longitude") Double longitude,
+            @Param("distanceMeters") Double distanceMeters
+    );
 }

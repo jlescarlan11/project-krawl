@@ -1,17 +1,24 @@
 package com.krawl.service;
 
+import com.krawl.dto.request.CreateGemRequest;
+import com.krawl.dto.request.UpdateGemRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.GemPhoto;
+import com.krawl.entity.User;
 import com.krawl.entity.Vouch;
+import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
+import com.krawl.repository.GemPhotoRepository;
 import com.krawl.repository.GemRepository;
+import com.krawl.repository.UserRepository;
 import com.krawl.repository.VouchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,6 +30,9 @@ public class GemService {
 
     private final GemRepository gemRepository;
     private final VouchRepository vouchRepository;
+    private final GemPhotoRepository gemPhotoRepository;
+    private final UserRepository userRepository;
+    private final BoundaryValidationService boundaryValidationService;
 
     /**
      * Get detailed information about a specific gem
@@ -114,6 +124,178 @@ public class GemService {
                 .vouchesData(vouchesData)
                 .relatedKrawls(List.of()) // TODO: Implement when Krawl entity is available
                 .build();
+    }
+
+    /**
+     * Create a new Gem.
+     *
+     * @param request Create Gem request
+     * @param userId User ID creating the Gem
+     * @return Created Gem ID
+     * @throws IllegalArgumentException if validation fails or boundary check fails
+     */
+    @Transactional
+    public UUID createGem(CreateGemRequest request, UUID userId) {
+        log.debug("Creating Gem: {} for user: {}", request.getName(), userId);
+
+        // Validate boundary
+        boundaryValidationService.validateBoundary(
+                request.getCoordinates().getLatitude(),
+                request.getCoordinates().getLongitude()
+        );
+
+        // Get user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // Validate thumbnail index
+        if (request.getThumbnailIndex() < 0 || request.getThumbnailIndex() >= request.getPhotos().size()) {
+            throw new IllegalArgumentException("Thumbnail index is out of bounds");
+        }
+
+        // Determine thumbnail URL
+        String thumbnailUrl = request.getPhotos().get(request.getThumbnailIndex());
+
+        // Create Gem entity
+        Gem gem = Gem.builder()
+                .name(request.getName())
+                .category(request.getCategory())
+                .district(request.getDistrict())
+                .shortDescription(request.getShortDescription())
+                .fullDescription(request.getFullDescription())
+                .culturalSignificance(request.getCulturalSignificance())
+                .latitude(request.getCoordinates().getLatitude())
+                .longitude(request.getCoordinates().getLongitude())
+                .address(request.getAddress())
+                .hours(request.getHours())
+                .website(request.getWebsite())
+                .phone(request.getPhone())
+                .thumbnailUrl(thumbnailUrl)
+                .status(Gem.GemStatus.PENDING)
+                .viewCount(0)
+                .tags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>())
+                .createdBy(user)
+                .photos(new ArrayList<>())
+                .build();
+
+        gem = gemRepository.save(gem);
+
+        // Create photos
+        for (int i = 0; i < request.getPhotos().size(); i++) {
+            GemPhoto photo = GemPhoto.builder()
+                    .gem(gem)
+                    .url(request.getPhotos().get(i))
+                    .displayOrder(i)
+                    .uploadedBy(user)
+                    .build();
+            gem.getPhotos().add(photo);
+        }
+
+        gemRepository.save(gem);
+        log.info("Gem created: {} by user: {}", gem.getId(), userId);
+
+        return gem.getId();
+    }
+
+    /**
+     * Update an existing Gem.
+     *
+     * @param gemId Gem ID to update
+     * @param request Update Gem request
+     * @param userId User ID updating the Gem
+     * @return Updated Gem ID
+     * @throws ResourceNotFoundException if Gem not found
+     * @throws ForbiddenException if user doesn't own the Gem
+     * @throws IllegalArgumentException if validation fails or boundary check fails
+     */
+    @Transactional
+    public UUID updateGem(UUID gemId, UpdateGemRequest request, UUID userId) {
+        log.debug("Updating Gem: {} by user: {}", gemId, userId);
+
+        Gem gem = gemRepository.findById(gemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+
+        // Check ownership
+        if (!gem.getCreatedBy().getId().equals(userId)) {
+            throw new ForbiddenException("You can only update Gems that you created");
+        }
+
+        // Update fields if provided
+        if (request.getName() != null) {
+            gem.setName(request.getName());
+        }
+        if (request.getCategory() != null) {
+            gem.setCategory(request.getCategory());
+        }
+        if (request.getDistrict() != null) {
+            gem.setDistrict(request.getDistrict());
+        }
+        if (request.getShortDescription() != null) {
+            gem.setShortDescription(request.getShortDescription());
+        }
+        if (request.getFullDescription() != null) {
+            gem.setFullDescription(request.getFullDescription());
+        }
+        if (request.getCulturalSignificance() != null) {
+            gem.setCulturalSignificance(request.getCulturalSignificance());
+        }
+        if (request.getAddress() != null) {
+            gem.setAddress(request.getAddress());
+        }
+        if (request.getHours() != null) {
+            gem.setHours(request.getHours());
+        }
+        if (request.getWebsite() != null) {
+            gem.setWebsite(request.getWebsite());
+        }
+        if (request.getPhone() != null) {
+            gem.setPhone(request.getPhone());
+        }
+        if (request.getTags() != null) {
+            gem.setTags(new ArrayList<>(request.getTags()));
+        }
+
+        // Update coordinates if provided
+        if (request.getCoordinates() != null) {
+            boundaryValidationService.validateBoundary(
+                    request.getCoordinates().getLatitude(),
+                    request.getCoordinates().getLongitude()
+            );
+            gem.setLatitude(request.getCoordinates().getLatitude());
+            gem.setLongitude(request.getCoordinates().getLongitude());
+        }
+
+        // Update photos if provided
+        if (request.getPhotos() != null && !request.getPhotos().isEmpty()) {
+            // Validate thumbnail index
+            if (request.getThumbnailIndex() != null) {
+                if (request.getThumbnailIndex() < 0 || request.getThumbnailIndex() >= request.getPhotos().size()) {
+                    throw new IllegalArgumentException("Thumbnail index is out of bounds");
+                }
+                gem.setThumbnailUrl(request.getPhotos().get(request.getThumbnailIndex()));
+            }
+
+            // Remove existing photos
+            gem.getPhotos().clear();
+
+            // Add new photos
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+            for (int i = 0; i < request.getPhotos().size(); i++) {
+                GemPhoto photo = GemPhoto.builder()
+                        .gem(gem)
+                        .url(request.getPhotos().get(i))
+                        .displayOrder(i)
+                        .uploadedBy(user)
+                        .build();
+                gem.getPhotos().add(photo);
+            }
+        }
+
+        gemRepository.save(gem);
+        log.info("Gem updated: {} by user: {}", gemId, userId);
+
+        return gem.getId();
     }
 
     /**
