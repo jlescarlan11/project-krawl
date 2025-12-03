@@ -284,3 +284,8 @@ The landing page (`app/page.tsx`) conditionally renders components based on auth
 Authentication is detected server-side using `auth()` from NextAuth.js.
 
 
+
+
+
+
+

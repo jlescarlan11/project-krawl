@@ -369,6 +369,9 @@ export const GemLocationPicker = forwardRef<GemLocationPickerRef, GemLocationPic
 
     // Load boundary and set up map
     map.on("load", async () => {
+      // Enforce maxBounds after load for stricter boundary control
+      map.setMaxBounds(CEBU_CITY_MAX_BOUNDS);
+      
       try {
         // Load boundary data
         const boundaryFeature = await loadBoundaryData();

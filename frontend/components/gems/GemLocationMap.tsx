@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { validateCoordinates } from "@/lib/map/boundaryValidation";
 import { formatCoordinates } from "@/lib/map/geoUtils";
 import { openDirections } from "@/lib/map/platformUtils";
+import { CEBU_CITY_MAX_BOUNDS } from "@/lib/map/constants";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
@@ -109,16 +110,21 @@ export function GemLocationMap({
         keyboard: false, // Avoid conflicts with page navigation
         minZoom: 13,
         maxZoom: 18,
+        attributionControl: false, // Remove Mapbox/OpenStreetMap attribution
+        maxBounds: CEBU_CITY_MAX_BOUNDS, // Limit panning to Cebu City region
       });
 
       // Add navigation controls
       map.addControl(
         new mapboxgl.NavigationControl({ showCompass: false }),
-        "top-right"
+        "bottom-right"
       );
 
       // Handle map load
       map.on("load", () => {
+        // Enforce maxBounds after load for stricter boundary control
+        map.setMaxBounds(CEBU_CITY_MAX_BOUNDS);
+        
         setIsLoaded(true);
         setIsLoading(false);
 
@@ -325,9 +331,9 @@ export function GemLocationMap({
         >
           <Button
             variant="outline"
-            className="w-full justify-center gap-2"
+            size="lg"
+            className="w-full justify-center"
           >
-            <MapPin className="w-4 h-4" />
             View Full Map
           </Button>
         </Link>
@@ -335,10 +341,10 @@ export function GemLocationMap({
         {/* Get Directions Button */}
         <Button
           variant="outline"
-          className="w-full justify-center gap-2"
+          size="lg"
+          className="w-full justify-center"
           onClick={handleGetDirections}
         >
-          <Navigation className="w-4 h-4" />
           Get Directions
         </Button>
       </div>

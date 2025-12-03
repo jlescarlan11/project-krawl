@@ -13,6 +13,7 @@ import {
 } from '@/lib/map/mapUtils';
 import {
   CEBU_CITY_CENTER,
+  CEBU_CITY_MAX_BOUNDS,
   DEFAULT_ZOOM,
   MAP_LOAD_TIMEOUT,
   MAX_RETRY_ATTEMPTS,
@@ -68,7 +69,7 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
       showGeolocateControl = true,
       showScaleControl = false,
       navigationControlPosition = 'top-right',
-      maxBounds,
+      maxBounds = CEBU_CITY_MAX_BOUNDS, // Default to Cebu City bounds to prevent panning outside Region 7
       minZoom = 10,
       maxZoom = 18,
       onLoad,
@@ -225,13 +226,17 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
           zoom: initialZoom,
           interactive,
 
+          // Remove Mapbox/OpenStreetMap attribution
+          attributionControl: false,
+
           // Smooth panning with inertia/momentum
-          dragPan: dragPan ? {
+          // Use simple boolean when maxBounds is set to avoid conflicts
+          dragPan: dragPan ? (maxBounds ? true : {
             linearity: 0.3, // Lower = more inertia (0-1, default 0)
             easing: (t: number) => t * (2 - t), // Ease-out easing for smooth deceleration
             maxSpeed: 1400, // Maximum pan speed (pixels per second)
             deceleration: 2500, // Deceleration rate (pixels per second²)
-          } : false,
+          }) : false,
 
           // Smooth zooming with scroll wheel (boolean enables default smooth behavior)
           scrollZoom,

@@ -13,11 +13,11 @@ export const CEBU_CITY_BOUNDS: [[number, number], [number, number]] = [
 ];
 
 // Precise boundary constraints for map panning
-// Covers Region 7 (Central Visayas) to allow full view of Cebu City and context
-// Prevents users from panning too far (e.g., to Manila or Mindanao)
+// Restricted to Cebu City boundaries only
+// Prevents users from panning outside Cebu City
 export const CEBU_CITY_MAX_BOUNDS: [[number, number], [number, number]] = [
-  [123.0, 9.0],  // Southwest corner (covers Region 7: Central Visayas)
-  [125.5, 11.5], // Northeast corner (includes Cebu, Bohol, Negros Oriental, Siquijor)
+  [123.80, 10.25], // Southwest corner (Cebu City bounds)
+  [123.95, 10.40], // Northeast corner (Cebu City bounds)
 ];
 
 // Boundary GeoJSON file path
