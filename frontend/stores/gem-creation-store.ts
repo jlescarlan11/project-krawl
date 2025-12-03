@@ -295,6 +295,39 @@ export const useGemCreationStore = create<GemCreationStore>()(
               return true;
             case 3: // Additional Details step (all fields optional)
               return true;
+            case 4: // Preview step - validate all required data is present
+              // Check location
+              if (!location || !location.isValid || !location.coordinates) {
+                return false;
+              }
+              // Check details
+              if (
+                !details ||
+                !details.name ||
+                details.name.length === 0 ||
+                details.name.length > 100 ||
+                !details.category ||
+                !details.shortDescription ||
+                details.shortDescription.length < 50 ||
+                details.shortDescription.length > 500
+              ) {
+                return false;
+              }
+              // Media is optional, but if provided, validate it
+              if (media) {
+                if (media.photos && media.photos.length > 5) {
+                  return false;
+                }
+                if (
+                  media.thumbnailIndex !== undefined &&
+                  media.photos &&
+                  (media.thumbnailIndex < 0 ||
+                    media.thumbnailIndex >= media.photos.length)
+                ) {
+                  return false;
+                }
+              }
+              return true;
             default:
               return false;
           }
@@ -389,6 +422,11 @@ export const useGemCreationStore = create<GemCreationStore>()(
                 ? {
                     photoUrls: state.media.uploadedUrls,
                     thumbnailIndex: state.media.thumbnailIndex,
+                    photoMetadata: state.media.photos.map((file) => ({
+                      name: file.name,
+                      size: file.size,
+                      type: file.type,
+                    })),
                   }
                 : undefined,
               currentStep: state.currentStep,
@@ -510,13 +548,15 @@ export const useGemCreationStore = create<GemCreationStore>()(
           location: state.location || null,
           details: state.details || null,
           media: null, // Don't persist File objects (can't be serialized)
-          currentStep: state.currentStep,
+          // Don't persist currentStep - always start at step 1 on refresh
           completedSteps: state.completedSteps,
           lastSavedAt: state.lastSavedAt,
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {
             state._hasHydrated = true;
+            // Reset to step 1 (index 0) on page refresh so users can see their previous data
+            state.currentStep = 0;
 
             if (process.env.NODE_ENV === "development") {
               console.log("[GemCreationStore] Rehydrated from localStorage", {

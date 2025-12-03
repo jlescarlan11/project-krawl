@@ -14,6 +14,7 @@ import { GemMarkerLayer } from './GemMarkerLayer';
 import { KrawlTrailLayer } from './KrawlTrailLayer';
 import { GemPopup, GemPopupMobile, adjustPopupPosition } from './GemPopup';
 import { calculateDistance } from '@/lib/map/geoUtils';
+import { CEBU_CITY_MAX_BOUNDS } from '@/lib/map/constants';
 import type { MapProps } from './types';
 import type { MapGem } from './gem-types';
 import type { MapKrawl } from './krawl-types';
@@ -359,9 +360,15 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       }
     }, [boundaryError, onBoundaryError]);
 
+    // Ensure maxBounds is always set to prevent panning outside Region 7
+    const mapPropsWithBounds = {
+      ...mapProps,
+      maxBounds: mapProps.maxBounds || CEBU_CITY_MAX_BOUNDS,
+    };
+
     return (
       <>
-        <Map ref={ref} {...mapProps} onLoad={handleMapLoad} />
+        <Map ref={ref} {...mapPropsWithBounds} onLoad={handleMapLoad} />
         {showKrawlTrails && (
           <KrawlTrailLayer
             map={mapInstance}

@@ -341,23 +341,23 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
       {/* Header */}
       <header className="shrink-0 border-b border-border-subtle bg-bg-white">
         <div className="p-4">
-          <div className="flex items-center mb-3 relative">
+          <div className="flex items-center gap-3 relative">
             <button
               onClick={onBack}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors absolute left-0"
+              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex-1 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center gap-3">
               <h1 className="text-xl font-bold text-text-primary">Add Media</h1>
+              <ProgressDots total={5} currentIndex={2} />
             </div>
-            <p className="text-sm text-text-secondary absolute right-0">
-              Step 3 of 4
+            <p className="text-sm text-text-secondary shrink-0">
+              Step 3 of 5
             </p>
           </div>
-          <ProgressDots total={4} currentIndex={2} />
         </div>
       </header>
 
@@ -384,9 +384,6 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
                     <h2 className="text-lg font-semibold text-text-primary mb-1">
                       Add Photos
                     </h2>
-                    <p className="text-sm text-text-secondary">
-                      Tap to upload from your device
-                    </p>
                   </div>
                 }
               />

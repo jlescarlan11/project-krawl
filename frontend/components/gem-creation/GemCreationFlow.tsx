@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { StepTransition } from "@/components/onboarding/StepTransition";
 import { LocationStep } from "./steps/LocationStep";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { MediaStep } from "./steps/MediaStep";
 import { AdditionalDetailsStep } from "./steps/AdditionalDetailsStep";
+import { PreviewStep } from "./steps/PreviewStep";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
 import { ROUTES } from "@/lib/routes";
-import { SaveDraftButton } from "./SaveDraftButton";
 import { useAutoSaveDraft } from "./hooks/useAutoSaveDraft";
 
 /**
  * Total number of steps in gem creation flow
  */
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 /**
  * GemCreationFlow Component
@@ -28,16 +28,24 @@ const TOTAL_STEPS = 4;
  * - Step 1: Basic info (name, category, description)
  * - Step 2: Media upload
  * - Step 3: Additional details (cultural significance, tags)
+ * - Step 4: Preview before submission
  */
 export function GemCreationFlow() {
   const router = useRouter();
   const { currentStep: storedStep, setCurrentStep } = useGemCreationStore();
 
-  const [currentStep, setCurrentStepLocal] = useState(storedStep || 0);
+  // Always start at step 1 (index 0) on page load/refresh
+  const [currentStep, setCurrentStepLocal] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<
     "forward" | "backward"
   >("forward");
   const [isNavigating, setIsNavigating] = useState(false);
+
+  // Reset to step 1 on mount/refresh
+  useEffect(() => {
+    setCurrentStep(0);
+    setCurrentStepLocal(0);
+  }, [setCurrentStep]);
 
   // Enable auto-save functionality
   useAutoSaveDraft();
@@ -96,11 +104,6 @@ export function GemCreationFlow() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-white">
-      {/* Save Draft Button - Fixed Position */}
-      <div className="fixed top-20 right-6 z-50">
-        <SaveDraftButton />
-      </div>
-
       <StepTransition stepIndex={currentStep} direction={transitionDirection}>
         {/* Step 1: Location Selection */}
         {currentStep === 0 && (
@@ -126,9 +129,14 @@ export function GemCreationFlow() {
         {/* Step 4: Additional Details (TASK-090) */}
         {currentStep === 3 && (
           <AdditionalDetailsStep
-            onNext={() => router.push(ROUTES.GEMS)}
+            onNext={goToNextStep}
             onBack={goToPreviousStep}
           />
+        )}
+
+        {/* Step 5: Preview (TASK-095) */}
+        {currentStep === 4 && (
+          <PreviewStep onBack={goToPreviousStep} />
         )}
       </StepTransition>
     </div>

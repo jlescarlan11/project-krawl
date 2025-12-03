@@ -4,6 +4,8 @@ import { useGemCreationStore, useDraftSaveStatus, useLastDraftSavedAt, useDraftS
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 /**
  * SaveDraftButton Component
@@ -46,118 +48,37 @@ export function SaveDraftButton() {
     return null;
   }
 
-  // Get button text and styling based on status
-  const getButtonContent = () => {
+  // Get button text based on status
+  const getButtonText = () => {
     if (draftSaveStatus === "saving") {
-      return (
-        <>
-          <svg
-            className="animate-spin h-4 w-4 mr-2"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-          Saving...
-        </>
-      );
+      return "Saving...";
     }
 
     if (showSavedMessage && draftSaveStatus === "saved") {
-      return (
-        <>
-          <svg
-            className="h-4 w-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          Draft Saved
-        </>
-      );
+      return "Draft Saved";
     }
 
     if (draftSaveStatus === "error") {
-      return (
-        <>
-          <svg
-            className="h-4 w-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Retry Save
-        </>
-      );
+      return "Retry Save";
     }
 
-    return (
-      <>
-        <svg
-          className="h-4 w-4 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-          />
-        </svg>
-        Save Draft
-      </>
-    );
+    return "Save Draft";
   };
 
-  const getButtonClassName = () => {
-    const baseClasses =
-      "flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-200";
-
-    if (draftSaveStatus === "saving") {
-      return `${baseClasses} bg-blue-500 text-white cursor-wait opacity-75`;
-    }
-
+  // Get button variant based on status
+  const getButtonVariant = (): "primary" | "secondary" | "outline" => {
     if (showSavedMessage && draftSaveStatus === "saved") {
-      return `${baseClasses} bg-green-500 text-white`;
+      return "primary"; // Green success state
     }
 
     if (draftSaveStatus === "error") {
-      return `${baseClasses} bg-red-500 text-white hover:bg-red-600`;
+      return "primary"; // Red error state (will be styled with className)
     }
 
-    return `${baseClasses} bg-blue-500 text-white hover:bg-blue-600`;
+    return "outline"; // Default outline style to match Edit button
   };
 
-  // Format last saved timestamp
+  // Format last saved timestamp for tooltip
   const getLastSavedText = () => {
     if (!lastDraftSavedAt) return null;
 
@@ -171,50 +92,27 @@ export function SaveDraftButton() {
     }
   };
 
+  const buttonTitle = draftSaveError || (lastDraftSavedAt && !draftSaveError ? getLastSavedText() || undefined : undefined);
+
   return (
-    <div className="flex flex-col items-start gap-2">
-      <button
-        onClick={handleSaveDraft}
-        disabled={draftSaveStatus === "saving"}
-        className={getButtonClassName()}
-        aria-label="Save draft"
-      >
-        {getButtonContent()}
-      </button>
-
-      {/* Last saved timestamp */}
-      {lastDraftSavedAt && !draftSaveError && (
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {getLastSavedText()}
-        </p>
-      )}
-
-      {/* Error message */}
-      {draftSaveError && (
-        <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg max-w-md">
-          <svg
-            className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">
-              Failed to save draft
-            </p>
-            <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-              {draftSaveError}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
+    <Button
+      variant={getButtonVariant()}
+      size="lg"
+      onClick={handleSaveDraft}
+      disabled={draftSaveStatus === "saving"}
+      className={`flex-1 sm:flex-initial sm:min-w-[120px] ${
+        showSavedMessage && draftSaveStatus === "saved"
+          ? "bg-green-500 hover:bg-green-600 text-white"
+          : draftSaveStatus === "error"
+          ? "bg-red-500 hover:bg-red-600 text-white"
+          : ""
+      }`}
+      aria-label="Save draft"
+      title={buttonTitle || undefined}
+      icon={draftSaveStatus === "saving" ? <Loader2 className="w-5 h-5 animate-spin" /> : undefined}
+      iconPosition="left"
+    >
+      {getButtonText()}
+    </Button>
   );
 }

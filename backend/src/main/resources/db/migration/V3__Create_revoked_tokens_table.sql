@@ -20,3 +20,7 @@ COMMENT ON TABLE revoked_tokens IS 'Stores revoked JWT tokens until expiration f
 
 
 
+
+
+
+

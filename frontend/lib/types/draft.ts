@@ -23,6 +23,11 @@ export interface DraftData {
   media?: {
     photoUrls?: string[]; // Cloudinary URLs if already uploaded
     thumbnailIndex?: number;
+    photoMetadata?: Array<{
+      name: string;
+      size: number;
+      type: string;
+    }>; // Metadata for selected photos (for reference when loading draft)
   };
 
   // Additional details (Step 3)

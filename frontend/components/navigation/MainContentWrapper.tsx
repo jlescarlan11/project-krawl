@@ -19,6 +19,9 @@ export function MainContentWrapper({
   children,
   className,
 }: MainContentWrapperProps) {
+  const pathname = usePathname();
+  const isGemCreationPage = pathname?.startsWith("/gems/create");
+
   return (
     <main
       className={cn(
@@ -26,7 +29,9 @@ export function MainContentWrapper({
         // Desktop: fixed margin for collapsed sidebar (80px)
         "lg:ml-20",
         // Mobile: no left margin (sidebar is hidden), but add bottom padding for BottomNav
-        "ml-0 pb-20 lg:pb-0",
+        // Skip bottom padding on gem creation page (has sticky footer)
+        "ml-0",
+        !isGemCreationPage && "pb-20 lg:pb-0",
         className
       )}
     >
