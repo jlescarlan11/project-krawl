@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { GemPhoto } from "@/types/gem-detail";
+import { getThumbnailUrl, getMediumUrl, getLargeUrl } from "@/lib/cloudinary/urls";
 
 // Helper to check if URL is a blob/Object URL
 const isBlobUrl = (url: string) => url.startsWith('blob:') || url.startsWith('data:');
@@ -78,7 +79,7 @@ export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProp
                   />
                 ) : (
                   <Image
-                    src={photo.url}
+                    src={getLargeUrl(photo.url, 1920)}
                     alt={photo.caption || `${gemName} - Photo 1`}
                     fill
                     className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
@@ -134,7 +135,7 @@ export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProp
                   />
                 ) : (
                   <Image
-                    src={photo.url}
+                    src={getMediumUrl(photo.url, 800)}
                     alt={photo.caption || `${gemName} - Photo ${index + 1}`}
                     fill
                     className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
@@ -196,7 +197,7 @@ export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProp
                   />
                 ) : (
                   <Image
-                    src={photo.url}
+                    src={getLargeUrl(photo.url, 1920)}
                     alt={photo.caption || `${gemName} - Photo 1`}
                     fill
                     className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
@@ -250,7 +251,7 @@ export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProp
                   />
                 ) : (
                   <Image
-                    src={photo.url}
+                    src={getMediumUrl(photo.url, 800)}
                     alt={photo.caption || `${gemName} - Photo ${index + 2}`}
                     fill
                     className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}

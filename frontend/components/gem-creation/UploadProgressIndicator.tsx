@@ -39,8 +39,8 @@ export function UploadProgressIndicator({
       {/* Overall Status Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-text-primary">
-          {hasUploading && "Uploading photos..."}
-          {allSuccess && "All photos uploaded successfully"}
+          {hasUploading && "Uploading and optimizing photos..."}
+          {allSuccess && "All photos uploaded and optimized successfully"}
           {!hasUploading && hasErrors && "Some uploads failed"}
         </h3>
         <span className="text-sm text-text-secondary">
@@ -106,6 +106,13 @@ function UploadProgressItem({
 
           {/* File name */}
           <span className="text-sm text-text-primary truncate">{file.name}</span>
+          
+          {/* Optimization indicator for successful uploads */}
+          {uploadStatus === 'success' && status.publicId && (
+            <span className="text-xs text-text-tertiary ml-2" title="Optimized with Cloudinary">
+              ✓ Optimized
+            </span>
+          )}
         </div>
 
         {/* Progress percentage or retry button */}
@@ -118,8 +125,9 @@ function UploadProgressItem({
           {uploadStatus === 'error' && onRetry && (
             <button
               onClick={() => onRetry(fileIndex)}
-              className="text-xs text-primary-green hover:text-primary-green-dark font-medium flex items-center gap-1"
+              className="text-xs text-primary-green hover:text-primary-green-dark font-medium flex items-center gap-1 transition-colors"
               type="button"
+              aria-label={`Retry upload for ${file.name}`}
             >
               <RefreshCw className="w-3 h-3" />
               Retry
@@ -145,7 +153,10 @@ function UploadProgressItem({
 
       {/* Error message */}
       {uploadStatus === 'error' && error && (
-        <p className="text-xs text-red-600">{error}</p>
+        <div className="space-y-1">
+          <p className="text-xs text-red-600 font-medium">Upload failed</p>
+          <p className="text-xs text-red-500">{error}</p>
+        </div>
       )}
     </div>
   );

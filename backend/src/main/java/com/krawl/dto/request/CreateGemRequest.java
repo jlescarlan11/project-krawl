@@ -63,6 +63,10 @@ public class CreateGemRequest {
     @Size(min = 1, max = 10, message = "At least 1 photo is required, maximum 10 photos")
     private List<String> photos = new ArrayList<>();
 
+    @Schema(description = "List of Cloudinary public IDs corresponding to photos (optional, for backward compatibility)", 
+            example = "[\"krawl-gems/abc123\", \"krawl-gems/def456\"]")
+    private List<String> photoPublicIds;
+
     @Schema(description = "Index of the thumbnail photo in the photos array", example = "0")
     @NotNull(message = "Thumbnail index is required")
     @Min(value = 0, message = "Thumbnail index must be non-negative")

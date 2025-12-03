@@ -182,13 +182,21 @@ public class GemService {
 
         // Create photos
         for (int i = 0; i < request.getPhotos().size(); i++) {
-            GemPhoto photo = GemPhoto.builder()
+            GemPhoto.GemPhotoBuilder photoBuilder = GemPhoto.builder()
                     .gem(gem)
                     .url(request.getPhotos().get(i))
                     .displayOrder(i)
-                    .uploadedBy(user)
-                    .build();
-            gem.getPhotos().add(photo);
+                    .uploadedBy(user);
+            
+            // Set Cloudinary public ID if provided (optional for backward compatibility)
+            if (request.getPhotoPublicIds() != null 
+                    && i < request.getPhotoPublicIds().size() 
+                    && request.getPhotoPublicIds().get(i) != null 
+                    && !request.getPhotoPublicIds().get(i).isEmpty()) {
+                photoBuilder.cloudinaryPublicId(request.getPhotoPublicIds().get(i));
+            }
+            
+            gem.getPhotos().add(photoBuilder.build());
         }
 
         gemRepository.save(gem);

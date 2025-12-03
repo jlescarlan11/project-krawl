@@ -38,6 +38,7 @@ export interface PhotoUploadStatus {
   progress: number; // 0-100
   status: 'pending' | 'uploading' | 'success' | 'error';
   url?: string;
+  publicId?: string; // Cloudinary public ID
   error?: string;
 }
 
@@ -49,6 +50,7 @@ export interface MediaData {
   thumbnailIndex: number;
   uploadStatuses?: PhotoUploadStatus[]; // Upload progress for each photo
   uploadedUrls?: string[]; // URLs of successfully uploaded photos
+  uploadedPublicIds?: string[]; // Cloudinary public IDs of successfully uploaded photos
 }
 
 /**
@@ -123,6 +125,7 @@ interface GemCreationActions {
     status: Partial<PhotoUploadStatus>
   ) => void;
   setUploadedUrls: (urls: string[]) => void;
+  setUploadedPublicIds: (publicIds: string[]) => void;
   initializeUploadStatuses: (files: File[]) => void;
 
   // Draft actions
@@ -384,6 +387,18 @@ export const useGemCreationStore = create<GemCreationStore>()(
             media: {
               ...media,
               uploadedUrls: urls,
+            },
+          });
+        },
+
+        setUploadedPublicIds: (publicIds) => {
+          const { media } = get();
+          if (!media) return;
+
+          set({
+            media: {
+              ...media,
+              uploadedPublicIds: publicIds,
             },
           });
         },

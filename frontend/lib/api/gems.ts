@@ -108,6 +108,7 @@ export interface CreateGemRequest {
   };
   address: string;
   photos: string[]; // Cloudinary URLs
+  photoPublicIds?: string[]; // Cloudinary public IDs (optional)
   thumbnailIndex: number;
   culturalSignificance?: string;
   tags?: string[];
