@@ -32,6 +32,9 @@ public class GemPhoto {
     @Column(name = "url", nullable = false, length = 500)
     private String url;
 
+    @Column(name = "cloudinary_public_id", length = 255)
+    private String cloudinaryPublicId;
+
     @Column(length = 500)
     private String caption;
 

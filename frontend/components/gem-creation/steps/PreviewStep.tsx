@@ -46,6 +46,8 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
     clearForm,
     initializeUploadStatuses,
     updatePhotoUploadStatus,
+    setUploadedUrls,
+    setUploadedPublicIds,
   } = useGemCreationStore();
 
   // Submission state
@@ -100,10 +102,12 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
     try {
       // Step 1: Upload photos to Cloudinary (if not already uploaded)
       let photoUrls: string[] = [];
+      let photoPublicIds: string[] = [];
 
       if (media.uploadedUrls && media.uploadedUrls.length > 0) {
-        // Photos already uploaded, use existing URLs
+        // Photos already uploaded, use existing URLs and public IDs
         photoUrls = media.uploadedUrls;
+        photoPublicIds = media.uploadedPublicIds || [];
       } else if (media.photos && media.photos.length > 0) {
         // Need to upload photos
         initializeUploadStatuses(media.photos);
@@ -120,6 +124,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
               progress: progress.progress,
               status: progress.status,
               url: progress.url,
+              publicId: progress.publicId,
               error: progress.error,
             });
           },
@@ -132,6 +137,11 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         }
 
         photoUrls = uploadResult.results.map((r) => r.url);
+        photoPublicIds = uploadResult.results.map((r) => r.publicId);
+        
+        // Store uploaded URLs and public IDs in store
+        setUploadedUrls(photoUrls);
+        setUploadedPublicIds(photoPublicIds);
       }
 
       // Step 2: Create gem via API
@@ -146,6 +156,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         },
         address: location.address,
         photos: photoUrls,
+        photoPublicIds: photoPublicIds.length > 0 ? photoPublicIds : undefined,
         thumbnailIndex: media.thumbnailIndex || 0,
         culturalSignificance: details.culturalSignificance?.trim() || undefined,
         tags: details.tags && details.tags.length > 0 ? details.tags : undefined,

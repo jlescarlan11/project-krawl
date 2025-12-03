@@ -14,6 +14,7 @@ export interface UploadProgress {
   progress: number; // 0-100
   status: 'uploading' | 'success' | 'error';
   url?: string;
+  publicId?: string; // Cloudinary public ID
   error?: string;
 }
 
@@ -90,16 +91,26 @@ export async function uploadSingleFile(
   const { cloudName, uploadPreset } = getCloudinaryConfig();
   const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-  // Validate file
-  if (!file.type.startsWith('image/')) {
-    const error = 'Invalid file type. Only images are allowed.';
+  // Validate file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  if (!file.type || !allowedTypes.some(type => file.type.toLowerCase().includes(type.split('/')[1]))) {
+    const error = `Invalid file type "${file.type}". Only JPEG, PNG, WebP, and GIF images are allowed.`;
     onError?.(error, file);
     return { file, url: '', publicId: '', success: false, error };
   }
 
   // Validate file size (5MB max)
-  if (file.size > 5 * 1024 * 1024) {
-    const error = 'File too large. Maximum size is 5MB.';
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    const error = `File "${file.name}" is too large (${fileSizeMB}MB). Maximum size is 5MB.`;
+    onError?.(error, file);
+    return { file, url: '', publicId: '', success: false, error };
+  }
+
+  // Validate file name
+  if (!file.name || file.name.trim().length === 0) {
+    const error = 'Invalid file name. Please rename the file and try again.';
     onError?.(error, file);
     return { file, url: '', publicId: '', success: false, error };
   }
@@ -114,6 +125,10 @@ export async function uploadSingleFile(
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
       formData.append('folder', 'krawl-gems'); // Store in specific folder
+      
+      // Add transformation parameters for optimization
+      // Convert to WebP format, resize to max dimensions, compress for web
+      formData.append('transformation', 'f_webp,q_auto,w_1920,h_1080,c_limit');
 
       // Create XMLHttpRequest for progress tracking
       const result = await new Promise<UploadResult>((resolve, reject) => {
@@ -153,6 +168,7 @@ export async function uploadSingleFile(
                 progress: 100,
                 status: 'success',
                 url: response.secure_url,
+                publicId: response.public_id,
               });
 
               onComplete?.(result);
@@ -177,17 +193,20 @@ export async function uploadSingleFile(
 
         // Upload error
         xhr.addEventListener('error', () => {
-          reject(new Error('Network error during upload'));
+          const error = xhr.status === 0 
+            ? 'Network error: Unable to connect to Cloudinary. Please check your internet connection.'
+            : `Network error during upload (HTTP ${xhr.status})`;
+          reject(new Error(error));
         });
 
         // Upload timeout
         xhr.addEventListener('timeout', () => {
-          reject(new Error('Upload timeout'));
+          reject(new Error(`Upload timeout after ${timeout}ms. The file may be too large or your connection is slow.`));
         });
 
         // Upload aborted
         xhr.addEventListener('abort', () => {
-          reject(new Error('Upload aborted'));
+          reject(new Error('Upload was cancelled'));
         });
 
         // Send request

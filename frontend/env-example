@@ -71,7 +71,7 @@ NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your-mapbox-public-access-token
 NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/mapbox/streets-v12
 
 # ============================================
-# Cloudinary Configuration (Image Upload)
+# Cloudinary Configuration (Image Upload & Optimization)
 # ============================================
 # Get these from Cloudinary Dashboard:
 # https://cloudinary.com/console
@@ -79,18 +79,37 @@ NEXT_PUBLIC_MAPBOX_STYLE=mapbox://styles/mapbox/streets-v12
 # For direct client-side uploads, you'll need:
 # - Cloud name (public)
 # - Upload preset (unsigned, for public uploads)
+#
+# Image Optimization:
+# - Images are automatically converted to WebP format
+# - Images are resized to max 1920x1080 (maintaining aspect ratio)
+# - Quality is automatically optimized (q_auto)
+# - Multiple sizes are generated via URL transformations:
+#   - Thumbnails: 300x300 (fill crop)
+#   - Medium: 800px width (limit crop)
+#   - Large: 1920px width (limit crop)
+#
+# Upload Preset Configuration:
+# - Create an unsigned upload preset in Cloudinary dashboard
+# - Set folder to "krawl-gems" (or configure in upload.ts)
+# - Enable "Use filename" if you want to preserve original filenames
+# - Set "Signing mode" to "Unsigned" for client-side uploads
 
 # Cloudinary Cloud Name (public, safe to expose)
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
 
 # Cloudinary Upload Preset (unsigned preset for client-side uploads)
+# Example: "krawl-gems-upload" or "krawl-gems"
 NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-unsigned-upload-preset
 
 # Cloudinary API Key (if using signed uploads from server)
 # Note: Only use signed uploads if you have a server-side API endpoint
+# Currently not used - client-side uploads use unsigned preset
 CLOUDINARY_API_KEY=your-cloudinary-api-key
 
 # Cloudinary API Secret (server-side only, never expose to browser)
+# Currently not used - client-side uploads use unsigned preset
+# Keep for future server-side operations (e.g., image deletion)
 CLOUDINARY_API_SECRET=your-cloudinary-api-secret
 
 # ============================================

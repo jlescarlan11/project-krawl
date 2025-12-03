@@ -10,6 +10,7 @@ import Captions from "yet-another-react-lightbox/plugins/captions";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/captions.css";
 import type { GemPhoto } from "@/types/gem-detail";
+import { getThumbnailUrl, getMediumUrl, getLargeUrl, getResponsiveSrcset } from "@/lib/cloudinary/urls";
 
 interface GemPhotoGalleryProps {
   photos: GemPhoto[];
@@ -43,8 +44,9 @@ export function GemPhotoGallery({ photos, gemName }: GemPhotoGalleryProps) {
   };
 
   // Convert photos to lightbox slides format
+  // Use large URLs for lightbox (full quality)
   const slides = photos.map((photo) => ({
-    src: photo.url,
+    src: getLargeUrl(photo.url, 1920),
     alt: photo.caption || gemName,
     title: photo.caption,
     width: photo.width,
@@ -63,6 +65,17 @@ export function GemPhotoGallery({ photos, gemName }: GemPhotoGalleryProps) {
       >
         {displayPhotos.map((photo, index) => {
           const isLoading = loadingImages.has(photo.id);
+          
+          // Generate optimized URLs based on image position
+          // First image (large): use large URL, others use medium
+          const optimizedUrl = index === 0 
+            ? getLargeUrl(photo.url, 1920)
+            : getMediumUrl(photo.url, 800);
+          
+          // Generate responsive srcset for better performance
+          const srcset = getResponsiveSrcset(photo.url, 
+            index === 0 ? [400, 800, 1200, 1920] : [300, 600, 800]
+          );
 
           return (
             <div
@@ -90,15 +103,18 @@ export function GemPhotoGallery({ photos, gemName }: GemPhotoGalleryProps) {
               )}
 
               <Image
-                src={photo.url}
+                src={optimizedUrl}
                 alt={photo.caption || `${gemName} - Photo ${index + 1}`}
                 fill
                 className={cn(
                   "object-cover transition-opacity duration-300",
                   isLoading ? "opacity-0" : "opacity-100"
                 )}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                quality={75}
+                sizes={index === 0 
+                  ? "(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 66vw"
+                  : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                }
+                quality={85}
                 loading={index === 0 ? "eager" : "lazy"}
                 onLoad={() => handleImageLoad(photo.id)}
               />
