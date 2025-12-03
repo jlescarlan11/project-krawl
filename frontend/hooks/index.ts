@@ -32,3 +32,6 @@ export type {
   GuestSignInOptions,
 } from "./useGuestMode";
 export { useGuestContextSync } from "./useGuestContextSync";
+
+// Utility hooks
+export { useDebounce } from "./useDebounce";

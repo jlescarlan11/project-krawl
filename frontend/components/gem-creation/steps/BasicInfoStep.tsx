@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
   getCharacterCountColor,
 } from "@/lib/validation/gem-validation";
 import { checkForDuplicatesWithAbort } from "@/lib/api/gems";
+import { useDebounce } from "@/hooks/useDebounce";
 
 /**
  * Props for BasicInfoStep component
@@ -65,6 +66,9 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     description: false,
   });
 
+  // Debounce values for expensive validations (like duplicate checking)
+  const debouncedName = useDebounce(name, 300);
+
   // Duplicate detection state
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
   const [showDuplicateModal, setShowDuplicateModal] = useState(true);
@@ -90,7 +94,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   }, [name, category, description]);
 
   /**
-   * Run validation on field changes
+   * Run validation on field changes (real-time)
    */
   useEffect(() => {
     validateFields();
@@ -155,6 +159,21 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   );
 
   /**
+   * Check for duplicates when debounced name changes and is valid
+   */
+  useEffect(() => {
+    // Only check duplicates if name is valid and location exists
+    if (
+      debouncedName.trim() &&
+      !validateGemName(debouncedName) &&
+      location &&
+      touched.name
+    ) {
+      checkDuplicates(debouncedName.trim());
+    }
+  }, [debouncedName, location, touched.name, checkDuplicates]);
+
+  /**
    * Handle field blur (mark as touched)
    */
   const handleBlur = (field: keyof typeof touched) => {
@@ -162,21 +181,58 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   };
 
   /**
-   * Handle name field blur (check for duplicates)
+   * Handle name field blur
    */
   const handleNameBlur = useCallback(() => {
     handleBlur("name");
-    // Only check duplicates if name is valid and location exists
-    if (name.trim() && !validateGemName(name) && location) {
-      checkDuplicates(name.trim());
+  }, []);
+
+  /**
+   * Handle name field change (real-time validation)
+   */
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    // Mark as touched on change for immediate feedback
+    if (!touched.name) {
+      setTouched((prev) => ({ ...prev, name: true }));
     }
-  }, [name, location, checkDuplicates]);
+  }, [touched.name]);
+
+  /**
+   * Handle category change (real-time validation)
+   */
+  const handleCategoryChange = useCallback((newCategory: string) => {
+    setCategory(newCategory);
+    // Mark as touched on change for immediate feedback
+    if (!touched.category) {
+      setTouched((prev) => ({ ...prev, category: true }));
+    }
+  }, [touched.category]);
+
+  /**
+   * Handle description change (real-time validation)
+   */
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+    // Mark as touched on change for immediate feedback
+    if (!touched.description) {
+      setTouched((prev) => ({ ...prev, description: true }));
+    }
+  }, [touched.description]);
 
   /**
    * Check if should show error for a field
    */
   const shouldShowError = (field: keyof typeof touched): boolean => {
     return touched[field] && !!errors[field];
+  };
+
+  /**
+   * Check if field is valid (for success indicators)
+   */
+  const isFieldValid = (field: keyof typeof touched, value: string): boolean => {
+    if (!touched[field]) return false;
+    return !errors[field] && value.trim().length > 0;
   };
 
   /**
@@ -300,14 +356,16 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
               label="Gem Name"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
               onBlur={handleNameBlur}
               error={shouldShowError("name") ? errors.name : undefined}
               placeholder="Enter gem name"
               maxLength={101} // Allow typing to 101 to show error
               rightIcon={
                 isCheckingDuplicate ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-text-secondary" />
+                ) : isFieldValid("name", name) ? (
+                  <CheckCircle className="w-4 h-4 text-success" />
                 ) : undefined
               }
             />
@@ -322,7 +380,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
           {/* Category Selection */}
           <CategoryChipSelector
             value={category}
-            onChange={setCategory}
+            onChange={handleCategoryChange}
             error={shouldShowError("category") ? errors.category : undefined}
             required
           />
@@ -333,7 +391,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
               label="Brief Description"
               required
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               onBlur={() => handleBlur("description")}
               error={
                 shouldShowError("description") ? errors.description : undefined
