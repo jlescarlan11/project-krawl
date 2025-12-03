@@ -1,5 +1,6 @@
 package com.krawl.service;
 
+import com.krawl.constants.GemCategoryConstants;
 import com.krawl.dto.request.CreateGemRequest;
 import com.krawl.dto.request.UpdateGemRequest;
 import com.krawl.dto.response.*;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -144,6 +146,15 @@ public class GemService {
                 request.getCoordinates().getLongitude()
         );
 
+        // Validate category
+        if (!GemCategoryConstants.isValidCategory(request.getCategory())) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid category: %s. Valid categories are: %s",
+                            request.getCategory(),
+                            String.join(", ", GemCategoryConstants.VALID_CATEGORIES))
+            );
+        }
+
         // Get user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
@@ -233,6 +244,14 @@ public class GemService {
             gem.setName(request.getName());
         }
         if (request.getCategory() != null) {
+            // Validate category
+            if (!GemCategoryConstants.isValidCategory(request.getCategory())) {
+                throw new IllegalArgumentException(
+                        String.format("Invalid category: %s. Valid categories are: %s",
+                                request.getCategory(),
+                                String.join(", ", GemCategoryConstants.VALID_CATEGORIES))
+                );
+            }
             gem.setCategory(request.getCategory());
         }
         if (request.getDistrict() != null) {
@@ -372,5 +391,155 @@ public class GemService {
                 .comment(vouch.getComment())
                 .createdAt(vouch.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Get all gems (for map display)
+     * Returns basic gem information including coordinates for map rendering
+     * This is optimized for map display and doesn't fetch all related data
+     *
+     * @param currentUserId Current user ID (can be null)
+     * @return List of gems with basic information
+     */
+    @Transactional(readOnly = true)
+    public List<GemDetailResponse> getAllGems(UUID currentUserId) {
+        log.debug("Fetching all gems for map display");
+        
+        List<Gem> allGems = gemRepository.findAllWithDetails();
+        
+        return allGems.stream()
+                .map(gem -> {
+                    try {
+                        // Calculate basic stats without full detail fetch
+                        Double averageRating = gemRepository.calculateAverageRating(gem.getId());
+                        Integer vouchCount = gemRepository.countVouchesByGemId(gem.getId());
+                        Boolean isVouchedByCurrentUser = currentUserId != null
+                                ? gemRepository.hasUserVouchedForGem(gem.getId(), currentUserId)
+                                : false;
+                        
+                        // Map photos
+                        List<GemPhotoResponse> photos = gem.getPhotos().stream()
+                                .map(this::mapToPhotoResponse)
+                                .collect(Collectors.toList());
+                        
+                        // Build coordinates
+                        GemCoordinatesResponse coordinates = GemCoordinatesResponse.builder()
+                                .longitude(gem.getLongitude())
+                                .latitude(gem.getLatitude())
+                                .build();
+                        
+                        // Build creator info
+                        GemCreatorResponse creator = GemCreatorResponse.builder()
+                                .id(gem.getCreatedBy().getId().toString())
+                                .name(gem.getCreatedBy().getDisplayName())
+                                .avatar(gem.getCreatedBy().getAvatarUrl())
+                                .build();
+                        
+                        // Build ratings data (simplified)
+                        GemRatingsDataResponse ratingsData = GemRatingsDataResponse.builder()
+                                .averageRating(averageRating)
+                                .totalRatings(gemRepository.countRatingsByGemId(gem.getId()))
+                                .breakdown(buildRatingBreakdown(gem.getId()))
+                                .build();
+                        
+                        // Build vouches data (simplified - no list of vouches for map)
+                        GemVouchesDataResponse vouchesData = GemVouchesDataResponse.builder()
+                                .vouchCount(vouchCount)
+                                .vouches(List.of()) // Empty list for map display
+                                .isVouchedByCurrentUser(isVouchedByCurrentUser)
+                                .build();
+                        
+                        // Build the response
+                        return GemDetailResponse.builder()
+                                .id(gem.getId().toString())
+                                .name(gem.getName())
+                                .category(gem.getCategory())
+                                .district(gem.getDistrict())
+                                .coordinates(coordinates)
+                                .status(gem.getStatus().name())
+                                .thumbnailUrl(gem.getThumbnailUrl())
+                                .rating(averageRating)
+                                .vouchCount(vouchCount)
+                                .viewCount(gem.getViewCount())
+                                .shortDescription(gem.getShortDescription())
+                                .fullDescription(gem.getFullDescription())
+                                .culturalSignificance(gem.getCulturalSignificance())
+                                .address(gem.getAddress())
+                                .hours(gem.getHours())
+                                .website(gem.getWebsite())
+                                .phone(gem.getPhone())
+                                .createdAt(gem.getCreatedAt())
+                                .updatedAt(gem.getUpdatedAt())
+                                .tags(gem.getTags())
+                                .createdBy(creator)
+                                .photos(photos)
+                                .ratingsData(ratingsData)
+                                .vouchesData(vouchesData)
+                                .relatedKrawls(List.of()) // TODO: Implement when Krawl entity is available
+                                .build();
+                    } catch (Exception e) {
+                        log.warn("Failed to build response for gem {}", gem.getId(), e);
+                        return null;
+                    }
+                })
+                .filter(gem -> gem != null)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Toggle vouch for a gem.
+     * If user has vouched, removes the vouch.
+     * If user hasn't vouched, creates a new vouch.
+     *
+     * @param gemId The UUID of the gem
+     * @param userId The UUID of the user
+     * @return Updated vouch count after toggle
+     * @throws ResourceNotFoundException if gem not found
+     */
+    @Transactional
+    public Integer toggleVouch(UUID gemId, UUID userId) {
+        log.debug("Toggling vouch for gemId: {} by userId: {}", gemId, userId);
+
+        // Verify gem exists
+        Gem gem = gemRepository.findById(gemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+
+        // Check if user already vouched
+        Optional<Vouch> existingVouch = vouchRepository.findByGemIdAndUserId(gemId, userId);
+
+        if (existingVouch.isPresent()) {
+            // Remove vouch
+            log.debug("Removing existing vouch for gemId: {} by userId: {}", gemId, userId);
+            vouchRepository.delete(existingVouch.get());
+        } else {
+            // Create new vouch
+            log.debug("Creating new vouch for gemId: {} by userId: {}", gemId, userId);
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+            Vouch vouch = Vouch.builder()
+                    .gem(gem)
+                    .user(user)
+                    .build();
+
+            vouchRepository.save(vouch);
+        }
+
+        // Return updated vouch count
+        Integer vouchCount = gemRepository.countVouchesByGemId(gemId);
+        log.info("Vouch toggled for gemId: {} by userId: {}. New vouch count: {}", gemId, userId, vouchCount);
+        return vouchCount;
+    }
+
+    /**
+     * Check if user has vouched for a gem
+     *
+     * @param gemId The UUID of the gem
+     * @param userId The UUID of the user
+     * @return true if user has vouched, false otherwise
+     */
+    @Transactional(readOnly = true)
+    public boolean hasUserVouchedForGem(UUID gemId, UUID userId) {
+        return Boolean.TRUE.equals(gemRepository.hasUserVouchedForGem(gemId, userId));
     }
 }

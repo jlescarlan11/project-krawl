@@ -10,6 +10,19 @@ import { getThumbnailUrl, getMediumUrl, getLargeUrl } from "@/lib/cloudinary/url
 // Helper to check if URL is a blob/Object URL
 const isBlobUrl = (url: string) => url.startsWith('blob:') || url.startsWith('data:');
 
+// Helper to check if URL is a valid Cloudinary URL
+const isCloudinaryUrl = (url: string) => url.includes('res.cloudinary.com') || url.includes('cloudinary.com');
+
+// Helper to check if URL is valid (not empty and has proper format)
+const isValidUrl = (url: string) => {
+  if (!url || url.trim() === '') return false;
+  // Check if it's a blob URL, data URL, http URL, or Cloudinary public ID
+  return url.startsWith('blob:') || 
+         url.startsWith('data:') || 
+         url.startsWith('http') || 
+         url.length > 0; // Allow non-http URLs (like Cloudinary public IDs)
+};
+
 interface PreviewPhotoGalleryProps {
   photos: GemPhoto[];
   gemName: string;
@@ -20,9 +33,9 @@ interface PreviewPhotoGalleryProps {
  * 
  * Non-interactive photo gallery for preview mode with adaptive layouts:
  * - 1 photo: full width
- * - 2 photos: split 50/50
+ * - 2 photos: one left, one right (both spanning full height)
  * - 3 photos: 1 left (thumbnail), 2 right stacked
- * - 4-5 photos: same as 3, but with indicator showing there are more
+ * - 4+ photos: same as 3, but with indicator showing there are more photos
  */
 export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProps) {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
@@ -68,28 +81,53 @@ export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProp
             </div>
           </div>
         )}
-              {!hasError && (
-                isBlobUrl(photo.url) ? (
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || `${gemName} - Photo 1`}
-                    className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                  />
-                ) : (
-                  <Image
-                    src={getLargeUrl(photo.url, 1920)}
-                    alt={photo.caption || `${gemName} - Photo 1`}
-                    fill
-                    className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    sizes="100vw"
-                    quality={85}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                    unoptimized={isBlobUrl(photo.url)}
-                  />
-                )
+              {!hasError && isValidUrl(photo.url) && (
+                (() => {
+                  // Use regular img tag for blob URLs, data URLs, or if Cloudinary transformation fails
+                  if (isBlobUrl(photo.url)) {
+                    return (
+                      <img
+                        src={photo.url}
+                        alt={photo.caption || `${gemName} - Photo 1`}
+                        className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                        onLoad={() => handleImageLoad(photo.id)}
+                        onError={() => handleImageError(photo.id)}
+                      />
+                    );
+                  }
+                  
+                  // Try to get optimized URL
+                  const optimizedUrl = getLargeUrl(photo.url, 1920);
+                  
+                  // If optimization failed or URL is not Cloudinary, use regular img tag
+                  if (!optimizedUrl || optimizedUrl.trim() === '' || !isCloudinaryUrl(optimizedUrl)) {
+                    // Fallback to original URL or optimized URL if available
+                    const fallbackUrl = optimizedUrl || photo.url;
+                    return (
+                      <img
+                        src={fallbackUrl}
+                        alt={photo.caption || `${gemName} - Photo 1`}
+                        className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                        onLoad={() => handleImageLoad(photo.id)}
+                        onError={() => handleImageError(photo.id)}
+                      />
+                    );
+                  }
+                  
+                  // Use Next.js Image for valid Cloudinary URLs
+                  return (
+                    <Image
+                      src={optimizedUrl}
+                      alt={photo.caption || `${gemName} - Photo 1`}
+                      fill
+                      className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                      sizes="100vw"
+                      quality={85}
+                      onLoad={() => handleImageLoad(photo.id)}
+                      onError={() => handleImageError(photo.id)}
+                    />
+                  );
+                })()
               )}
         {hasError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
@@ -104,188 +142,319 @@ export function PreviewPhotoGallery({ photos, gemName }: PreviewPhotoGalleryProp
   }
 
   if (photoCount === 2) {
-    // Two photos: split 50/50
+    // Two photos: one left (3/4 of total width = 75%), one right (1/4 of total width = 25%, full height)
     return (
-      <div className="grid grid-cols-2 gap-2">
-        {photos.map((photo, index) => {
-          const isLoaded = loadedImages.has(photo.id);
-          const hasError = imageErrors.has(photo.id);
+      <div className={cn(
+        "grid grid-cols-1 md:grid-cols-4 gap-2",
+        "sm:gap-4",
+        "lg:gap-6"
+      )}>
+        {/* Left photo (3/4 of total width = 75%) */}
+        <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden bg-bg-light md:col-span-3">
+          {(() => {
+            const photo = photos[0];
+            const isLoaded = loadedImages.has(photo.id);
+            const hasError = imageErrors.has(photo.id);
 
-          return (
-            <div
-              key={photo.id}
-              className="relative w-full h-[300px] md:h-[400px] overflow-hidden bg-bg-light"
-            >
-              {!isLoaded && !hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-bg-light z-10">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-primary-green animate-spin" />
-                    <p className="text-xs text-text-secondary">Loading...</p>
+            return (
+              <>
+                {!isLoaded && !hasError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-bg-light z-10">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-primary-green animate-spin" />
+                      <p className="text-xs text-text-secondary">Loading...</p>
+                    </div>
                   </div>
-                </div>
-              )}
-              {!hasError && (
-                isBlobUrl(photo.url) ? (
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || `${gemName} - Photo ${index + 1}`}
-                    className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                  />
-                ) : (
-                  <Image
-                    src={getMediumUrl(photo.url, 800)}
-                    alt={photo.caption || `${gemName} - Photo ${index + 1}`}
-                    fill
-                    className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    sizes="50vw"
-                    quality={85}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                    unoptimized={isBlobUrl(photo.url)}
-                  />
-                )
-              )}
-              {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
-                  <div className="text-center text-text-tertiary px-2">
-                    <p className="text-xs font-medium mb-0.5">Preview Mode</p>
-                    <p className="text-[10px]">Images shown in uploaded gems</p>
+                )}
+                {!hasError && isValidUrl(photo.url) && (
+                  (() => {
+                    // Use regular img tag for blob URLs, data URLs, or if Cloudinary transformation fails
+                    if (isBlobUrl(photo.url)) {
+                      return (
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || `${gemName} - Photo 1`}
+                          className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                          onLoad={() => handleImageLoad(photo.id)}
+                          onError={() => handleImageError(photo.id)}
+                        />
+                      );
+                    }
+                    
+                    // Try to get optimized URL
+                    const optimizedUrl = getMediumUrl(photo.url, 800);
+                    
+                    // If optimization failed or URL is not Cloudinary, use regular img tag
+                    if (!optimizedUrl || optimizedUrl.trim() === '' || !isCloudinaryUrl(optimizedUrl)) {
+                      // Fallback to original URL or optimized URL if available
+                      const fallbackUrl = optimizedUrl || photo.url;
+                      return (
+                        <img
+                          src={fallbackUrl}
+                          alt={photo.caption || `${gemName} - Photo 1`}
+                          className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                          onLoad={() => handleImageLoad(photo.id)}
+                          onError={() => handleImageError(photo.id)}
+                        />
+                      );
+                    }
+                    
+                    // Use Next.js Image for valid Cloudinary URLs
+                    return (
+                      <Image
+                        src={optimizedUrl}
+                        alt={photo.caption || `${gemName} - Photo 1`}
+                        fill
+                        className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                        sizes="(max-width: 768px) 100vw, 75vw"
+                        quality={85}
+                        onLoad={() => handleImageLoad(photo.id)}
+                        onError={() => handleImageError(photo.id)}
+                      />
+                    );
+                  })()
+                )}
+                {hasError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
+                    <div className="text-center text-text-tertiary px-2">
+                      <p className="text-xs font-medium mb-0.5">Preview Mode</p>
+                      <p className="text-[10px]">Images shown in uploaded gems</p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </>
+            );
+          })()}
+        </div>
+
+        {/* Right photo (1/4 of total width = 25%, full height) */}
+        <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden bg-bg-light md:col-span-1">
+          {(() => {
+            const photo = photos[1];
+            const isLoaded = loadedImages.has(photo.id);
+            const hasError = imageErrors.has(photo.id);
+
+            return (
+              <>
+                {!isLoaded && !hasError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-bg-light z-10">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-primary-green animate-spin" />
+                      <p className="text-xs text-text-secondary">Loading...</p>
+                    </div>
+                  </div>
+                )}
+                {!hasError && isValidUrl(photo.url) && (
+                  (() => {
+                    // Use regular img tag for blob URLs, data URLs, or if Cloudinary transformation fails
+                    if (isBlobUrl(photo.url)) {
+                      return (
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || `${gemName} - Photo 2`}
+                          className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                          onLoad={() => handleImageLoad(photo.id)}
+                          onError={() => handleImageError(photo.id)}
+                        />
+                      );
+                    }
+                    
+                    // Try to get optimized URL
+                    const optimizedUrl = getMediumUrl(photo.url, 800);
+                    
+                    // If optimization failed or URL is not Cloudinary, use regular img tag
+                    if (!optimizedUrl || optimizedUrl.trim() === '' || !isCloudinaryUrl(optimizedUrl)) {
+                      // Fallback to original URL or optimized URL if available
+                      const fallbackUrl = optimizedUrl || photo.url;
+                      return (
+                        <img
+                          src={fallbackUrl}
+                          alt={photo.caption || `${gemName} - Photo 2`}
+                          className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                          onLoad={() => handleImageLoad(photo.id)}
+                          onError={() => handleImageError(photo.id)}
+                        />
+                      );
+                    }
+                    
+                    // Use Next.js Image for valid Cloudinary URLs
+                    return (
+                      <Image
+                        src={optimizedUrl}
+                        alt={photo.caption || `${gemName} - Photo 2`}
+                        fill
+                        className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                        sizes="(max-width: 768px) 100vw, 25vw"
+                        quality={85}
+                        onLoad={() => handleImageLoad(photo.id)}
+                        onError={() => handleImageError(photo.id)}
+                      />
+                    );
+                  })()
+                )}
+                {hasError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
+                    <div className="text-center text-text-tertiary px-2">
+                      <p className="text-xs font-medium mb-0.5">Preview Mode</p>
+                      <p className="text-[10px]">Images shown in uploaded gems</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
       </div>
     );
   }
 
-  // Three or more photos: 1 left (thumbnail), 2 right stacked
-  // For 4-5 photos, show indicator on last visible photo
+  // Three or more photos: 1 left (thumbnail), 2+ right stacked
+  // Show only first 3 photos in gallery grid
   const displayPhotos = photos.slice(0, 3);
   const hasMorePhotos = photoCount > 3;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-      {/* Left: Single large thumbnail */}
-      <div className="relative w-full h-[300px] md:h-[500px] overflow-hidden bg-bg-light md:col-span-1">
-        {(() => {
-          const photo = displayPhotos[0];
-          const isLoaded = loadedImages.has(photo.id);
-          const hasError = imageErrors.has(photo.id);
+    <div
+      className={cn(
+        "grid gap-2",
+        "sm:gap-4 sm:grid-cols-2",
+        "lg:gap-6 lg:grid-cols-3"
+      )}
+    >
+      {displayPhotos.map((photo, index) => {
+        const isLoaded = loadedImages.has(photo.id);
+        const hasError = imageErrors.has(photo.id);
+        
+        // Check if URL is already a full Cloudinary URL
+        const isFullCloudinaryUrl = photo.url.startsWith('http') && photo.url.includes('cloudinary.com');
+        
+        // Generate optimized URLs based on image position
+        const optimizedUrl = isFullCloudinaryUrl 
+          ? photo.url 
+          : (index === 0 
+              ? getLargeUrl(photo.url, 1920)
+              : getMediumUrl(photo.url, 800));
 
-          return (
-            <>
-              {!isLoaded && !hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-bg-light z-10">
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
-                    <p className="text-sm text-text-secondary">Loading...</p>
-                  </div>
+        return (
+          <div
+            key={photo.id}
+            className={cn(
+              "relative overflow-hidden rounded-lg",
+              "bg-bg-light",
+              // First image is larger
+              index === 0 && [
+                "col-span-1 row-span-1 h-[300px]",
+                "sm:col-span-2",
+                "lg:col-span-2 lg:row-span-2 lg:h-[524px]",
+              ],
+              // Other images
+              index > 0 && "h-[200px] sm:h-[250px]"
+            )}
+          >
+            {/* Loading Spinner Overlay */}
+            {!isLoaded && !hasError && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-bg-light">
+                <div className="flex items-center gap-2">
+                  <Loader2 className={cn(
+                    "text-primary-green animate-spin",
+                    index === 0 ? "w-8 h-8" : "w-4 h-4"
+                  )} />
+                  <p className={cn(
+                    "text-text-secondary",
+                    index === 0 ? "text-sm" : "text-xs"
+                  )}>Loading...</p>
                 </div>
-              )}
-              {!hasError && (
-                isBlobUrl(photo.url) ? (
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || `${gemName} - Photo 1`}
-                    className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                  />
-                ) : (
+              </div>
+            )}
+
+            {/* Error/Preview Mode Placeholder */}
+            {hasError ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
+                <div className="text-center text-text-tertiary px-4">
+                  <p className={cn(
+                    "font-medium mb-1",
+                    index === 0 ? "text-sm" : "text-xs"
+                  )}>Preview Mode</p>
+                  <p className={cn(
+                    index === 0 ? "text-xs" : "text-[10px]"
+                  )}>Images will be shown in uploaded gems</p>
+                </div>
+              </div>
+            ) : isValidUrl(photo.url) ? (
+              (() => {
+                // Use regular img tag for blob URLs, data URLs, or if Cloudinary transformation fails
+                if (isBlobUrl(photo.url)) {
+                  return (
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || `${gemName} - Photo ${index + 1}`}
+                      className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                      onLoad={() => handleImageLoad(photo.id)}
+                      onError={() => handleImageError(photo.id)}
+                    />
+                  );
+                }
+                
+                // If optimization failed or URL is not Cloudinary, use regular img tag
+                if (!optimizedUrl || optimizedUrl.trim() === '' || !isCloudinaryUrl(optimizedUrl)) {
+                  const fallbackUrl = optimizedUrl || photo.url;
+                  return (
+                    <img
+                      src={fallbackUrl}
+                      alt={photo.caption || `${gemName} - Photo ${index + 1}`}
+                      className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
+                      onLoad={() => handleImageLoad(photo.id)}
+                      onError={() => handleImageError(photo.id)}
+                    />
+                  );
+                }
+                
+                // Use Next.js Image for valid Cloudinary URLs
+                return (
                   <Image
-                    src={getLargeUrl(photo.url, 1920)}
-                    alt={photo.caption || `${gemName} - Photo 1`}
+                    src={optimizedUrl}
+                    alt={photo.caption || `${gemName} - Photo ${index + 1}`}
                     fill
                     className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    sizes="(max-width: 768px) 100vw, 33vw"
+                    sizes={index === 0 
+                      ? "(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 66vw"
+                      : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    }
                     quality={85}
+                    loading={index === 0 ? "eager" : "lazy"}
                     onLoad={() => handleImageLoad(photo.id)}
                     onError={() => handleImageError(photo.id)}
-                    unoptimized={isBlobUrl(photo.url)}
                   />
-                )
-              )}
-              {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-bg-light">
-                  <p className="text-sm text-text-tertiary">Failed to load image</p>
+                );
+              })()
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
+                <div className="text-center text-text-tertiary px-4">
+                  <p className={cn(
+                    "font-medium mb-1",
+                    index === 0 ? "text-sm" : "text-xs"
+                  )}>Preview Mode</p>
+                  <p className={cn(
+                    index === 0 ? "text-xs" : "text-[10px]"
+                  )}>Images will be shown in uploaded gems</p>
                 </div>
-              )}
-            </>
-          );
-        })()}
-      </div>
+              </div>
+            )}
 
-      {/* Right: Two stacked photos */}
-      <div className="grid grid-cols-1 gap-2 md:col-span-2">
-        {displayPhotos.slice(1, 3).map((photo, index) => {
-          const isLastVisible = index === displayPhotos.slice(1, 3).length - 1;
-          const showMoreIndicator = isLastVisible && hasMorePhotos;
-          const isLoaded = loadedImages.has(photo.id);
-          const hasError = imageErrors.has(photo.id);
-
-          return (
-            <div
-              key={photo.id}
-              className="relative w-full h-[200px] md:h-[250px] overflow-hidden bg-bg-light"
-            >
-              {!isLoaded && !hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-bg-light z-10">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-primary-green animate-spin" />
-                    <p className="text-xs text-text-secondary">Loading...</p>
-                  </div>
+            {/* "More photos" indicator on 3rd image if more photos exist */}
+            {index === 2 && hasMorePhotos && !hasError && isLoaded && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+                <div className="text-white text-center">
+                  <p className="text-2xl font-bold">+{photoCount - 3}</p>
+                  <p className="text-sm">More Photos</p>
                 </div>
-              )}
-              {!hasError && (
-                isBlobUrl(photo.url) ? (
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || `${gemName} - Photo ${index + 2}`}
-                    className={cn("w-full h-full object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                  />
-                ) : (
-                  <Image
-                    src={getMediumUrl(photo.url, 800)}
-                    alt={photo.caption || `${gemName} - Photo ${index + 2}`}
-                    fill
-                    className={cn("object-cover transition-opacity duration-300", !isLoaded && "opacity-0")}
-                    sizes="(max-width: 768px) 100vw, 66vw"
-                    quality={85}
-                    onLoad={() => handleImageLoad(photo.id)}
-                    onError={() => handleImageError(photo.id)}
-                    unoptimized={isBlobUrl(photo.url)}
-                  />
-                )
-              )}
-              {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
-                  <div className="text-center text-text-tertiary px-2">
-                    <p className="text-xs font-medium mb-0.5">Preview Mode</p>
-                    <p className="text-[10px]">Images shown in uploaded gems</p>
-                  </div>
-                </div>
-              )}
-              
-              {/* More photos indicator overlay (only for 4-5 photos) */}
-              {showMoreIndicator && isLoaded && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="text-white text-center">
-                    <p className="text-xl md:text-2xl font-bold">+{photoCount - 3}</p>
-                    <p className="text-xs md:text-sm">More Photos</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
+
 }
 

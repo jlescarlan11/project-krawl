@@ -34,16 +34,16 @@ export function GemDetailSkeleton() {
             className={cn(
               "col-span-1 row-span-1 h-[300px]",
               "sm:col-span-2",
-              "lg:col-span-2 lg:row-span-2 lg:h-[400px]"
+              "lg:col-span-2 lg:row-span-2 lg:h-[524px]"
             )}
           />
 
           {/* Smaller photos */}
-          {[...Array(4)].map((_, i) => (
+          {[...Array(2)].map((_, i) => (
             <LoadingSkeleton
               key={i}
               variant="custom"
-              className="h-[200px] sm:h-[250px] hidden sm:block"
+              className="h-[200px] sm:h-[250px]"
             />
           ))}
         </div>

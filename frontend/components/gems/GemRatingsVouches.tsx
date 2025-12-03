@@ -23,30 +23,48 @@ export function GemRatingsVouches({ gem, isAuthenticated = false }: GemRatingsVo
   const hasVouches = vouchesData && vouchesData.vouchCount > 0;
 
   const handleVouch = async () => {
+    if (!vouchesData) return;
+
+    // Optimistic update
+    const isCurrentlyVouched = vouchesData.isVouchedByCurrentUser;
+    const previousVouchesData = vouchesData;
+    const newVouchCount = isCurrentlyVouched
+      ? vouchesData.vouchCount - 1
+      : vouchesData.vouchCount + 1;
+
+    setVouchesData({
+      ...vouchesData,
+      vouchCount: newVouchCount,
+      isVouchedByCurrentUser: !isCurrentlyVouched,
+    });
+
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/gems/${gem.id}/vouch`, { method: isVouched ? 'DELETE' : 'POST' });
-
-      if (!vouchesData) return;
-
-      // Optimistic update
-      const isCurrentlyVouched = vouchesData.isVouchedByCurrentUser;
-      const newVouchCount = isCurrentlyVouched
-        ? vouchesData.vouchCount - 1
-        : vouchesData.vouchCount + 1;
-
-      setVouchesData({
-        ...vouchesData,
-        vouchCount: newVouchCount,
-        isVouchedByCurrentUser: !isCurrentlyVouched,
+      const response = await fetch(`/api/gems/${gem.id}/vouch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to toggle vouch: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Update with actual response data
+      setVouchesData({
+        ...vouchesData,
+        vouchCount: data.vouchCount ?? newVouchCount,
+        isVouchedByCurrentUser: data.isVouchedByCurrentUser ?? !isCurrentlyVouched,
+      });
     } catch (error) {
       console.error("Error vouching gem:", error);
       // Revert on error
-      setVouchesData(gem.vouchesData);
+      setVouchesData(previousVouchesData);
+      // Optionally show error message to user
+      alert(error instanceof Error ? error.message : "Failed to toggle vouch. Please try again.");
     }
   };
 

@@ -11,6 +11,7 @@ import { Button } from "@/components";
 import { cn } from "@/lib/utils";
 import { ProtectedActionGate } from "@/components/guest";
 import { Logo } from "@/components/brand";
+import { getAvatarUrl } from "@/lib/cloudinary/urls";
 
 /**
  * Get cached auth from localStorage synchronously - OPTIMIZATION
@@ -261,7 +262,7 @@ export const Sidebar = memo(function Sidebar() {
                 <span className={avatarWrapperClasses}>
                   {currentUser?.avatar ? (
                     <img
-                      src={currentUser.avatar}
+                      src={getAvatarUrl(currentUser.avatar) || currentUser.avatar}
                       alt={`${profileName} avatar`}
                       className={`${avatarImageClasses} block`}
                       loading="lazy"

@@ -3,63 +3,72 @@ import { MapGem, GemStatus } from "@/components/map/gem-types";
 import { Star, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 
 interface RelatedGemsProps {
   currentGem: GemDetail;
 }
 
-// Mock function to get related gems - TODO: Replace with API call
+/**
+ * Get related gems based on same category or district from backend API
+ */
 async function getRelatedGems(gem: GemDetail): Promise<MapGem[]> {
-  // Mock related gems based on same category or district
-  const mockRelatedGems: MapGem[] = [
-    {
-      id: "gem-002",
-      name: "Fort San Pedro",
-      category: "Historical Landmark",
-      district: "Downtown",
-      coordinates: [123.8868, 10.2925],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/fort-san-pedro.jpg",
-      rating: 4.3,
-      vouchCount: 12,
-      viewCount: 189,
-      shortDescription: "Spanish colonial fort and military defense structure",
-    },
-    {
-      id: "gem-003",
-      name: "Basilica del Santo Niño",
-      category: "Religious Site",
-      district: "Downtown",
-      coordinates: [123.8897, 10.2942],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/basilica.jpg",
-      rating: 4.8,
-      vouchCount: 25,
-      viewCount: 456,
-      shortDescription: "Oldest Roman Catholic church in the Philippines",
-    },
-    {
-      id: "gem-014",
-      name: "Fuente Osmeña Circle",
-      category: "Park",
-      district: "Downtown",
-      coordinates: [123.8945, 10.3123],
-      status: GemStatus.VERIFIED,
-      thumbnailUrl: "/images/gems/fuente.jpg",
-      rating: 4.2,
-      vouchCount: 11,
-      viewCount: 234,
-      shortDescription: "Historic circular park and landmark",
-    },
-  ];
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const session = await auth();
+    
+    const backendResponse = await fetch(`${API_URL}/api/gems`, {
+      headers: session?.jwt ? {
+        Authorization: `Bearer ${session.jwt}`,
+      } : {},
+    });
 
-  // Filter out current gem and limit to 3
-  return mockRelatedGems
-    .filter((g) => g.id !== gem.id)
-    .filter(
-      (g) => g.category === gem.category || g.district === gem.district
-    )
-    .slice(0, 3);
+    if (!backendResponse.ok) {
+      return [];
+    }
+
+    const backendGemsData = await backendResponse.json();
+    const backendGemsList = Array.isArray(backendGemsData) ? backendGemsData : [];
+    
+    // Convert backend gems to MapGem format and filter
+    const relatedGems: MapGem[] = backendGemsList
+      .filter((g: any) => g.id !== gem.id) // Exclude current gem
+      .filter((g: any) => {
+        const longitude = g.coordinates?.longitude ?? g.longitude;
+        const latitude = g.coordinates?.latitude ?? g.latitude;
+        return longitude && latitude && (
+          g.category === gem.category || g.district === gem.district
+        );
+      })
+      .map((g: any) => {
+        const longitude = g.coordinates?.longitude ?? g.longitude;
+        const latitude = g.coordinates?.latitude ?? g.latitude;
+        const backendStatus = g.status?.toLowerCase() || 'pending';
+        const frontendStatus = backendStatus === 'verified' ? GemStatus.VERIFIED :
+                               backendStatus === 'stale' ? GemStatus.STALE :
+                               GemStatus.PENDING;
+        
+        return {
+          id: g.id,
+          name: g.name,
+          category: g.category,
+          district: g.district || "Cebu City",
+          coordinates: [longitude, latitude] as [number, number],
+          status: frontendStatus,
+          thumbnailUrl: g.thumbnailUrl,
+          rating: g.ratingsData?.averageRating || g.rating || 0,
+          vouchCount: g.vouchesData?.vouchCount || g.vouchCount || 0,
+          viewCount: g.viewCount || 0,
+          shortDescription: g.shortDescription,
+        } as MapGem;
+      })
+      .slice(0, 3); // Limit to 3
+
+    return relatedGems;
+  } catch (error) {
+    console.error("Error fetching related gems:", error);
+    return [];
+  }
 }
 
 export async function RelatedGems({ currentGem }: RelatedGemsProps) {

@@ -5,37 +5,34 @@ import { GemComment } from "@/types/gem-detail";
 import { User, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Avatar component with error handling
+function Avatar({ src, alt, className }: { src?: string; alt: string; className?: string }) {
+  const [hasError, setHasError] = useState(false);
+  
+  if (!src || hasError) {
+    return (
+      <div className={`w-10 h-10 rounded-full bg-primary-green/10 flex items-center justify-center flex-shrink-0 ${className || ''}`}>
+        <User className="w-5 h-5 text-primary-green" />
+      </div>
+    );
+  }
+  
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`w-10 h-10 rounded-full ${className || ''}`}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 interface GemCommentsProps {
   gemId: string;
 }
 
-// Mock comments data - TODO: Replace with API call
-const mockComments: GemComment[] = [
-  {
-    id: "comment-001",
-    userId: "user-001",
-    userName: "Maria Santos",
-    userAvatar: "/images/avatars/maria.jpg",
-    content:
-      "Beautiful place! A must-see when visiting Cebu. The history behind it is fascinating.",
-    createdAt: "2024-11-15T10:30:00Z",
-    vouchCount: 5,
-    isVouchedByCurrentUser: false,
-  },
-  {
-    id: "comment-002",
-    userId: "user-002",
-    userName: "Juan Dela Cruz",
-    content:
-      "Very crowded on weekends, but worth the visit. Try to go early in the morning.",
-    createdAt: "2024-11-10T14:20:00Z",
-    vouchCount: 3,
-    isVouchedByCurrentUser: false,
-  },
-];
-
 export function GemComments({ gemId }: GemCommentsProps) {
-  const [comments, setComments] = useState<GemComment[]>(mockComments);
+  const [comments, setComments] = useState<GemComment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -145,17 +142,7 @@ export function GemComments({ gemId }: GemCommentsProps) {
             >
               {/* Comment Header */}
               <div className="flex items-start gap-3 mb-2">
-                {comment.userAvatar ? (
-                  <img
-                    src={comment.userAvatar}
-                    alt={comment.userName}
-                    className="w-10 h-10 rounded-full"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary-green/10 flex items-center justify-center flex-shrink-0">
-                    <User className="w-5 h-5 text-primary-green" />
-                  </div>
-                )}
+                <Avatar src={comment.userAvatar} alt={comment.userName} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium text-text-primary">

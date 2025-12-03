@@ -14,14 +14,13 @@ import java.util.UUID;
 public interface GemRepository extends JpaRepository<Gem, UUID> {
 
     /**
-     * Find gem by ID with all related entities eagerly loaded for optimal performance
+     * Find gem by ID with photos and creator eagerly loaded.
+     * Note: Ratings and vouches are fetched separately to avoid MultipleBagFetchException.
      */
     @Query("""
             SELECT DISTINCT g FROM Gem g
             LEFT JOIN FETCH g.createdBy
             LEFT JOIN FETCH g.photos
-            LEFT JOIN FETCH g.ratings
-            LEFT JOIN FETCH g.vouches
             WHERE g.id = :id
             """)
     Optional<Gem> findByIdWithDetails(@Param("id") UUID id);
@@ -90,4 +89,15 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
             @Param("longitude") Double longitude,
             @Param("distanceMeters") Double distanceMeters
     );
+
+    /**
+     * Find all gems with photos and creator eagerly loaded for map display
+     */
+    @Query("""
+            SELECT DISTINCT g FROM Gem g
+            LEFT JOIN FETCH g.createdBy
+            LEFT JOIN FETCH g.photos
+            ORDER BY g.createdAt DESC
+            """)
+    List<Gem> findAllWithDetails();
 }

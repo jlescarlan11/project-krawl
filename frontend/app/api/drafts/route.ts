@@ -15,6 +15,7 @@ import type {
   SaveDraftRequest,
   SaveDraftResponse,
   ListDraftsResponse,
+  DeleteDraftResponse,
 } from "@/lib/types/draft";
 
 // Mock in-memory storage (replace with database in production)
@@ -65,6 +66,13 @@ function removeExpiredDrafts(userId: string): void {
   if (validDrafts.length !== userDrafts.length) {
     mockDraftStorage.set(userId, validDrafts);
   }
+}
+
+/**
+ * Delete all drafts for a user
+ */
+function deleteAllDrafts(userId: string): void {
+  mockDraftStorage.set(userId, []);
 }
 
 /**
@@ -230,6 +238,58 @@ export async function GET(request: NextRequest) {
         drafts: [],
         error: "Internal server error",
       } as ListDraftsResponse,
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/drafts
+ *
+ * Delete all drafts for the authenticated user
+ *
+ * Response:
+ * - success: boolean
+ * - message?: string
+ * - error?: string
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Check authentication
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "You must be signed in to delete drafts",
+        } as DeleteDraftResponse,
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+
+    // Delete all drafts
+    deleteAllDrafts(userId);
+
+    console.log(`[MOCK] Deleted all drafts for user: ${userId}`);
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "All drafts deleted successfully",
+      } as DeleteDraftResponse,
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting all drafts:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+        message: "An error occurred while deleting drafts",
+      } as DeleteDraftResponse,
       { status: 500 }
     );
   }

@@ -57,20 +57,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
+            String requestUri = request.getRequestURI();
             
             if (StringUtils.hasText(jwt)) {
+                // Log token preview for debugging (first 20 chars only)
+                String tokenPreview = jwt.length() > 20 ? jwt.substring(0, 20) + "..." : jwt;
+                log.debug("JWT token found in request: {} - Request URI: {}", tokenPreview, requestUri);
+                
                 try {
                     // Check blacklist first (fast fail)
                     if (tokenBlacklistService.isBlacklisted(jwt)) {
-                        log.debug("JWT token is blacklisted");
+                        log.warn("JWT token is blacklisted - Request URI: {}", requestUri);
                         SecurityContextHolder.clearContext();
                         filterChain.doFilter(request, response);
                         return;
                     }
                     
                     // Validate token and extract claims in one call
+                    log.debug("Validating JWT token for request: {}", requestUri);
                     Claims claims = jwtTokenService.validateToken(jwt);
                     String userId = claims.getSubject();
+                    log.debug("JWT token validated successfully for user: {}", userId);
                     
                     // Load user details
                     UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
@@ -86,24 +93,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     
                     // Set authentication in security context
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Authentication context set for user: {} - Request URI: {}", userId, requestUri);
                 } catch (AuthException e) {
                     // Invalid or expired token - clear security context
                     SecurityContextHolder.clearContext();
-                    log.debug("JWT authentication failed: {}", e.getMessage());
+                    log.warn("JWT authentication failed: {} - Request URI: {}", e.getMessage(), requestUri);
                     // Continue filter chain - Spring Security will handle unauthorized access
                 } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
                     // User not found in database
                     SecurityContextHolder.clearContext();
-                    log.warn("User not found during JWT authentication: {}", e.getMessage());
+                    log.warn("User not found during JWT authentication: {} - Request URI: {}", e.getMessage(), requestUri);
                     // Continue filter chain - Spring Security will handle unauthorized access
                 } catch (Exception e) {
                     // Unexpected error during authentication
-                    log.error("Unexpected error during JWT authentication", e);
+                    log.error("Unexpected error during JWT authentication - Request URI: {}", requestUri, e);
                     SecurityContextHolder.clearContext();
                 }
+            } else {
+                log.debug("No JWT token found in request - Request URI: {}", requestUri);
             }
         } catch (Exception e) {
-            log.error("Cannot set user authentication", e);
+            log.error("Cannot set user authentication - Request URI: {}", request.getRequestURI(), e);
             SecurityContextHolder.clearContext();
         }
         

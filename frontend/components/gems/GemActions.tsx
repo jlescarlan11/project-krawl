@@ -10,28 +10,44 @@ interface GemActionsProps {
 }
 
 export function GemActions({ gem }: GemActionsProps) {
-  const [isVouched, setIsVouched] = useState(false);
+  const [isVouched, setIsVouched] = useState(gem.vouchesData?.isVouchedByCurrentUser || false);
   const [vouchCount, setVouchCount] = useState(gem.vouchCount || 0);
   const [isVouching, setIsVouching] = useState(false);
 
   const handleVouch = async () => {
     setIsVouching(true);
 
+    // Optimistic update
+    const previousIsVouched = isVouched;
+    const previousVouchCount = vouchCount;
+    setIsVouched(!isVouched);
+    setVouchCount((prev) => (isVouched ? prev - 1 : prev + 1));
+
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/gems/${gem.id}/vouch`, { method: isVouched ? 'DELETE' : 'POST' });
+      const response = await fetch(`/api/gems/${gem.id}/vouch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      // Optimistic update
-      setIsVouched(!isVouched);
-      setVouchCount((prev) => (isVouched ? prev - 1 : prev + 1));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to toggle vouch: ${response.statusText}`);
+      }
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const data = await response.json();
+
+      // Update with actual response data
+      setIsVouched(data.isVouchedByCurrentUser ?? !previousIsVouched);
+      setVouchCount(data.vouchCount ?? previousVouchCount);
     } catch (error) {
       console.error("Error vouching gem:", error);
       // Revert on error
-      setIsVouched(isVouched);
-      setVouchCount(vouchCount);
+      setIsVouched(previousIsVouched);
+      setVouchCount(previousVouchCount);
+      // Optionally show error message to user
+      alert(error instanceof Error ? error.message : "Failed to toggle vouch. Please try again.");
     } finally {
       setIsVouching(false);
     }

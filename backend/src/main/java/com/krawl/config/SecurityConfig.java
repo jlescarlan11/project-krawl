@@ -51,6 +51,7 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/gems/**").permitAll() // Public gem endpoints
                 .requestMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )

@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -115,6 +116,38 @@ public class GemController {
         }
 
         return ResponseEntity.ok(gemDetail);
+    }
+
+    /**
+     * GET /api/gems
+     *
+     * Returns a list of all gems with basic information for map display.
+     * Public endpoint, no authentication required.
+     *
+     * @return List of GemDetailResponse with all gems
+     */
+    @Operation(
+            summary = "Get all Gems",
+            description = "Retrieves a list of all Gems with basic information including coordinates for map display."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Gems retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GemDetailResponse.class)
+                    )
+            )
+    })
+    @GetMapping
+    public ResponseEntity<List<GemDetailResponse>> getAllGems() {
+        log.debug("GET /api/gems");
+
+        UUID currentUserId = getCurrentUserId();
+        List<GemDetailResponse> gems = gemService.getAllGems(currentUserId);
+
+        return ResponseEntity.ok(gems);
     }
 
     /**
