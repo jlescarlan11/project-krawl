@@ -84,6 +84,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    /**
+     * Handles forbidden access exceptions.
+     *
+     * @param e ForbiddenException
+     * @return Error response with 403 Forbidden status
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException e) {
+        log.error("Forbidden access: {}", e.getMessage());
+        ErrorResponse error = ErrorResponse.builder()
+            .error("FORBIDDEN")
+            .message(e.getMessage())
+            .build();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
     
     /**
      * Handles all other unhandled exceptions.
