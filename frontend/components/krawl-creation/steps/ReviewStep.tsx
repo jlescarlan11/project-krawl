@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
+import { SaveDraftButton } from "../SaveDraftButton";
 import { RouteVisualizationMap } from "../RouteVisualizationMap";
 import { RouteOptimizationSuggestion } from "../RouteOptimizationSuggestion";
 import { formatDistance, formatDuration } from "@/lib/format";
@@ -374,18 +375,21 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
         </div>
       </div>
 
-      {/* Footer - Publish Button */}
+      {/* Footer - Publish Button and Save Draft */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handlePublish}
-          disabled={!canPublish || isPublishing}
-          loading={isPublishing}
-          className="w-full"
-        >
-          {isPublishing ? "Publishing..." : "Publish Krawl"}
-        </Button>
+        <div className="flex gap-3">
+          <SaveDraftButton />
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handlePublish}
+            disabled={!canPublish || isPublishing}
+            loading={isPublishing}
+            className="flex-1"
+          >
+            {isPublishing ? "Publishing..." : "Publish Krawl"}
+          </Button>
+        </div>
         {!termsAccepted && (
           <p className="text-sm text-error text-center mt-2">
             Please accept the Terms & Conditions to publish

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
+import { SaveDraftButton } from "../SaveDraftButton";
 import { MapGem } from "@/components/map/gem-types";
 import { ContextInjectionForm } from "../ContextInjectionForm";
 import { cn } from "@/lib/utils";
@@ -419,15 +420,18 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
 
       {/* Footer */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={!canProceed}
-          className="w-full"
-        >
-          Continue ({selectedGems.length}/{MIN_GEMS} gems)
-        </Button>
+        <div className="flex gap-3">
+          <SaveDraftButton />
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleContinue}
+            disabled={!canProceed}
+            className="flex-1"
+          >
+            Continue ({selectedGems.length}/{MIN_GEMS} gems)
+          </Button>
+        </div>
         {selectedGems.length < MIN_GEMS && (
           <p className="text-sm text-error text-center mt-2">
             Please add at least {MIN_GEMS} gems to continue

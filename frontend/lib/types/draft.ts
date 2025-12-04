@@ -1,8 +1,35 @@
 /**
  * Draft Types
  *
- * Type definitions for gem creation drafts
+ * Type definitions for gem and krawl creation drafts
  */
+
+/**
+ * Krawl draft data structure
+ */
+export interface KrawlDraftData {
+  // Basic info data (Step 1)
+  basicInfo?: {
+    name: string;
+    description: string;
+    category: string;
+    difficulty: string;
+    coverImage?: string; // Cloudinary URL
+  };
+
+  // Selected gems data (Step 2)
+  selectedGems?: Array<{
+    gemId: string;
+    gem: any; // MapGem type
+    creatorNote: string;
+    lokalSecret: string;
+    order: number;
+  }>;
+
+  // Form state
+  currentStep: number;
+  completedSteps: number[];
+}
 
 export interface DraftData {
   // Location data (Step 0)

@@ -11,6 +11,7 @@ import { Radio } from "@/components/ui/radio";
 import { FileUpload } from "@/components/ui/file-upload";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
+import { SaveDraftButton } from "../SaveDraftButton";
 import {
   validateKrawlName,
   validateKrawlDescription,
@@ -488,17 +489,20 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
         </div>
       </div>
 
-      {/* Footer - Continue Button */}
+      {/* Footer - Continue Button and Save Draft */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={!canProceed}
-          className="w-full"
-        >
-          Continue
-        </Button>
+        <div className="flex gap-3">
+          <SaveDraftButton />
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleContinue}
+            disabled={!canProceed}
+            className="flex-1"
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     </div>
   );
