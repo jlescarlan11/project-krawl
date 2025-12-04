@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Radio } from "@/components/ui/radio";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
 import {
@@ -15,8 +16,11 @@ import {
   validateKrawlDescription,
   validateKrawlCategory,
   validateKrawlDifficulty,
+  validateCoverImageFile,
+  validateCoverImageUrl,
   getCharacterCountColor,
 } from "@/lib/validation/krawl-validation";
+import { uploadSingleFile } from "@/lib/cloudinary/upload";
 import { GEM_CATEGORIES } from "@/lib/constants/gem-categories";
 import type { DifficultyLevel } from "@/lib/difficulty";
 
@@ -61,6 +65,13 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   const [difficulty, setDifficulty] = useState<DifficultyLevel | "">(
     (basicInfo?.difficulty as DifficultyLevel) || ""
   );
+  const [coverImageUrl, setCoverImageUrl] = useState(basicInfo?.coverImage || "");
+
+  // Cover image upload state
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
 
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -69,6 +80,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     description: false,
     category: false,
     difficulty: false,
+    coverImage: false,
   });
 
   /**
@@ -89,9 +101,12 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     const diffError = validateKrawlDifficulty(difficulty);
     if (diffError) newErrors.difficulty = diffError;
 
+    const coverImageError = validateCoverImageUrl(coverImageUrl);
+    if (coverImageError) newErrors.coverImage = coverImageError;
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [name, description, category, difficulty]);
+  }, [name, description, category, difficulty, coverImageUrl]);
 
   /**
    * Run validation on field changes (real-time)
@@ -99,6 +114,17 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
   useEffect(() => {
     validateFields();
   }, [validateFields]);
+
+  /**
+   * Cleanup preview URL on unmount
+   */
+  useEffect(() => {
+    return () => {
+      if (coverImagePreview) {
+        URL.revokeObjectURL(coverImagePreview);
+      }
+    };
+  }, [coverImagePreview]);
 
   /**
    * Handle field blur (mark as touched)
@@ -146,9 +172,102 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       description.trim().length >= 50 &&
       description.trim().length <= 500 &&
       category.trim().length > 0 &&
-      difficulty !== ""
+      difficulty !== "" &&
+      coverImageUrl.trim().length > 0 &&
+      !isUploadingCover
     );
-  }, [name, description, category, difficulty]);
+  }, [name, description, category, difficulty, coverImageUrl, isUploadingCover]);
+
+  /**
+   * Handle cover image file selection and upload
+   */
+  const handleCoverImageChange = useCallback(async (files: File[]) => {
+    if (files.length === 0) {
+      // Remove image
+      if (coverImagePreview) {
+        URL.revokeObjectURL(coverImagePreview);
+      }
+      setCoverImagePreview(null);
+      setCoverImageFile(null);
+      setCoverImageUrl("");
+      setUploadProgress(0);
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.coverImage;
+        return newErrors;
+      });
+      return;
+    }
+
+    const file = files[0];
+    setCoverImageFile(file);
+    setTouched((prev) => ({ ...prev, coverImage: true }));
+
+    // Validate file
+    const validationError = await validateCoverImageFile(file);
+    if (validationError) {
+      setErrors((prev) => ({ ...prev, coverImage: validationError }));
+      setCoverImageFile(null);
+      return;
+    }
+
+    // Create preview
+    const preview = URL.createObjectURL(file);
+    setCoverImagePreview(preview);
+
+    // Clear previous errors
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.coverImage;
+      return newErrors;
+    });
+
+    // Upload to Cloudinary
+    setIsUploadingCover(true);
+    setUploadProgress(0);
+
+    try {
+      const result = await uploadSingleFile(file, 0, {
+        onProgress: (progress) => {
+          setUploadProgress(progress.progress);
+        },
+        onError: (err) => {
+          setErrors((prev) => ({ ...prev, coverImage: err }));
+          setIsUploadingCover(false);
+          setUploadProgress(0);
+          URL.revokeObjectURL(preview);
+          setCoverImagePreview(null);
+          setCoverImageFile(null);
+        },
+      });
+
+      if (result.success) {
+        setCoverImageUrl(result.url);
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.coverImage;
+          return newErrors;
+        });
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          coverImage: result.error || "Upload failed",
+        }));
+        URL.revokeObjectURL(preview);
+        setCoverImagePreview(null);
+        setCoverImageFile(null);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Upload failed";
+      setErrors((prev) => ({ ...prev, coverImage: errorMessage }));
+      URL.revokeObjectURL(preview);
+      setCoverImagePreview(null);
+      setCoverImageFile(null);
+    } finally {
+      setIsUploadingCover(false);
+      setUploadProgress(0);
+    }
+  }, [coverImagePreview]);
 
   /**
    * Handle continue button click
@@ -157,7 +276,13 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     if (!canProceed) return;
 
     // Mark all fields as touched to show any remaining errors
-    setTouched({ name: true, description: true, category: true, difficulty: true });
+    setTouched({
+      name: true,
+      description: true,
+      category: true,
+      difficulty: true,
+      coverImage: true,
+    });
 
     // Validate one more time
     if (!validateFields()) return;
@@ -168,6 +293,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       description: description.trim(),
       category,
       difficulty: difficulty as DifficultyLevel,
+      coverImage: coverImageUrl,
     });
 
     // Navigate to next step
@@ -178,6 +304,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     description,
     category,
     difficulty,
+    coverImageUrl,
     setBasicInfo,
     onNext,
     validateFields,
@@ -277,6 +404,27 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
                 {description.length}/500
               </span>
             </div>
+          </div>
+
+          {/* Cover Image Upload */}
+          <div className="space-y-2">
+            <FileUpload
+              label="Cover Image"
+              required
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              maxSize={5 * 1024 * 1024}
+              singleImageMode={true}
+              imagePreviewHeight="h-48"
+              showChangeButton={true}
+              showRemoveButton={true}
+              onFilesChange={handleCoverImageChange}
+              error={shouldShowError("coverImage") ? errors.coverImage : undefined}
+              helperText="PNG, JPG, WebP up to 5MB. Recommended: 16:9 aspect ratio"
+              disabled={isUploadingCover}
+              uploadProgress={uploadProgress}
+              isUploading={isUploadingCover}
+              previewUrl={coverImageUrl || coverImagePreview || undefined}
+            />
           </div>
 
           {/* Category Selection */}

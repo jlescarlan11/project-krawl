@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import { ArrowLeft, Edit2, MapPin, Clock, Route } from "lucide-react";
+import { ArrowLeft, Edit2, MapPin, Clock, Route, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
@@ -22,6 +22,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
   const { basicInfo, selectedGems, setCurrentStep, reorderGems } = useKrawlCreationStore();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [coverImageError, setCoverImageError] = useState(false);
   const [routeMetrics, setRouteMetrics] = useState<{
     distance: number;
     duration: number;
@@ -234,13 +235,28 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
             </div>
             {basicInfo && (
               <div className="bg-bg-light rounded-lg p-4 space-y-3">
-                {/* Cover Image Placeholder */}
-                <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-text-tertiary">
-                    <div className="text-4xl mb-2">🏔️</div>
-                    <p className="text-sm">Cover Image</p>
+                {/* Cover Image */}
+                {basicInfo.coverImage && !coverImageError ? (
+                  <div className="w-full h-48 bg-bg-light rounded-lg overflow-hidden">
+                    <img
+                      src={basicInfo.coverImage}
+                      alt={`Cover image for ${basicInfo.name}`}
+                      className="w-full h-full object-cover"
+                      onError={() => {
+                        setCoverImageError(true);
+                      }}
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <div className="text-center text-text-tertiary">
+                      <ImageIcon className="w-8 h-8 mx-auto mb-2" />
+                      <p className="text-sm">
+                        {coverImageError ? "Failed to load cover image" : "No cover image"}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Krawl Name */}
                 <h4 className="text-lg font-bold text-text-primary">

@@ -13,6 +13,7 @@ export interface KrawlBasicInfo {
   description: string;
   category: string;
   difficulty: string;
+  coverImage?: string; // Cloudinary URL
 }
 
 /**
@@ -246,7 +247,9 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
                 basicInfo.category &&
                 basicInfo.category.trim() !== "" &&
                 basicInfo.difficulty &&
-                basicInfo.difficulty.trim() !== ""
+                basicInfo.difficulty.trim() !== "" &&
+                basicInfo.coverImage &&
+                basicInfo.coverImage.trim() !== ""
               );
             case 1: // Gem Selection step
               return (
