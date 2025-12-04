@@ -10,6 +10,7 @@ import { KrawlComments } from "@/components/krawls/KrawlComments";
 import { KrawlActions } from "@/components/krawls/KrawlActions";
 import { KrawlCreator } from "@/components/krawls/KrawlCreator";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * Fetch krawl detail from API
@@ -93,6 +94,7 @@ export default async function KrawlDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
   const krawl = await fetchKrawlById(id);
 
   // Handle 404
@@ -151,7 +153,7 @@ export default async function KrawlDetailPage({
 
             {/* Right Column - Sidebar (1/3 width on desktop) */}
             <div className="lg:col-span-1 space-y-6">
-              <KrawlRatingsVouches krawl={krawl} isAuthenticated={false} />
+              <KrawlRatingsVouches krawl={krawl} isAuthenticated={!!session?.jwt} />
               <KrawlActions krawl={krawl} />
               <KrawlCreator krawl={krawl} />
             </div>
