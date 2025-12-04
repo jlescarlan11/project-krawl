@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
-// Import other steps when created (Step 2: Gem Selection, Step 3: Review)
+import { GemSelectionStep } from "./steps/GemSelectionStep";
+import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
+// Import Step 3: Review when implemented
 
 /**
  * KrawlCreationFlow Component
@@ -18,13 +19,18 @@ import { BasicInfoStep } from "./steps/BasicInfoStep";
  */
 export function KrawlCreationFlow() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
+  const { currentStep, setCurrentStep, validateCurrentStep } =
+    useKrawlCreationStore();
 
   const handleNext = () => {
+    if (!validateCurrentStep()) {
+      return; // Don't proceed if validation fails
+    }
+
     if (currentStep < 2) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle final submission (to be implemented)
+      // Handle final submission (to be implemented in Step 3)
       router.push("/krawls");
     }
   };
@@ -51,8 +57,9 @@ export function KrawlCreationFlow() {
       {currentStep === 0 && (
         <BasicInfoStep onNext={handleNext} onBack={handleCancel} />
       )}
-      {/* Add other steps here when implemented */}
-      {/* {currentStep === 1 && <GemSelectionStep onNext={handleNext} onBack={handleBack} />} */}
+      {currentStep === 1 && (
+        <GemSelectionStep onNext={handleNext} onBack={handleBack} />
+      )}
       {/* {currentStep === 2 && <ReviewStep onNext={handleNext} onBack={handleBack} />} */}
     </div>
   );

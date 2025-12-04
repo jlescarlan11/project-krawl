@@ -166,6 +166,8 @@ public class KrawlService {
                 .thumbnailUrl(gem.getThumbnailUrl())
                 .rating(gemRating)
                 .order(krawlGem.getOrder())
+                .creatorNote(krawlGem.getCreatorNote())
+                .lokalSecret(krawlGem.getLokalSecret())
                 .build();
     }
 

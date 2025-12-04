@@ -35,6 +35,12 @@ public class KrawlGem {
 
     @Column(name = "order", nullable = false)
     private Integer order;
+
+    @Column(name = "creator_note", nullable = false, columnDefinition = "TEXT")
+    private String creatorNote;
+
+    @Column(name = "lokal_secret", nullable = false, columnDefinition = "TEXT")
+    private String lokalSecret;
 }
 
 

@@ -18,6 +18,8 @@ public class KrawlGemResponse {
     private String thumbnailUrl;
     private Double rating;
     private Integer order; // Order in the Krawl sequence
+    private String creatorNote; // Practical logistics information
+    private String lokalSecret; // Insider tip
 }
 
 

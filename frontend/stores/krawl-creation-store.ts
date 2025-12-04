@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { safeLocalStorage } from "./utils";
+import type { MapGem } from "@/components/map/gem-types";
 
 /**
  * Basic information data for Step 1
@@ -15,12 +16,26 @@ export interface KrawlBasicInfo {
 }
 
 /**
+ * Selected Gem with context information
+ */
+export interface SelectedGem {
+  gemId: string;
+  gem: MapGem;
+  creatorNote: string;
+  lokalSecret: string;
+  order: number; // Sequence order in krawl
+}
+
+/**
  * Krawl Creation State
  * Stores form data across all steps with localStorage persistence
  */
 interface KrawlCreationState {
   // Step 1: Basic Info
   basicInfo: KrawlBasicInfo | null;
+
+  // Step 2: Selected Gems
+  selectedGems: SelectedGem[];
 
   // Flow state
   currentStep: number;
@@ -36,6 +51,11 @@ interface KrawlCreationState {
  */
 interface KrawlCreationActions {
   setBasicInfo: (info: KrawlBasicInfo | null) => void;
+  addGem: (gem: MapGem, creatorNote: string, lokalSecret: string) => void;
+  removeGem: (gemId: string) => void;
+  updateGemContext: (gemId: string, creatorNote: string, lokalSecret: string) => void;
+  reorderGems: (gemIds: string[]) => void;
+  clearSelectedGems: () => void;
   setCurrentStep: (step: number) => void;
   markStepCompleted: (step: number) => void;
   clearForm: () => void;
@@ -52,6 +72,7 @@ type KrawlCreationStore = KrawlCreationState & KrawlCreationActions;
  */
 const defaultState: KrawlCreationState = {
   basicInfo: null,
+  selectedGems: [],
   currentStep: 0,
   completedSteps: [],
   lastSavedAt: null,
@@ -117,6 +138,78 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
           });
         },
 
+        addGem: (gem, creatorNote, lokalSecret) => {
+          const { selectedGems } = get();
+          // Check if gem already exists
+          if (selectedGems.some((g) => g.gemId === gem.id)) {
+            return; // Prevent duplicates
+          }
+
+          const newGem: SelectedGem = {
+            gemId: gem.id,
+            gem,
+            creatorNote: creatorNote.trim(),
+            lokalSecret: lokalSecret.trim(),
+            order: selectedGems.length, // Auto-assign order
+          };
+
+          set({
+            selectedGems: [...selectedGems, newGem],
+            lastSavedAt: new Date().toISOString(),
+          });
+        },
+
+        removeGem: (gemId) => {
+          const { selectedGems } = get();
+          const filtered = selectedGems
+            .filter((g) => g.gemId !== gemId)
+            .map((g, index) => ({ ...g, order: index })); // Reorder
+
+          set({
+            selectedGems: filtered,
+            lastSavedAt: new Date().toISOString(),
+          });
+        },
+
+        updateGemContext: (gemId, creatorNote, lokalSecret) => {
+          const { selectedGems } = get();
+          set({
+            selectedGems: selectedGems.map((g) =>
+              g.gemId === gemId
+                ? {
+                    ...g,
+                    creatorNote: creatorNote.trim(),
+                    lokalSecret: lokalSecret.trim(),
+                  }
+                : g
+            ),
+            lastSavedAt: new Date().toISOString(),
+          });
+        },
+
+        reorderGems: (gemIds) => {
+          const { selectedGems } = get();
+          const gemMap = new Map(selectedGems.map((g) => [g.gemId, g]));
+          const reordered = gemIds
+            .map((id, index) => {
+              const gem = gemMap.get(id);
+              return gem ? { ...gem, order: index } : null;
+            })
+            .filter((g): g is SelectedGem => g !== null);
+
+          set({
+            selectedGems: reordered,
+            lastSavedAt: new Date().toISOString(),
+          });
+        },
+
+        clearSelectedGems: () => {
+          set({
+            selectedGems: [],
+            lastSavedAt: new Date().toISOString(),
+          });
+        },
+
         setCurrentStep: (step) => {
           set({ currentStep: step });
         },
@@ -138,7 +231,7 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
         },
 
         validateCurrentStep: () => {
-          const { currentStep, basicInfo } = get();
+          const { currentStep, basicInfo, selectedGems } = get();
 
           switch (currentStep) {
             case 0: // Basic Info step
@@ -155,6 +248,17 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
                 basicInfo.difficulty &&
                 basicInfo.difficulty.trim() !== ""
               );
+            case 1: // Gem Selection step
+              return (
+                selectedGems.length >= 2 &&
+                selectedGems.every(
+                  (gem) =>
+                    gem.creatorNote.trim().length >= 10 &&
+                    gem.creatorNote.trim().length <= 500 &&
+                    gem.lokalSecret.trim().length >= 10 &&
+                    gem.lokalSecret.trim().length <= 500
+                )
+              );
             default:
               return false;
           }
@@ -166,6 +270,7 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
         // Only persist form data, not UI state
         partialize: (state) => ({
           basicInfo: state.basicInfo || null,
+          selectedGems: state.selectedGems || [],
           completedSteps: state.completedSteps,
           lastSavedAt: state.lastSavedAt,
         }),
