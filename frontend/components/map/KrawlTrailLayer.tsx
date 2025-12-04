@@ -44,6 +44,12 @@ export interface KrawlTrailLayerProps {
    * Callback when trails are loaded
    */
   onTrailsLoad?: (krawls: MapKrawl[]) => void;
+
+  /**
+   * Optional: Direct Krawl data to display (avoids API fetch)
+   * If provided, this krawl will be used instead of fetching from API
+   */
+  krawl?: MapKrawl | null;
 }
 
 /**
@@ -59,15 +65,19 @@ export function KrawlTrailLayer({
   routingProfile = 'walking',
   onTrailClick,
   onTrailsLoad,
+  krawl,
 }: KrawlTrailLayerProps) {
   const [layersAdded, setLayersAdded] = useState(false);
   const [isProcessingRoutes, setIsProcessingRoutes] = useState(false);
 
-  // Fetch Krawls
-  const { krawls, isLoading, error } = useKrawlTrails({
+  // Fetch Krawls (only if krawl prop not provided)
+  const { krawls: fetchedKrawls, isLoading, error } = useKrawlTrails({
     selectedKrawlId,
-    enabled: showTrails,
+    enabled: showTrails && !krawl, // Disable fetch if krawl prop provided
   });
+
+  // Use provided krawl or fetched krawls
+  const krawls = krawl ? [krawl] : fetchedKrawls;
 
   // Notify when trails are loaded
   const onTrailsLoadRef = React.useRef(onTrailsLoad);
@@ -89,7 +99,9 @@ export function KrawlTrailLayer({
 
   // Add trails to map
   useEffect(() => {
-    if (!map || !showTrails || isLoading || krawls.length === 0) {
+    // If krawl prop is provided, don't wait for loading state
+    const shouldWaitForLoad = !krawl && isLoading;
+    if (!map || !showTrails || shouldWaitForLoad || krawls.length === 0) {
       return;
     }
 
@@ -171,8 +183,45 @@ export function KrawlTrailLayer({
         });
       }
 
-      // Add direction arrows layer (optional enhancement)
+      // Add direction arrows layer
       const arrowLayerId = 'krawl-trail-arrows';
+      const arrowIconId = 'krawl-trail-arrow-icon';
+      
+      // Load arrow icon if not already loaded
+      if (!map.hasImage(arrowIconId)) {
+        // Create arrow icon using canvas
+        const size = 24;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          // Draw arrow pointing right
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          // Arrow body (horizontal line)
+          ctx.beginPath();
+          ctx.moveTo(4, size / 2);
+          ctx.lineTo(size - 4, size / 2);
+          ctx.stroke();
+          
+          // Arrow head (pointing right)
+          ctx.beginPath();
+          ctx.moveTo(size - 4, size / 2);
+          ctx.lineTo(size - 10, 6);
+          ctx.moveTo(size - 4, size / 2);
+          ctx.lineTo(size - 10, size - 6);
+          ctx.stroke();
+          
+          map.addImage(arrowIconId, canvas);
+        }
+      }
+      
+      // Add arrow layer if it doesn't exist
       if (!map.getLayer(arrowLayerId)) {
         map.addLayer({
           id: arrowLayerId,
@@ -181,15 +230,20 @@ export function KrawlTrailLayer({
           layout: {
             'symbol-placement': 'line',
             'symbol-spacing': DEFAULT_TRAIL_STYLE.directionArrowSpacing || 50,
-            'icon-image': 'arrow', // Use built-in arrow icon if available
-            'icon-size': 0.5,
-            'icon-rotate': 90,
+            'icon-image': arrowIconId,
+            'icon-size': 0.8,
+            'icon-rotate': 90, // Rotate to point along line direction
             'icon-rotation-alignment': 'map',
             'icon-allow-overlap': true,
             'icon-ignore-placement': true,
           },
           paint: {
-            'icon-opacity': 0.6,
+            'icon-opacity': [
+              'case',
+              ['==', ['get', 'id'], selectedKrawlId || ''],
+              0.8,
+              0.5,
+            ],
           },
         });
       }
@@ -252,7 +306,7 @@ export function KrawlTrailLayer({
     return () => {
       removeTrailLayers();
     };
-  }, [map, krawls, isLoading, showTrails, selectedKrawlId, routingProfile]);
+  }, [map, krawls, isLoading, showTrails, selectedKrawlId, routingProfile, krawl]);
 
   // Update trail styling when selection changes
   useEffect(() => {
@@ -272,6 +326,17 @@ export function KrawlTrailLayer({
         ['==', ['get', 'id'], selectedKrawlId || ''],
         DEFAULT_TRAIL_STYLE.selectedLineOpacity,
         DEFAULT_TRAIL_STYLE.lineOpacity,
+      ]);
+    }
+
+    // Update arrow opacity when selection changes
+    const arrowLayerId = 'krawl-trail-arrows';
+    if (map.getLayer(arrowLayerId)) {
+      map.setPaintProperty(arrowLayerId, 'icon-opacity', [
+        'case',
+        ['==', ['get', 'id'], selectedKrawlId || ''],
+        0.8,
+        0.5,
       ]);
     }
   }, [map, selectedKrawlId, layersAdded]);

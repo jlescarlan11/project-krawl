@@ -159,6 +159,12 @@ export interface MapWithBoundaryProps extends Omit<MapProps, 'onLoad'> {
    * Callback when Krawl trails are loaded
    */
   onKrawlTrailsLoad?: (krawls: MapKrawl[]) => void;
+
+  /**
+   * Optional: Direct Krawl data to display (avoids API fetch)
+   * If provided, this krawl will be used instead of fetching from API
+   */
+  krawl?: MapKrawl | null;
 }
 
 /**
@@ -192,6 +198,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       selectedKrawlId,
       onKrawlTrailClick,
       onKrawlTrailsLoad,
+      krawl,
       onLoad,
       onBoundaryError,
       ...mapProps
@@ -376,6 +383,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
             showTrails={showKrawlTrails}
             onTrailClick={onKrawlTrailClick}
             onTrailsLoad={onKrawlTrailsLoad}
+            krawl={krawl}
           />
         )}
         {showGemMarkers && (
