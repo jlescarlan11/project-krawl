@@ -1,8 +1,9 @@
 "use client";
 
-import { Upload, X, XCircle, FileImage } from "lucide-react";
-import { useState, useRef, useId, DragEvent } from "react";
+import { Upload, X, XCircle, FileImage, Loader2 } from "lucide-react";
+import { useState, useRef, useId, DragEvent, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
 
 /**
  * File upload component with drag-and-drop support, validation, and file preview.
@@ -35,6 +36,13 @@ export interface FileUploadProps {
   required?: boolean;
   fullWidth?: boolean;
   customIcon?: React.ReactNode;
+  singleImageMode?: boolean; // Enable large preview for single image
+  imagePreviewHeight?: string; // Height class for preview (default "h-48")
+  showChangeButton?: boolean; // Show "Change Image" button on preview
+  showRemoveButton?: boolean; // Show remove button on preview
+  uploadProgress?: number; // Upload progress 0-100 (for external upload tracking)
+  isUploading?: boolean; // Whether upload is in progress
+  previewUrl?: string; // External preview URL (for Cloudinary URLs)
 }
 
 export function FileUpload({
@@ -50,14 +58,25 @@ export function FileUpload({
   required = false,
   fullWidth = true,
   customIcon,
+  singleImageMode = false,
+  imagePreviewHeight = "h-48",
+  showChangeButton = true,
+  showRemoveButton = true,
+  uploadProgress = 0,
+  isUploading = false,
+  previewUrl: externalPreviewUrl,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const fileUploadId = `file-upload-${generatedId}`;
   const hasError = !!error || !!uploadError;
+  
+  // Use external preview URL if provided, otherwise use local preview
+  const previewUrl = externalPreviewUrl || localPreviewUrl;
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -166,6 +185,41 @@ export function FileUpload({
     return file.type.startsWith("image/");
   };
 
+  // Generate preview URL for single image mode
+  useEffect(() => {
+    if (singleImageMode && !multiple && files.length > 0) {
+      const file = files[0];
+      if (isImageFile(file)) {
+        const url = URL.createObjectURL(file);
+        setLocalPreviewUrl(url);
+        return () => {
+          URL.revokeObjectURL(url);
+        };
+      }
+    } else if (singleImageMode && files.length === 0) {
+      setLocalPreviewUrl(null);
+    }
+  }, [files, singleImageMode, multiple]);
+
+  // Handle change image button
+  const handleChangeImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Handle remove image
+  const handleRemoveImage = () => {
+    if (localPreviewUrl) {
+      URL.revokeObjectURL(localPreviewUrl);
+      setLocalPreviewUrl(null);
+    }
+    setFiles([]);
+    onFilesChange?.([]);
+    setUploadError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className={cn("space-y-2", fullWidth && "w-full")}>
       {label && (
@@ -189,9 +243,10 @@ export function FileUpload({
           !hasError &&
             !isDragging &&
             "border-bg-medium hover:border-primary-green hover:bg-bg-light",
-          disabled && "opacity-60 cursor-not-allowed"
+          disabled && "opacity-60 cursor-not-allowed",
+          isUploading && "pointer-events-none"
         )}
-        onClick={() => !disabled && fileInputRef.current?.click()}
+        onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
       >
         <input
           ref={fileInputRef}
@@ -220,14 +275,29 @@ export function FileUpload({
             )}
           />
         )}
-        <p
-          className={cn(
-            "text-sm font-medium mb-1",
-            hasError ? "text-error" : "text-text-primary"
-          )}
-        >
-          {isDragging ? "Drop files here" : "Click to upload or drag and drop"}
-        </p>
+        {!isUploading ? (
+          <p
+            className={cn(
+              "text-sm font-medium mb-1",
+              hasError ? "text-error" : "text-text-primary"
+            )}
+          >
+            {isDragging ? "Drop files here" : "Click to upload or drag and drop"}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary-green" />
+            <p className="text-sm font-medium text-text-primary">
+              Uploading... {uploadProgress}%
+            </p>
+            <div className="w-full bg-bg-medium rounded-full h-2">
+              <div
+                className="bg-primary-green h-2 rounded-full transition-all"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
         <p className="text-xs text-text-secondary">
           {accept && `Accepted: ${accept}`}
           {maxSize && ` • Max size: ${formatFileSize(maxSize)}`}
@@ -235,7 +305,64 @@ export function FileUpload({
         </p>
       </div>
 
-      {files.length > 0 && (
+      {/* Single Image Mode Preview */}
+      {singleImageMode && !multiple && previewUrl && (
+        <div className="relative group">
+          <div className={cn("relative w-full bg-bg-light rounded-lg overflow-hidden", imagePreviewHeight)}>
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              onError={() => {
+                setUploadError("Failed to load image preview");
+              }}
+            />
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="text-center space-y-2">
+                  <Loader2 className="w-8 h-8 mx-auto animate-spin text-white" />
+                  <p className="text-sm text-white">Uploading... {uploadProgress}%</p>
+                  <div className="w-48 bg-white/20 rounded-full h-2">
+                    <div
+                      className="bg-primary-green h-2 rounded-full transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          {!isUploading && (showChangeButton || showRemoveButton) && (
+            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {showChangeButton && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleChangeImage}
+                  disabled={disabled}
+                >
+                  Change Image
+                </Button>
+              )}
+              {showRemoveButton && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleRemoveImage}
+                  disabled={disabled}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Standard File List (when not in single image mode or multiple files) */}
+      {!singleImageMode && files.length > 0 && (
         <div className="space-y-2">
           {files.map((file, index) => (
             <div

@@ -127,3 +127,81 @@ export function getCharacterCountColor(
   return "text-text-secondary";
 }
 
+/**
+ * Validate cover image file
+ *
+ * Rules:
+ * - Must be image/jpeg, image/png, or image/webp
+ * - Maximum 5MB file size
+ * - Recommended 16:9 aspect ratio (with tolerance - shows warning but doesn't block)
+ *
+ * @param file - File to validate
+ * @returns Promise resolving to error message or null if valid
+ */
+export async function validateCoverImageFile(
+  file: File
+): Promise<string | null> {
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const RECOMMENDED_ASPECT_RATIO = 16 / 9;
+  const ASPECT_RATIO_TOLERANCE = 0.2; // 20% tolerance
+
+  // Validate file type
+  if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+    return "Invalid file type. Only JPG, PNG, and WebP allowed";
+  }
+
+  // Validate file size
+  if (file.size > MAX_SIZE) {
+    return "File size must be less than 5MB";
+  }
+
+  // Validate aspect ratio (async - needs to load image)
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const aspectRatio = img.width / img.height;
+      const ratioDiff = Math.abs(aspectRatio - RECOMMENDED_ASPECT_RATIO);
+
+      if (ratioDiff > ASPECT_RATIO_TOLERANCE) {
+        // Warning but doesn't block - return null to allow upload
+        // The warning can be shown in the UI separately
+        resolve(null);
+      } else {
+        resolve(null);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve("Failed to load image. Please try a different file.");
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+/**
+ * Validate cover image URL
+ *
+ * @param url - Cover image URL to validate
+ * @returns Error message or null if valid
+ */
+export function validateCoverImageUrl(url: string): string | null {
+  if (!url || url.trim() === "") {
+    return "Cover image is required";
+  }
+
+  // Basic URL validation
+  try {
+    new URL(url);
+  } catch {
+    return "Invalid cover image URL";
+  }
+
+  return null;
+}
+
