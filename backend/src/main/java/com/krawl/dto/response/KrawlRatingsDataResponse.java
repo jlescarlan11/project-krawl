@@ -15,3 +15,4 @@ public class KrawlRatingsDataResponse {
     private RatingBreakdownResponse breakdown;
 }
 
+

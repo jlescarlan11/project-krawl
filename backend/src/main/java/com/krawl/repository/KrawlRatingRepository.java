@@ -15,3 +15,4 @@ public interface KrawlRatingRepository extends JpaRepository<KrawlRating, UUID> 
     boolean existsByKrawlIdAndUserId(UUID krawlId, UUID userId);
 }
 
+

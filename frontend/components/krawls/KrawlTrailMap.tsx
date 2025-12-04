@@ -120,14 +120,11 @@ export function KrawlTrailMap({ krawl }: KrawlTrailMapProps) {
       <div className="w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden relative">
         <MapWithBoundary
           ref={mapRef}
-          initialViewState={{
-            longitude: lng,
-            latitude: lat,
-            zoom: 15,
-          }}
+          initialCenter={[lng, lat]}
+          initialZoom={15}
           showKrawlTrails={false}
           showGemMarkers={true}
-          style={{ width: "100%", height: "100%" }}
+          containerStyle={{ width: "100%", height: "100%" }}
           onLoad={handleMapLoad}
           krawl={mapKrawl}
         />
@@ -171,15 +168,12 @@ export function KrawlTrailMap({ krawl }: KrawlTrailMapProps) {
     <div className="w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden relative">
       <MapWithBoundary
         ref={mapRef}
-        initialViewState={{
-          longitude: centerLng,
-          latitude: centerLat,
-          zoom: zoom,
-        }}
+        initialCenter={[centerLng, centerLat]}
+        initialZoom={zoom}
         showKrawlTrails={true}
         selectedKrawlId={krawl.id}
         showGemMarkers={true}
-        style={{ width: "100%", height: "100%" }}
+        containerStyle={{ width: "100%", height: "100%" }}
         onLoad={handleMapLoad}
         krawl={mapKrawl}
         onKrawlTrailClick={(krawl) => {

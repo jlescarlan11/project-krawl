@@ -26,3 +26,4 @@ public interface KrawlVouchRepository extends JpaRepository<KrawlVouch, UUID> {
     boolean existsByKrawlIdAndUserId(UUID krawlId, UUID userId);
 }
 
+

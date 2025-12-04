@@ -100,3 +100,4 @@ CREATE TABLE krawl_vouches (
 CREATE INDEX idx_krawl_vouch_krawl_id ON krawl_vouches(krawl_id);
 CREATE INDEX idx_krawl_vouch_user_id ON krawl_vouches(user_id);
 
+

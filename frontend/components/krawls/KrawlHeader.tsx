@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useKrawlRouteMetrics } from "./useKrawlRouteMetrics";
 import { formatDuration, formatDurationFromMinutes, formatDistance } from "@/lib/format";
 import { DifficultyBadge } from "@/components/ui/difficulty-badge";
+import { Spinner } from "@/components/ui/spinner";
 
 interface KrawlHeaderProps {
   krawl: KrawlDetail;
@@ -18,6 +19,8 @@ const UNIT_PREFERENCE_KEY = 'krawl:unit-system';
 export function KrawlHeader({ krawl }: KrawlHeaderProps) {
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
   
   // Unit system preference (default to metric, stored in localStorage)
   const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>(() => {
@@ -82,13 +85,37 @@ export function KrawlHeader({ krawl }: KrawlHeaderProps) {
       {/* Cover Image */}
       <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px]">
         {krawl.coverImage ? (
-          <Image
-            src={krawl.coverImage}
-            alt={krawl.name}
-            fill
-            className="object-cover"
-            priority
-          />
+          <>
+            {/* Loading Spinner */}
+            {imageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-bg-light z-0">
+                <Spinner size="lg" aria-label="Loading cover image" />
+              </div>
+            )}
+            
+            {/* Image */}
+            <Image
+              src={krawl.coverImage}
+              alt={krawl.name}
+              fill
+              className={`object-cover transition-opacity duration-300 ${
+                imageLoading ? "opacity-0" : "opacity-100"
+              }`}
+              priority
+              onLoad={() => setImageLoading(false)}
+              onError={() => {
+                setImageLoading(false);
+                setImageError(true);
+              }}
+            />
+            
+            {/* Error State */}
+            {imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-green/20 to-accent-orange/20">
+                <p className="text-text-secondary text-sm">Failed to load image</p>
+              </div>
+            )}
+          </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary-green/20 to-accent-orange/20" />
         )}
