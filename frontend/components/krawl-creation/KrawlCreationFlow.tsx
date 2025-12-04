@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { GemSelectionStep } from "./steps/GemSelectionStep";
+import { ReviewStep } from "./steps/ReviewStep";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-// Import Step 3: Review when implemented
 
 /**
  * KrawlCreationFlow Component
@@ -14,8 +14,8 @@ import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
  *
  * Steps:
  * - Step 1: Basic Info (name, description, category, difficulty)
- * - Step 2: Gem Selection (to be implemented)
- * - Step 3: Review & Publish (to be implemented)
+ * - Step 2: Gem Selection
+ * - Step 3: Review & Publish
  */
 export function KrawlCreationFlow() {
   const router = useRouter();
@@ -23,14 +23,13 @@ export function KrawlCreationFlow() {
     useKrawlCreationStore();
 
   const handleNext = () => {
-    if (!validateCurrentStep()) {
-      return; // Don't proceed if validation fails
-    }
-
     if (currentStep < 2) {
+      if (!validateCurrentStep()) {
+        return; // Don't proceed if validation fails
+      }
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle final submission (to be implemented in Step 3)
+      // Step 3 handles its own submission, so just navigate to krawls list on success
       router.push("/krawls");
     }
   };
@@ -60,7 +59,9 @@ export function KrawlCreationFlow() {
       {currentStep === 1 && (
         <GemSelectionStep onNext={handleNext} onBack={handleBack} />
       )}
-      {/* {currentStep === 2 && <ReviewStep onNext={handleNext} onBack={handleBack} />} */}
+      {currentStep === 2 && (
+        <ReviewStep onNext={handleNext} onBack={handleBack} />
+      )}
     </div>
   );
 }
