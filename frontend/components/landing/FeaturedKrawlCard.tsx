@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 import type { FeaturedKrawl } from "./types";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 
 interface FeaturedKrawlCardProps {
   className?: string;
@@ -19,20 +20,6 @@ const formatDuration = (minutes?: number) => {
     return `${hours}h ${mins}m`;
   }
   return `${mins}m`;
-};
-
-const difficultyColor = (difficulty?: string) => {
-  switch (difficulty?.toLowerCase()) {
-    case "easy":
-      return "bg-primary-green/20 text-primary-green";
-    case "moderate":
-    case "medium":
-      return "bg-yellow-100 text-yellow-600";
-    case "hard":
-      return "bg-red-100 text-red-600";
-    default:
-      return "bg-bg-medium/30 text-text-primary";
-  }
 };
 
 export function FeaturedKrawlCard({ className, krawl }: FeaturedKrawlCardProps) {
@@ -56,9 +43,7 @@ export function FeaturedKrawlCard({ className, krawl }: FeaturedKrawlCardProps) 
         <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.4em] text-text-tertiary/70">
             <span className="text-[0.65rem] uppercase tracking-[0.5em]">Featured</span>
-            <span className={cn("rounded-full px-3 py-1 text-[0.6rem] font-semibold", difficultyColor(krawl.difficulty))}>
-              {krawl.difficulty ?? "Unknown"}
-            </span>
+            <DifficultyBadge difficulty={krawl.difficulty} size="sm" variant="subtle" />
           </div>
           <h3 className="text-lg font-semibold leading-tight text-text-primary line-clamp-2">
             {krawl.name}

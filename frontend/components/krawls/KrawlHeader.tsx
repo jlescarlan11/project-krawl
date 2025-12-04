@@ -7,17 +7,11 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useKrawlRouteMetrics } from "./useKrawlRouteMetrics";
 import { formatDuration, formatDurationFromMinutes, formatDistance } from "@/lib/format";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 
 interface KrawlHeaderProps {
   krawl: KrawlDetail;
 }
-
-const difficultyColors = {
-  EASY: "bg-green-100 text-green-700",
-  MODERATE: "bg-yellow-100 text-yellow-700",
-  HARD: "bg-red-100 text-red-700",
-  MEDIUM: "bg-yellow-100 text-yellow-700", // Alias for MODERATE
-};
 
 const UNIT_PREFERENCE_KEY = 'krawl:unit-system';
 
@@ -146,16 +140,7 @@ export function KrawlHeader({ krawl }: KrawlHeaderProps) {
               {krawl.category}
             </span>
           )}
-          {krawl.difficulty && (
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                difficultyColors[krawl.difficulty.toUpperCase() as keyof typeof difficultyColors] ||
-                "bg-gray-100 text-gray-700"
-              }`}
-            >
-              {krawl.difficulty}
-            </span>
-          )}
+          <DifficultyBadge difficulty={krawl.difficulty} size="md" />
         </div>
 
         {/* Krawl Name */}
