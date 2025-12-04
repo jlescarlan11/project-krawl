@@ -1,0 +1,23 @@
+package com.krawl.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class KrawlVouchesDataResponse {
+    private Integer vouchCount;
+
+    @Builder.Default
+    private List<KrawlVouchResponse> vouches = new ArrayList<>();
+
+    private Boolean isVouchedByCurrentUser;
+}
+

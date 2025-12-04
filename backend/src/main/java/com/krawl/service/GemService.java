@@ -6,14 +6,14 @@ import com.krawl.dto.request.UpdateGemRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.GemPhoto;
+import com.krawl.entity.GemVouch;
 import com.krawl.entity.User;
-import com.krawl.entity.Vouch;
 import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.GemPhotoRepository;
 import com.krawl.repository.GemRepository;
+import com.krawl.repository.GemVouchRepository;
 import com.krawl.repository.UserRepository;
-import com.krawl.repository.VouchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class GemService {
 
     private final GemRepository gemRepository;
-    private final VouchRepository vouchRepository;
+    private final GemVouchRepository vouchRepository;
     private final GemPhotoRepository gemPhotoRepository;
     private final UserRepository userRepository;
     private final BoundaryValidationService boundaryValidationService;
@@ -69,7 +69,7 @@ public class GemService {
                 ? gemRepository.hasUserVouchedForGem(gemId, currentUserId)
                 : false;
 
-        List<Vouch> vouches = vouchRepository.findByGemIdWithUser(gemId);
+        List<GemVouch> vouches = vouchRepository.findByGemIdWithUser(gemId);
         List<GemVouchResponse> vouchResponses = vouches.stream()
                 .map(this::mapToVouchResponse)
                 .collect(Collectors.toList());
@@ -378,7 +378,7 @@ public class GemService {
     /**
      * Map Vouch entity to response DTO
      */
-    private GemVouchResponse mapToVouchResponse(Vouch vouch) {
+    private GemVouchResponse mapToVouchResponse(GemVouch vouch) {
         GemCreatorResponse user = GemCreatorResponse.builder()
                 .id(vouch.getUser().getId().toString())
                 .name(vouch.getUser().getDisplayName())
@@ -505,7 +505,7 @@ public class GemService {
                 .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
 
         // Check if user already vouched
-        Optional<Vouch> existingVouch = vouchRepository.findByGemIdAndUserId(gemId, userId);
+        Optional<GemVouch> existingVouch = vouchRepository.findByGemIdAndUserId(gemId, userId);
 
         if (existingVouch.isPresent()) {
             // Remove vouch
@@ -517,7 +517,7 @@ public class GemService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-            Vouch vouch = Vouch.builder()
+            GemVouch vouch = GemVouch.builder()
                     .gem(gem)
                     .user(user)
                     .build();
