@@ -4,6 +4,7 @@ import { Clock, MapPin, Star } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
 import Image from "next/image";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 
 interface RelatedKrawlsProps {
   currentGem: GemDetail;
@@ -18,21 +19,6 @@ const formatDuration = (minutes?: number) => {
     return `${hours}h ${mins}m`;
   }
   return `${mins}m`;
-};
-
-// Difficulty color helper
-const difficultyColor = (difficulty?: string) => {
-  switch (difficulty?.toLowerCase()) {
-    case "easy":
-      return "bg-primary-green/20 text-primary-green";
-    case "moderate":
-    case "medium":
-      return "bg-yellow-100 text-yellow-600";
-    case "hard":
-      return "bg-red-100 text-red-600";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
 };
 
 /**
@@ -169,17 +155,9 @@ export async function RelatedKrawls({ currentGem }: RelatedKrawlsProps) {
               )}
 
               {/* Difficulty Badge */}
-              {krawl.difficulty && (
-                <div className="absolute top-2 right-2">
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${difficultyColor(
-                      krawl.difficulty
-                    )}`}
-                  >
-                    {krawl.difficulty}
-                  </span>
-                </div>
-              )}
+              <div className="absolute top-2 right-2">
+                <DifficultyBadge difficulty={krawl.difficulty} size="sm" />
+              </div>
             </div>
 
             {/* Krawl Info */}
