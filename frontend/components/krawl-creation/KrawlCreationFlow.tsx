@@ -5,6 +5,7 @@ import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { GemSelectionStep } from "./steps/GemSelectionStep";
 import { ReviewStep } from "./steps/ReviewStep";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
+import { useAutoSaveKrawlDraft } from "./hooks/useAutoSaveKrawlDraft";
 
 /**
  * KrawlCreationFlow Component
@@ -21,6 +22,9 @@ export function KrawlCreationFlow() {
   const router = useRouter();
   const { currentStep, setCurrentStep, validateCurrentStep } =
     useKrawlCreationStore();
+
+  // Enable auto-save for krawl drafts
+  useAutoSaveKrawlDraft();
 
   const handleNext = () => {
     if (currentStep < 2) {

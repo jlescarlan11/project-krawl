@@ -7,6 +7,7 @@
 import type {
   Draft,
   DraftData,
+  KrawlDraftData,
   SaveDraftRequest,
   SaveDraftResponse,
   ListDraftsResponse,
@@ -137,6 +138,109 @@ export async function deleteAllDrafts(): Promise<DeleteDraftResponse> {
     return result;
   } catch (error) {
     console.error("Error deleting all drafts:", error);
+    throw error;
+  }
+}
+
+/**
+ * Save or update a krawl draft
+ *
+ * @param data - The krawl draft data to save
+ * @returns Promise<SaveDraftResponse>
+ */
+export async function saveKrawlDraft(data: KrawlDraftData): Promise<SaveDraftResponse> {
+  try {
+    const response = await fetch("/api/krawls/drafts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data }),
+    });
+
+    const result: SaveDraftResponse = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to save krawl draft");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error saving krawl draft:", error);
+    throw error;
+  }
+}
+
+/**
+ * List all krawl drafts for the authenticated user
+ *
+ * @returns Promise<ListDraftsResponse>
+ */
+export async function listKrawlDrafts(): Promise<ListDraftsResponse> {
+  try {
+    const response = await fetch("/api/krawls/drafts", {
+      method: "GET",
+    });
+
+    const result: ListDraftsResponse = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to list krawl drafts");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error listing krawl drafts:", error);
+    throw error;
+  }
+}
+
+/**
+ * Load a specific krawl draft by ID
+ *
+ * @param draftId - The draft ID to load
+ * @returns Promise<LoadDraftResponse>
+ */
+export async function loadKrawlDraft(draftId: string): Promise<LoadDraftResponse> {
+  try {
+    const response = await fetch(`/api/krawls/drafts/${draftId}`, {
+      method: "GET",
+    });
+
+    const result: LoadDraftResponse = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to load krawl draft");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error loading krawl draft:", error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a specific krawl draft by ID
+ *
+ * @param draftId - The draft ID to delete
+ * @returns Promise<DeleteDraftResponse>
+ */
+export async function deleteKrawlDraft(draftId: string): Promise<DeleteDraftResponse> {
+  try {
+    const response = await fetch(`/api/krawls/drafts/${draftId}`, {
+      method: "DELETE",
+    });
+
+    const result: DeleteDraftResponse = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Failed to delete krawl draft");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error deleting krawl draft:", error);
     throw error;
   }
 }

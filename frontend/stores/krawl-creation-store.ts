@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { safeLocalStorage } from "./utils";
+import { saveKrawlDraft as saveKrawlDraftApi, loadKrawlDraft as loadKrawlDraftApi, deleteKrawlDraft as deleteKrawlDraftApi } from "@/lib/api/drafts";
+import type { KrawlDraftData } from "@/lib/types/draft";
 import type { MapGem } from "@/components/map/gem-types";
 
 /**
@@ -43,6 +45,12 @@ interface KrawlCreationState {
   completedSteps: number[];
   lastSavedAt: string | null;
 
+  // Draft state
+  currentDraftId: string | null;
+  draftSaveStatus: "idle" | "saving" | "saved" | "error";
+  draftSaveError: string | null;
+  lastDraftSavedAt: string | null;
+
   // Hydration flag
   _hasHydrated: boolean;
 }
@@ -61,6 +69,13 @@ interface KrawlCreationActions {
   markStepCompleted: (step: number) => void;
   clearForm: () => void;
   validateCurrentStep: () => boolean;
+
+  // Draft actions
+  saveDraftToBackend: () => Promise<void>;
+  loadDraftFromBackend: (draftId: string) => Promise<void>;
+  deleteDraftFromBackend: (draftId: string) => Promise<void>;
+  setDraftSaveStatus: (status: "idle" | "saving" | "saved" | "error") => void;
+  setDraftSaveError: (error: string | null) => void;
 }
 
 /**
@@ -77,6 +92,10 @@ const defaultState: KrawlCreationState = {
   currentStep: 0,
   completedSteps: [],
   lastSavedAt: null,
+  currentDraftId: null,
+  draftSaveStatus: "idle",
+  draftSaveError: null,
+  lastDraftSavedAt: null,
   _hasHydrated: false,
 };
 
@@ -228,6 +247,11 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
           set({
             ...defaultState,
             _hasHydrated: true, // Preserve hydration flag
+            // Clear draft state as well
+            currentDraftId: null,
+            draftSaveStatus: "idle",
+            draftSaveError: null,
+            lastDraftSavedAt: null,
           });
         },
 
@@ -265,6 +289,122 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
             default:
               return false;
           }
+        },
+
+        // Draft actions
+        saveDraftToBackend: async () => {
+          const state = get();
+
+          // Set saving status
+          set({ draftSaveStatus: "saving", draftSaveError: null });
+
+          try {
+            // Prepare draft data
+            const draftData: KrawlDraftData = {
+              basicInfo: state.basicInfo || undefined,
+              selectedGems: state.selectedGems.length > 0 ? state.selectedGems : undefined,
+              currentStep: state.currentStep,
+              completedSteps: state.completedSteps,
+            };
+
+            // Save to backend
+            const response = await saveKrawlDraftApi(draftData);
+
+            if (response.success) {
+              set({
+                currentDraftId: response.draftId,
+                draftSaveStatus: "saved",
+                lastDraftSavedAt: new Date().toISOString(),
+                draftSaveError: null,
+              });
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[KrawlCreationStore] Draft saved to backend:", response.draftId);
+              }
+            } else {
+              throw new Error(response.error || "Failed to save draft");
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to save draft";
+            set({
+              draftSaveStatus: "error",
+              draftSaveError: errorMessage,
+            });
+
+            console.error("[KrawlCreationStore] Error saving draft:", error);
+          }
+        },
+
+        loadDraftFromBackend: async (draftId: string) => {
+          try {
+            const response = await loadKrawlDraftApi(draftId);
+
+            if (response.success && response.draft) {
+              const draft = response.draft;
+
+              // Restore state from draft
+              set({
+                basicInfo: draft.data.basicInfo || null,
+                selectedGems: draft.data.selectedGems || [],
+                currentStep: draft.data.currentStep || 0,
+                completedSteps: draft.data.completedSteps || [],
+                currentDraftId: draft.id,
+                lastSavedAt: draft.updatedAt,
+                lastDraftSavedAt: draft.updatedAt,
+                draftSaveStatus: "idle",
+                draftSaveError: null,
+              });
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[KrawlCreationStore] Draft loaded from backend:", draftId);
+              }
+            } else {
+              throw new Error(response.error || "Failed to load draft");
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Failed to load draft";
+            set({
+              draftSaveStatus: "error",
+              draftSaveError: errorMessage,
+            });
+
+            console.error("[KrawlCreationStore] Error loading draft:", error);
+            throw error; // Re-throw so caller can handle it
+          }
+        },
+
+        deleteDraftFromBackend: async (draftId: string) => {
+          try {
+            const response = await deleteKrawlDraftApi(draftId);
+
+            if (response.success) {
+              // If we're deleting the current draft, clear the draft ID
+              const state = get();
+              if (state.currentDraftId === draftId) {
+                set({
+                  currentDraftId: null,
+                  lastDraftSavedAt: null,
+                });
+              }
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[KrawlCreationStore] Draft deleted from backend:", draftId);
+              }
+            } else {
+              throw new Error(response.error || "Failed to delete draft");
+            }
+          } catch (error) {
+            console.error("[KrawlCreationStore] Error deleting draft:", error);
+            throw error; // Re-throw so caller can handle it
+          }
+        },
+
+        setDraftSaveStatus: (status) => {
+          set({ draftSaveStatus: status });
+        },
+
+        setDraftSaveError: (error) => {
+          set({ draftSaveError: error });
         },
       }),
       {
@@ -321,4 +461,28 @@ export const useIsStepCompleted = (step: number) =>
  */
 export const useLastSavedAt = () =>
   useKrawlCreationStore((state) => state.lastSavedAt);
+
+/**
+ * Selector: Get draft save status
+ */
+export const useDraftSaveStatus = () =>
+  useKrawlCreationStore((state) => state.draftSaveStatus);
+
+/**
+ * Selector: Get current draft ID
+ */
+export const useCurrentDraftId = () =>
+  useKrawlCreationStore((state) => state.currentDraftId);
+
+/**
+ * Selector: Get draft save error
+ */
+export const useDraftSaveError = () =>
+  useKrawlCreationStore((state) => state.draftSaveError);
+
+/**
+ * Selector: Get last draft saved timestamp
+ */
+export const useLastDraftSavedAt = () =>
+  useKrawlCreationStore((state) => state.lastDraftSavedAt);
 

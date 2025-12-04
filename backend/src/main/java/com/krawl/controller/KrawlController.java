@@ -1,6 +1,9 @@
 package com.krawl.controller;
 
 import com.krawl.dto.response.KrawlDetailResponse;
+import com.krawl.dto.response.KrawlDraftResponse;
+import com.krawl.exception.AuthException;
+import com.krawl.service.KrawlDraftService;
 import com.krawl.service.KrawlService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,15 +11,19 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -31,6 +38,7 @@ import java.util.UUID;
 public class KrawlController {
 
     private final KrawlService krawlService;
+    private final KrawlDraftService krawlDraftService;
 
     /**
      * GET /api/krawls/{id}
@@ -115,6 +123,203 @@ public class KrawlController {
         }
 
         return ResponseEntity.ok(krawlDetail);
+    }
+
+    /**
+     * GET /api/krawls/drafts
+     *
+     * List all krawl drafts for the authenticated user.
+     * Requires authentication.
+     *
+     * @return List of KrawlDraftResponse
+     */
+    @Operation(
+            summary = "List krawl drafts",
+            description = "Lists all Krawl creation drafts for the authenticated user. " +
+                    "Drafts expire after 30 days. Requires authentication."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Drafts retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = KrawlDraftResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/drafts")
+    public ResponseEntity<List<KrawlDraftResponse>> listDrafts() {
+        log.debug("GET /api/krawls/drafts");
+
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
+        }
+
+        List<KrawlDraftResponse> drafts = krawlDraftService.listDrafts(userId);
+        return ResponseEntity.ok(drafts);
+    }
+
+    /**
+     * POST /api/krawls/drafts
+     *
+     * Save a draft.
+     * Requires authentication.
+     *
+     * @param data Draft data (JSON)
+     * @return KrawlDraftResponse with saved draft information
+     */
+    @Operation(
+            summary = "Save a draft",
+            description = "Saves a Krawl creation draft. Drafts expire after 30 days. " +
+                    "Requires authentication."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Draft saved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = KrawlDraftResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/drafts")
+    public ResponseEntity<KrawlDraftResponse> saveDraft(
+            @RequestBody Map<String, Object> data) {
+        log.debug("POST /api/krawls/drafts");
+
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
+        }
+
+        KrawlDraftResponse draft = krawlDraftService.saveDraft(userId, data);
+        return ResponseEntity.status(HttpStatus.CREATED).body(draft);
+    }
+
+    /**
+     * GET /api/krawls/drafts/{id}
+     *
+     * Load a specific draft.
+     * Requires authentication and ownership.
+     *
+     * @param id Draft ID
+     * @return KrawlDraftResponse with draft information
+     */
+    @Operation(
+            summary = "Load a draft",
+            description = "Loads a specific Krawl creation draft by ID. " +
+                    "Requires authentication and ownership."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Draft loaded successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = KrawlDraftResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden - You can only access your own drafts",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Draft not found or expired",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/drafts/{id}")
+    public ResponseEntity<KrawlDraftResponse> loadDraft(
+            @Parameter(description = "UUID of the draft to load", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id) {
+        log.debug("GET /api/krawls/drafts/{}", id);
+
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
+        }
+
+        KrawlDraftResponse draft = krawlDraftService.loadDraft(id, userId);
+        return ResponseEntity.ok(draft);
+    }
+
+    /**
+     * DELETE /api/krawls/drafts/{id}
+     *
+     * Delete a draft.
+     * Requires authentication and ownership.
+     *
+     * @param id Draft ID
+     * @return 204 No Content
+     */
+    @Operation(
+            summary = "Delete a draft",
+            description = "Deletes a Krawl creation draft by ID. " +
+                    "Requires authentication and ownership."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Draft deleted successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden - You can only delete your own drafts",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Draft not found",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/drafts/{id}")
+    public ResponseEntity<Void> deleteDraft(
+            @Parameter(description = "UUID of the draft to delete", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id) {
+        log.debug("DELETE /api/krawls/drafts/{}", id);
+
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
+        }
+
+        krawlDraftService.deleteDraft(id, userId);
+        return ResponseEntity.noContent().build();
     }
 
     /**
