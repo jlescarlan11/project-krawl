@@ -7,8 +7,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
 import { RouteVisualizationMap } from "../RouteVisualizationMap";
+import { RouteOptimizationSuggestion } from "../RouteOptimizationSuggestion";
 import { formatDistance, formatDuration } from "@/lib/format";
 import { getCachedRoute } from "@/lib/map/routingUtils";
+import { useRouteOptimization } from "@/hooks/useRouteOptimization";
 import type { Coordinates } from "@/components/map/gem-types";
 
 interface ReviewStepProps {
@@ -17,7 +19,7 @@ interface ReviewStepProps {
 }
 
 export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
-  const { basicInfo, selectedGems, setCurrentStep } = useKrawlCreationStore();
+  const { basicInfo, selectedGems, setCurrentStep, reorderGems } = useKrawlCreationStore();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [routeMetrics, setRouteMetrics] = useState<{
@@ -29,6 +31,50 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
   const sortedGems = useMemo(() => {
     return [...selectedGems].sort((a, b) => a.order - b.order);
   }, [selectedGems]);
+
+  // Extract coordinates and current order for optimization
+  const coordinates = useMemo(() => {
+    return sortedGems
+      .map((sg) => sg.gem.coordinates)
+      .filter(
+        (coord): coord is Coordinates =>
+          coord !== undefined &&
+          coord.length === 2 &&
+          !isNaN(coord[0]) &&
+          !isNaN(coord[1])
+      );
+  }, [sortedGems]);
+
+  const currentOrder = useMemo(() => {
+    // Create order array based on indices of gems with valid coordinates
+    const order: number[] = [];
+    sortedGems.forEach((sg, index) => {
+      const coord = sg.gem.coordinates;
+      if (
+        coord !== undefined &&
+        coord.length === 2 &&
+        !isNaN(coord[0]) &&
+        !isNaN(coord[1])
+      ) {
+        order.push(index);
+      }
+    });
+    return order;
+  }, [sortedGems]);
+
+  // Route optimization hook
+  const {
+    isCalculating: isOptimizing,
+    optimizationResult,
+    dismissed: optimizationDismissed,
+    calculateOptimization,
+    dismiss: dismissOptimization,
+    reset: resetOptimization,
+  } = useRouteOptimization(coordinates, currentOrder, {
+    profile: 'walking',
+    preserveStartEnd: false,
+    minSavingsPercentage: 5,
+  });
 
   // Calculate route metrics
   React.useEffect(() => {
@@ -69,6 +115,35 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
 
     calculateMetrics();
   }, [sortedGems]);
+
+  // Auto-trigger optimization when route metrics are available
+  React.useEffect(() => {
+    if (
+      routeMetrics &&
+      coordinates.length >= 2 &&
+      !optimizationDismissed &&
+      !optimizationResult &&
+      !isOptimizing
+    ) {
+      // Small delay to avoid blocking UI
+      const timer = setTimeout(() => {
+        calculateOptimization();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [routeMetrics, coordinates.length, optimizationDismissed, optimizationResult, isOptimizing, calculateOptimization]);
+
+  // Handle apply optimization
+  const handleApplyOptimization = useCallback(() => {
+    if (!optimizationResult) return;
+
+    const optimizedGemIds = optimizationResult.optimizedOrder.map(
+      (index) => sortedGems[index].gemId
+    );
+    
+    reorderGems(optimizedGemIds);
+    resetOptimization();
+  }, [optimizationResult, sortedGems, reorderGems, resetOptimization]);
 
   const handleEditBasicInfo = useCallback(() => {
     setCurrentStep(0);
@@ -218,6 +293,16 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
                 Edit
               </button>
             </div>
+
+            {/* Route Optimization Suggestion */}
+            {!optimizationDismissed && (optimizationResult || isOptimizing) && (
+              <RouteOptimizationSuggestion
+                result={optimizationResult}
+                isCalculating={isOptimizing}
+                onApply={handleApplyOptimization}
+                onDismiss={dismissOptimization}
+              />
+            )}
 
             {/* Route Visualization Map */}
             <div className="bg-bg-light rounded-lg overflow-hidden">
