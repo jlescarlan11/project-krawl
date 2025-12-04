@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { ArrowLeft, Search, Plus, X, Edit2, MapPin } from "lucide-react";
+import { ArrowLeft, Search, Plus, X, Edit2, MapPin, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
@@ -9,6 +9,24 @@ import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
 import { MapGem } from "@/components/map/gem-types";
 import { ContextInjectionForm } from "../ContextInjectionForm";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { SelectedGem } from "@/stores/krawl-creation-store";
 
 interface GemSelectionStepProps {
   onNext: () => void;
@@ -18,8 +36,91 @@ interface GemSelectionStepProps {
 const MIN_GEMS = 2;
 const MAX_GEMS = 20;
 
+interface SortableGemCardProps {
+  selectedGem: SelectedGem;
+  index: number;
+  onEdit: (gemId: string) => void;
+  onRemove: (gemId: string) => void;
+}
+
+function SortableGemCard({
+  selectedGem,
+  index,
+  onEdit,
+  onRemove,
+}: SortableGemCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: selectedGem.gemId });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "p-3 bg-bg-light rounded-lg flex items-start gap-3",
+        isDragging && "shadow-lg border-2 border-primary z-50"
+      )}
+    >
+      {/* Drag Handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 hover:bg-bg-white rounded transition-colors shrink-0 mt-1"
+        aria-label="Drag to reorder"
+        type="button"
+      >
+        <GripVertical className="w-5 h-5 text-text-tertiary" />
+      </button>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm font-medium text-text-secondary shrink-0">
+            #{index + 1}
+          </span>
+          <h3 className="font-semibold text-text-primary truncate">
+            {selectedGem.gem.name}
+          </h3>
+        </div>
+        <p className="text-sm text-text-secondary line-clamp-2">
+          {selectedGem.creatorNote}
+        </p>
+      </div>
+      <div className="flex gap-2 shrink-0">
+        <button
+          onClick={() => onEdit(selectedGem.gemId)}
+          className="p-2 hover:bg-bg-white rounded-lg transition-colors"
+          aria-label="Edit context"
+          type="button"
+        >
+          <Edit2 className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onRemove(selectedGem.gemId)}
+          className="p-2 hover:bg-bg-white rounded-lg transition-colors text-error"
+          aria-label="Remove gem"
+          type="button"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
-  const { selectedGems, addGem, removeGem, updateGemContext } =
+  const { selectedGems, addGem, removeGem, updateGemContext, reorderGems } =
     useKrawlCreationStore();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,6 +130,42 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
   const [selectedGemForContext, setSelectedGemForContext] =
     useState<MapGem | null>(null);
   const [editingGemId, setEditingGemId] = useState<string | null>(null);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Sort gems by order property
+  const sortedGems = useMemo(() => {
+    return [...selectedGems].sort((a, b) => a.order - b.order);
+  }, [selectedGems]);
+
+  // Handle drag end event for reordering
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (over && active.id !== over.id) {
+        const oldIndex = sortedGems.findIndex((g) => g.gemId === active.id);
+        const newIndex = sortedGems.findIndex((g) => g.gemId === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const reordered = arrayMove(sortedGems, oldIndex, newIndex);
+          const gemIds = reordered.map((g) => g.gemId);
+          reorderGems(gemIds);
+        }
+      }
+    },
+    [sortedGems, reorderGems]
+  );
 
   // Debounced search
   useEffect(() => {
@@ -173,46 +310,28 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {selectedGems.map((selectedGem, index) => (
-                  <div
-                    key={selectedGem.gemId}
-                    className="p-3 bg-bg-light rounded-lg flex items-start gap-3"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium text-text-secondary shrink-0">
-                          #{index + 1}
-                        </span>
-                        <h3 className="font-semibold text-text-primary truncate">
-                          {selectedGem.gem.name}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-text-secondary line-clamp-2">
-                        {selectedGem.creatorNote}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() => handleEditContext(selectedGem.gemId)}
-                        className="p-2 hover:bg-bg-white rounded-lg transition-colors"
-                        aria-label="Edit context"
-                        type="button"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => removeGem(selectedGem.gemId)}
-                        className="p-2 hover:bg-bg-white rounded-lg transition-colors text-error"
-                        aria-label="Remove gem"
-                        type="button"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={sortedGems.map((g) => g.gemId)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {sortedGems.map((selectedGem, index) => (
+                      <SortableGemCard
+                        key={selectedGem.gemId}
+                        selectedGem={selectedGem}
+                        index={index}
+                        onEdit={handleEditContext}
+                        onRemove={removeGem}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
 
