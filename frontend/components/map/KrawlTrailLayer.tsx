@@ -217,7 +217,16 @@ export function KrawlTrailLayer({
           ctx.lineTo(size - 10, size - 6);
           ctx.stroke();
           
-          map.addImage(arrowIconId, canvas);
+          // Convert canvas to image element
+          const img = new Image();
+          img.src = canvas.toDataURL();
+          await new Promise<void>((resolve) => {
+            img.onload = () => {
+              map.addImage(arrowIconId, img);
+              resolve();
+            };
+            img.onerror = () => resolve(); // Continue even if image load fails
+          });
         }
       }
       

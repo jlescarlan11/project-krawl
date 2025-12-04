@@ -158,6 +158,12 @@ export function AdditionalDetailsStep({
     // Mark all fields as touched to show any validation errors
     setTouched({ culturalSignificance: true });
 
+    // Ensure details exists (should be set in Step 2)
+    if (!details) {
+      console.error("Details not found - cannot proceed to preview");
+      return;
+    }
+
     // Save additional details to store before navigating to preview
     setDetails({
       ...details,

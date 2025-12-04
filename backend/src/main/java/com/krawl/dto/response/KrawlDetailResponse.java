@@ -42,3 +42,4 @@ public class KrawlDetailResponse {
     private Integer viewCount;
 }
 
+

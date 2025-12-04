@@ -63,3 +63,4 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
     Boolean hasUserVouchedForKrawl(@Param("krawlId") UUID krawlId, @Param("userId") UUID userId);
 }
 
+

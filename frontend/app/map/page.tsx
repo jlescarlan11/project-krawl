@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { MapWithBoundary } from "@/components/map";
@@ -65,7 +65,7 @@ const CATEGORY_FILTERS = [
   },
 ];
 
-export default function MapPage() {
+function MapPageContent() {
   const router = useRouter();
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   const [selectedCategory, setSelectedCategory] =
@@ -192,5 +192,17 @@ export default function MapPage() {
       {/* Bottom Navigation */}
       <BottomNav />
     </>
+  );
+}
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-text-secondary">Loading map...</div>
+      </div>
+    }>
+      <MapPageContent />
+    </Suspense>
   );
 }

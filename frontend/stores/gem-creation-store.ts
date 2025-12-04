@@ -484,9 +484,24 @@ export const useGemCreationStore = create<GemCreationStore>()(
               const draft = response.draft;
 
               // Restore state from draft
+              // Merge details and additionalDetails into DetailsData format
+              const details: DetailsData | null = draft.data.details
+                ? {
+                    name: draft.data.details.name,
+                    category: draft.data.details.category,
+                    shortDescription: draft.data.details.shortDescription,
+                    fullDescription: draft.data.additionalDetails?.culturalSignificance || "",
+                    tags: draft.data.additionalDetails?.tags || [],
+                    culturalSignificance: draft.data.additionalDetails?.culturalSignificance,
+                    hours: undefined,
+                    website: undefined,
+                    phone: undefined,
+                  }
+                : null;
+
               set({
                 location: draft.data.location || null,
-                details: draft.data.details || null,
+                details,
                 media: draft.data.media
                   ? {
                       photos: [],
