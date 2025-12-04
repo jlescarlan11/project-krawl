@@ -161,11 +161,11 @@ export async function krawlToGeoJSONWithRouting(
 
   const waypoints: Coordinates[] = validGems.map((gem) => gem.coordinates);
 
-  // Fetch road-based route
-  const routeCoordinates = await getCachedRoute(waypoints, profile);
+  // Fetch road-based route (now returns RouteResponse with distance and duration)
+  const route = await getCachedRoute(waypoints, profile);
 
   // Fall back to straight lines if routing fails
-  const coordinates = routeCoordinates || waypoints;
+  const coordinates = route?.coordinates || waypoints;
 
   return {
     type: 'Feature' as const,
@@ -175,7 +175,12 @@ export async function krawlToGeoJSONWithRouting(
       color: krawl.color || '#3b82f6',
       gemsCount: validGems.length,
       routingProfile: profile,
-      isRouted: !!routeCoordinates, // Track if road routing was successful
+      isRouted: !!route, // Track if road routing was successful
+      // Store metrics in properties for potential future use
+      ...(route && {
+        distance: route.distance,
+        duration: route.duration,
+      }),
     },
     geometry: {
       type: 'LineString' as const,

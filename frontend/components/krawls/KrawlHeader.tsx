@@ -4,7 +4,9 @@ import { KrawlDetail } from "@/types/krawl-detail";
 import { Star, Clock, MapPin, ArrowLeft, Bookmark, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useKrawlRouteMetrics } from "./useKrawlRouteMetrics";
+import { formatDuration, formatDurationFromMinutes, formatDistance } from "@/lib/format";
 
 interface KrawlHeaderProps {
   krawl: KrawlDetail;
@@ -17,9 +19,41 @@ const difficultyColors = {
   MEDIUM: "bg-yellow-100 text-yellow-700", // Alias for MODERATE
 };
 
+const UNIT_PREFERENCE_KEY = 'krawl:unit-system';
+
 export function KrawlHeader({ krawl }: KrawlHeaderProps) {
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  
+  // Unit system preference (default to metric, stored in localStorage)
+  const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>(() => {
+    if (typeof window === 'undefined') return 'metric';
+    const stored = localStorage.getItem(UNIT_PREFERENCE_KEY);
+    return (stored === 'imperial' || stored === 'metric') ? stored : 'metric';
+  });
+
+  // Calculate route metrics
+  const routeMetrics = useKrawlRouteMetrics(krawl, 'walking');
+
+  // Persist unit preference to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(UNIT_PREFERENCE_KEY, unitSystem);
+    }
+  }, [unitSystem]);
+
+  // Use calculated metrics if available, otherwise fall back to database values
+  const displayDuration = routeMetrics.duration > 0 
+    ? formatDuration(routeMetrics.duration)
+    : krawl.estimatedDurationMinutes 
+      ? formatDurationFromMinutes(krawl.estimatedDurationMinutes)
+      : null;
+
+  const displayDistance = routeMetrics.distance > 0
+    ? formatDistance(routeMetrics.distance, unitSystem)
+    : krawl.estimatedDistanceKm
+      ? formatDistance(krawl.estimatedDistanceKm * 1000, unitSystem)
+      : null;
 
   const handleBack = () => {
     router.back();
@@ -144,27 +178,45 @@ export function KrawlHeader({ krawl }: KrawlHeaderProps) {
               )}
             </div>
           )}
-          {krawl.estimatedDurationMinutes && (
+          
+          {/* Duration */}
+          {displayDuration && (
             <div className="flex items-center gap-1.5">
               <Clock className="w-5 h-5" />
-              <span>
-                {krawl.estimatedDurationMinutes >= 60
-                  ? `${Math.floor(krawl.estimatedDurationMinutes / 60)} ${
-                      Math.floor(krawl.estimatedDurationMinutes / 60) === 1
-                        ? "hour"
-                        : "hours"
-                    }`
-                  : `${krawl.estimatedDurationMinutes} ${
-                      krawl.estimatedDurationMinutes === 1 ? "minute" : "minutes"
-                    }`}
-              </span>
+              <span>{displayDuration}</span>
+              {routeMetrics.isLoading && (
+                <span className="text-xs text-text-tertiary">(calculating...)</span>
+              )}
             </div>
           )}
-          {krawl.estimatedDistanceKm && (
+          
+          {/* Distance */}
+          {displayDistance && (
             <div className="flex items-center gap-1.5">
               <MapPin className="w-5 h-5" />
-              <span>{krawl.estimatedDistanceKm.toFixed(1)} km</span>
+              <span>{displayDistance}</span>
+              {routeMetrics.isLoading && (
+                <span className="text-xs text-text-tertiary">(calculating...)</span>
+              )}
             </div>
+          )}
+
+          {/* Unit Toggle */}
+          {(displayDuration || displayDistance) && (
+            <button
+              onClick={() => setUnitSystem(prev => prev === 'metric' ? 'imperial' : 'metric')}
+              className="text-xs text-text-tertiary hover:text-text-secondary underline transition-colors"
+              aria-label={`Switch to ${unitSystem === 'metric' ? 'imperial' : 'metric'} units`}
+            >
+              {unitSystem === 'metric' ? 'mi' : 'km'}
+            </button>
+          )}
+
+          {/* Error state */}
+          {routeMetrics.error && !displayDuration && !displayDistance && (
+            <span className="text-xs text-text-tertiary">
+              Route calculation unavailable
+            </span>
           )}
         </div>
       </div>
