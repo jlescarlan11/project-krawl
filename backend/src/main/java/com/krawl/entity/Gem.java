@@ -95,11 +95,11 @@ public class Gem {
 
     @OneToMany(mappedBy = "gem", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Rating> ratings = new ArrayList<>();
+    private List<GemRating> ratings = new ArrayList<>();
 
     @OneToMany(mappedBy = "gem", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Vouch> vouches = new ArrayList<>();
+    private List<GemVouch> vouches = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

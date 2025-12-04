@@ -1,6 +1,6 @@
 package com.krawl.repository;
 
-import com.krawl.entity.Vouch;
+import com.krawl.entity.KrawlVouch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,17 +11,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface VouchRepository extends JpaRepository<Vouch, UUID> {
+public interface KrawlVouchRepository extends JpaRepository<KrawlVouch, UUID> {
 
     @Query("""
-            SELECT v FROM Vouch v
+            SELECT v FROM KrawlVouch v
             LEFT JOIN FETCH v.user
-            WHERE v.gem.id = :gemId
+            WHERE v.krawl.id = :krawlId
             ORDER BY v.createdAt DESC
             """)
-    List<Vouch> findByGemIdWithUser(@Param("gemId") UUID gemId);
+    List<KrawlVouch> findByKrawlIdWithUser(@Param("krawlId") UUID krawlId);
 
-    Optional<Vouch> findByGemIdAndUserId(UUID gemId, UUID userId);
+    Optional<KrawlVouch> findByKrawlIdAndUserId(UUID krawlId, UUID userId);
 
-    boolean existsByGemIdAndUserId(UUID gemId, UUID userId);
+    boolean existsByKrawlIdAndUserId(UUID krawlId, UUID userId);
 }
+
