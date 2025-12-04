@@ -69,14 +69,19 @@ export async function fetchRoute(
  *
  * @param waypoints - Array of coordinates to route through
  * @param profile - Routing profile: walking, cycling, driving
- * @returns Combined route coordinates following roads
+ * @returns Combined route with coordinates, distance, and duration
  */
 export async function fetchMultiWaypointRoute(
   waypoints: Coordinates[],
   profile: 'walking' | 'cycling' | 'driving' = 'walking'
-): Promise<Coordinates[] | null> {
+): Promise<RouteResponse | null> {
   if (waypoints.length < 2) {
-    return waypoints;
+    // Return a minimal route response for single waypoint
+    return {
+      coordinates: waypoints,
+      distance: 0,
+      duration: 0,
+    };
   }
 
   // Mapbox Directions API supports up to 25 waypoints in a single request
@@ -87,6 +92,8 @@ export async function fetchMultiWaypointRoute(
 
   // For routes with more than 25 waypoints, split into segments
   const allCoordinates: Coordinates[] = [];
+  let totalDistance = 0;
+  let totalDuration = 0;
 
   for (let i = 0; i < waypoints.length - 1; i++) {
     const route = await fetchRoute(waypoints[i], waypoints[i + 1], profile);
@@ -96,6 +103,10 @@ export async function fetchMultiWaypointRoute(
       allCoordinates.push(waypoints[i]);
       continue;
     }
+
+    // Accumulate distance and duration
+    totalDistance += route.distance;
+    totalDuration += route.duration;
 
     // Add route coordinates, avoiding duplicates at segment boundaries
     if (allCoordinates.length > 0) {
@@ -111,7 +122,11 @@ export async function fetchMultiWaypointRoute(
     allCoordinates.push(waypoints[waypoints.length - 1]);
   }
 
-  return allCoordinates;
+  return {
+    coordinates: allCoordinates,
+    distance: totalDistance,
+    duration: totalDuration,
+  };
 }
 
 /**
@@ -119,12 +134,12 @@ export async function fetchMultiWaypointRoute(
  *
  * @param waypoints - Array of coordinates (max 25)
  * @param profile - Routing profile
- * @returns Route coordinates following roads
+ * @returns Route with coordinates, distance, and duration
  */
 async function fetchOptimizedRoute(
   waypoints: Coordinates[],
   profile: 'walking' | 'cycling' | 'driving'
-): Promise<Coordinates[] | null> {
+): Promise<RouteResponse | null> {
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   if (!accessToken) {
@@ -153,7 +168,11 @@ async function fetchOptimizedRoute(
     const route = data.routes[0];
     const geometry = route.geometry;
 
-    return geometry.coordinates as Coordinates[];
+    return {
+      coordinates: geometry.coordinates as Coordinates[],
+      distance: route.distance,
+      duration: route.duration,
+    };
   } catch (error) {
     console.error('Error fetching optimized route:', error);
     return null;
@@ -163,7 +182,7 @@ async function fetchOptimizedRoute(
 /**
  * Cache for route requests to avoid duplicate API calls
  */
-const routeCache = new Map<string, Coordinates[]>();
+const routeCache = new Map<string, RouteResponse>();
 
 /**
  * Get cached route or fetch new one
@@ -171,7 +190,7 @@ const routeCache = new Map<string, Coordinates[]>();
 export async function getCachedRoute(
   waypoints: Coordinates[],
   profile: 'walking' | 'cycling' | 'driving' = 'walking'
-): Promise<Coordinates[] | null> {
+): Promise<RouteResponse | null> {
   const cacheKey = `${profile}:${waypoints.map(w => w.join(',')).join('|')}`;
 
   if (routeCache.has(cacheKey)) {
