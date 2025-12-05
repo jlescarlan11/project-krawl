@@ -12,11 +12,12 @@ import { Spinner } from "@/components/ui/spinner";
 
 interface KrawlHeaderProps {
   krawl: KrawlDetail;
+  onBack?: () => void; // Optional custom back handler for preview mode
 }
 
 const UNIT_PREFERENCE_KEY = 'krawl:unit-system';
 
-export function KrawlHeader({ krawl }: KrawlHeaderProps) {
+export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -53,7 +54,11 @@ export function KrawlHeader({ krawl }: KrawlHeaderProps) {
       : null;
 
   const handleBack = () => {
-    router.back();
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
   };
 
   const handleBookmark = () => {
@@ -131,30 +136,32 @@ export function KrawlHeader({ krawl }: KrawlHeaderProps) {
             <ArrowLeft className="w-5 h-5 text-text-primary" />
           </button>
 
-          {/* Right Side Buttons */}
-          <div className="flex gap-2">
-            {/* Share Button */}
-            <button
-              onClick={handleShare}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
-              aria-label="Share krawl"
-            >
-              <Share2 className="w-5 h-5 text-text-primary" />
-            </button>
+          {/* Right Side Buttons - Hide in preview mode */}
+          {!onBack && (
+            <div className="flex gap-2">
+              {/* Share Button */}
+              <button
+                onClick={handleShare}
+                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
+                aria-label="Share krawl"
+              >
+                <Share2 className="w-5 h-5 text-text-primary" />
+              </button>
 
-            {/* Bookmark Button */}
-            <button
-              onClick={handleBookmark}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
-              aria-label={isBookmarked ? "Remove bookmark" : "Bookmark krawl"}
-            >
-              <Bookmark
-                className={`w-5 h-5 ${
-                  isBookmarked ? "fill-text-primary text-text-primary" : "text-text-primary"
-                }`}
-              />
-            </button>
-          </div>
+              {/* Bookmark Button */}
+              <button
+                onClick={handleBookmark}
+                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
+                aria-label={isBookmarked ? "Remove bookmark" : "Bookmark krawl"}
+              >
+                <Bookmark
+                  className={`w-5 h-5 ${
+                    isBookmarked ? "fill-text-primary text-text-primary" : "text-text-primary"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
