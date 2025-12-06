@@ -35,6 +35,10 @@ public class UpdateKrawlRequest {
     @Size(max = 500, message = "Cover image URL must not exceed 500 characters")
     private String coverImage;
 
+    @Schema(description = "Cloudinary public ID for cover image (optional, for optimized URL generation)", example = "krawl-covers/abc123")
+    @Size(max = 255, message = "Cloudinary public ID must not exceed 255 characters")
+    private String coverImagePublicId;
+
     @Schema(description = "List of Gems with order, creator note, and lokal secret")
     @Size(min = 2, message = "At least 2 Gems are required")
     @Valid

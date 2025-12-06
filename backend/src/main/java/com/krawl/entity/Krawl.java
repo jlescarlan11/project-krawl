@@ -48,6 +48,9 @@ public class Krawl {
     @Column(name = "cover_image", length = 500)
     private String coverImage;
 
+    @Column(name = "cloudinary_public_id", length = 255)
+    private String cloudinaryPublicId;
+
     @Column(name = "estimated_duration_minutes")
     private Integer estimatedDurationMinutes;
 
