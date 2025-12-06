@@ -1,19 +1,26 @@
 package com.krawl.service;
 
+import com.krawl.dto.request.CreateKrawlRequest;
+import com.krawl.dto.request.UpdateKrawlRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.Krawl;
 import com.krawl.entity.KrawlGem;
 import com.krawl.entity.KrawlVouch;
+import com.krawl.entity.User;
+import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.GemRepository;
+import com.krawl.repository.KrawlGemRepository;
 import com.krawl.repository.KrawlRepository;
 import com.krawl.repository.KrawlVouchRepository;
+import com.krawl.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,6 +33,10 @@ public class KrawlService {
     private final KrawlRepository krawlRepository;
     private final KrawlVouchRepository krawlVouchRepository;
     private final GemRepository gemRepository;
+    private final KrawlGemRepository krawlGemRepository;
+    private final UserRepository userRepository;
+    private final BoundaryValidationService boundaryValidationService;
+    private final MapboxService mapboxService;
 
     /**
      * Get detailed information about a specific krawl
@@ -187,6 +198,210 @@ public class KrawlService {
                 .comment(vouch.getComment())
                 .createdAt(vouch.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Create a new Krawl.
+     *
+     * @param request Create Krawl request
+     * @param userId User ID creating the Krawl
+     * @return Created Krawl ID
+     * @throws IllegalArgumentException if validation fails
+     */
+    @Transactional
+    public UUID createKrawl(CreateKrawlRequest request, UUID userId) {
+        log.debug("Creating Krawl: {} for user: {}", request.getName(), userId);
+
+        // Validate minimum 2 Gems
+        if (request.getGems() == null || request.getGems().size() < 2) {
+            throw new IllegalArgumentException("At least 2 Gems are required");
+        }
+
+        // Validate and fetch all Gems
+        List<Gem> gems = new ArrayList<>();
+        List<CreateKrawlRequest.GemInKrawlRequest> gemRequests = request.getGems();
+        
+        for (CreateKrawlRequest.GemInKrawlRequest gemRequest : gemRequests) {
+            UUID gemId;
+            try {
+                gemId = UUID.fromString(gemRequest.getGemId());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid Gem ID format: " + gemRequest.getGemId());
+            }
+            
+            Gem gem = gemRepository.findById(gemId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+            
+            // Validate Gem is within Cebu City
+            boundaryValidationService.validateBoundary(gem.getLatitude(), gem.getLongitude());
+            
+            gems.add(gem);
+        }
+
+        // Get user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // Calculate route
+        List<double[]> waypoints = gems.stream()
+                .map(gem -> new double[]{gem.getLongitude(), gem.getLatitude()})
+                .collect(Collectors.toList());
+
+        MapboxService.RouteResult routeResult;
+        try {
+            routeResult = mapboxService.calculateRoute(waypoints);
+        } catch (Exception e) {
+            log.error("Failed to calculate route", e);
+            // Create fallback route
+            routeResult = mapboxService.calculateRoute(waypoints); // Will use fallback
+        }
+
+        // Create Krawl entity
+        Krawl krawl = Krawl.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .fullDescription(request.getFullDescription())
+                .category(request.getCategory())
+                .difficulty(request.getDifficulty())
+                .coverImage(request.getCoverImage())
+                .estimatedDurationMinutes(routeResult.getDurationMinutes())
+                .estimatedDistanceKm(routeResult.getDistanceKm())
+                .routePolyline(routeResult.getPolyline())
+                .tags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>())
+                .createdBy(user)
+                .gems(new ArrayList<>())
+                .build();
+
+        krawl = krawlRepository.save(krawl);
+
+        // Create KrawlGem junction records
+        for (int i = 0; i < gems.size(); i++) {
+            CreateKrawlRequest.GemInKrawlRequest gemRequest = gemRequests.get(i);
+            KrawlGem krawlGem = KrawlGem.builder()
+                    .krawl(krawl)
+                    .gem(gems.get(i))
+                    .order(gemRequest.getSequenceOrder())
+                    .creatorNote(gemRequest.getCreatorNote())
+                    .lokalSecret(gemRequest.getLokalSecret())
+                    .build();
+            krawl.getGems().add(krawlGem);
+        }
+
+        krawl = krawlRepository.save(krawl);
+        log.info("Krawl created: {} for user: {}", krawl.getId(), userId);
+
+        return krawl.getId();
+    }
+
+    /**
+     * Update an existing Krawl.
+     *
+     * @param krawlId Krawl ID
+     * @param request Update Krawl request
+     * @param userId User ID updating the Krawl
+     * @return Updated Krawl ID
+     * @throws ResourceNotFoundException if krawl not found
+     * @throws ForbiddenException if user doesn't own the krawl
+     */
+    @Transactional
+    public UUID updateKrawl(UUID krawlId, UpdateKrawlRequest request, UUID userId) {
+        log.debug("Updating Krawl: {} for user: {}", krawlId, userId);
+
+        Krawl krawl = krawlRepository.findById(krawlId)
+                .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
+
+        // Check ownership
+        if (!krawl.getCreatedBy().getId().equals(userId)) {
+            throw new ForbiddenException("You can only update Krawls that you created");
+        }
+
+        // Update fields if provided
+        if (request.getName() != null) {
+            krawl.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            krawl.setDescription(request.getDescription());
+        }
+        if (request.getFullDescription() != null) {
+            krawl.setFullDescription(request.getFullDescription());
+        }
+        if (request.getCategory() != null) {
+            krawl.setCategory(request.getCategory());
+        }
+        if (request.getDifficulty() != null) {
+            krawl.setDifficulty(request.getDifficulty());
+        }
+        if (request.getCoverImage() != null) {
+            krawl.setCoverImage(request.getCoverImage());
+        }
+        if (request.getTags() != null) {
+            krawl.setTags(new ArrayList<>(request.getTags()));
+        }
+
+        // Update gems if provided
+        if (request.getGems() != null) {
+            if (request.getGems().size() < 2) {
+                throw new IllegalArgumentException("At least 2 Gems are required");
+            }
+
+            // Delete existing KrawlGems
+            krawlGemRepository.deleteByKrawlId(krawlId);
+            krawl.getGems().clear();
+
+            // Validate and fetch all Gems
+            List<Gem> gems = new ArrayList<>();
+            for (UpdateKrawlRequest.GemInKrawlRequest gemRequest : request.getGems()) {
+                UUID gemId;
+                try {
+                    gemId = UUID.fromString(gemRequest.getGemId());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Invalid Gem ID format: " + gemRequest.getGemId());
+                }
+                
+                Gem gem = gemRepository.findById(gemId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+                
+                // Validate Gem is within Cebu City
+                boundaryValidationService.validateBoundary(gem.getLatitude(), gem.getLongitude());
+                
+                gems.add(gem);
+            }
+
+            // Calculate route
+            List<double[]> waypoints = gems.stream()
+                    .map(gem -> new double[]{gem.getLongitude(), gem.getLatitude()})
+                    .collect(Collectors.toList());
+
+            MapboxService.RouteResult routeResult;
+            try {
+                routeResult = mapboxService.calculateRoute(waypoints);
+            } catch (Exception e) {
+                log.error("Failed to calculate route", e);
+                routeResult = mapboxService.calculateRoute(waypoints); // Will use fallback
+            }
+
+            krawl.setEstimatedDurationMinutes(routeResult.getDurationMinutes());
+            krawl.setEstimatedDistanceKm(routeResult.getDistanceKm());
+            krawl.setRoutePolyline(routeResult.getPolyline());
+
+            // Create new KrawlGem junction records
+            for (int i = 0; i < gems.size(); i++) {
+                UpdateKrawlRequest.GemInKrawlRequest gemRequest = request.getGems().get(i);
+                KrawlGem krawlGem = KrawlGem.builder()
+                        .krawl(krawl)
+                        .gem(gems.get(i))
+                        .order(gemRequest.getSequenceOrder())
+                        .creatorNote(gemRequest.getCreatorNote())
+                        .lokalSecret(gemRequest.getLokalSecret())
+                        .build();
+                krawl.getGems().add(krawlGem);
+            }
+        }
+
+        krawl = krawlRepository.save(krawl);
+        log.info("Krawl updated: {} for user: {}", krawlId, userId);
+
+        return krawl.getId();
     }
 }
 
