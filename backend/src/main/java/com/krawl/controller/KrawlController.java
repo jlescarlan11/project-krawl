@@ -1,7 +1,11 @@
 package com.krawl.controller;
 
+import com.krawl.dto.request.CreateKrawlRequest;
+import com.krawl.dto.request.UpdateKrawlRequest;
+import com.krawl.dto.response.CreateKrawlResponse;
 import com.krawl.dto.response.KrawlDetailResponse;
 import com.krawl.dto.response.KrawlDraftResponse;
+import com.krawl.dto.response.UpdateKrawlResponse;
 import com.krawl.exception.AuthException;
 import com.krawl.service.KrawlDraftService;
 import com.krawl.service.KrawlService;
@@ -13,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -123,6 +128,129 @@ public class KrawlController {
         }
 
         return ResponseEntity.ok(krawlDetail);
+    }
+
+    /**
+     * POST /api/krawls
+     *
+     * Create a new Krawl.
+     * Requires authentication.
+     *
+     * @param request Create Krawl request
+     * @return CreateKrawlResponse with created Krawl ID
+     */
+    @Operation(
+            summary = "Create a new Krawl",
+            description = "Creates a new Krawl with the provided information. Requires authentication. " +
+                    "Validates all Gems are within Cebu City, calculates route, and stores Creator Notes and Lokal Secrets."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Krawl created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CreateKrawlResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error or boundary validation failed",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping
+    public ResponseEntity<CreateKrawlResponse> createKrawl(
+            @Valid @RequestBody CreateKrawlRequest request) {
+        log.debug("POST /api/krawls");
+
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
+        }
+
+        UUID krawlId = krawlService.createKrawl(request, userId);
+
+        CreateKrawlResponse response = CreateKrawlResponse.builder()
+                .krawlId(krawlId)
+                .message("Krawl created successfully")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * PUT /api/krawls/{id}
+     *
+     * Update an existing Krawl.
+     * Requires authentication and ownership.
+     *
+     * @param id Krawl ID
+     * @param request Update Krawl request
+     * @return UpdateKrawlResponse with updated Krawl ID
+     */
+    @Operation(
+            summary = "Update an existing Krawl",
+            description = "Updates an existing Krawl. Requires authentication and ownership. " +
+                    "Only the creator of the Krawl can update it."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Krawl updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateKrawlResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validation error or boundary validation failed",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden - You can only update Krawls that you created",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Krawl not found",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/{id}")
+    public ResponseEntity<UpdateKrawlResponse> updateKrawl(
+            @Parameter(description = "UUID of the Krawl to update", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateKrawlRequest request) {
+        log.debug("PUT /api/krawls/{}", id);
+
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
+        }
+
+        UUID krawlId = krawlService.updateKrawl(id, request, userId);
+
+        UpdateKrawlResponse response = UpdateKrawlResponse.builder()
+                .krawlId(krawlId)
+                .message("Krawl updated successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     /**
