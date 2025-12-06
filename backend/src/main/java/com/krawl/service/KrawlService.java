@@ -264,6 +264,7 @@ public class KrawlService {
                 .category(request.getCategory())
                 .difficulty(request.getDifficulty())
                 .coverImage(request.getCoverImage())
+                .cloudinaryPublicId(request.getCoverImagePublicId())
                 .estimatedDurationMinutes(routeResult.getDurationMinutes())
                 .estimatedDistanceKm(routeResult.getDistanceKm())
                 .routePolyline(routeResult.getPolyline())
@@ -333,6 +334,9 @@ public class KrawlService {
         }
         if (request.getCoverImage() != null) {
             krawl.setCoverImage(request.getCoverImage());
+        }
+        if (request.getCoverImagePublicId() != null) {
+            krawl.setCloudinaryPublicId(request.getCoverImagePublicId());
         }
         if (request.getTags() != null) {
             krawl.setTags(new ArrayList<>(request.getTags()));
