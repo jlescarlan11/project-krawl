@@ -17,7 +17,8 @@ import type { GeocodingFeature } from "../types";
  */
 export interface LocationStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -31,7 +32,11 @@ export interface LocationStepProps {
  * - Cebu City boundary validation
  * - Real-time coordinate display
  */
-export function LocationStep({ onNext, onBack }: LocationStepProps) {
+export function LocationStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: LocationStepProps) {
   const { location, setLocation } = useGemCreationStore();
   const mapPickerRef = useRef<GemLocationPickerRef>(null);
 
@@ -159,8 +164,14 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
       <header className="shrink-0 border-b border-border-subtle bg-bg-white">
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
-            {/* Hidden back button in step 1 - no back navigation */}
-            <div className="w-10 h-10 shrink-0" />
+            <button
+              onClick={onBackToPreviousPage}
+              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
+              aria-label="Go back"
+              type="button"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
             <div className="flex-1 flex flex-col items-center justify-center gap-3">
               <h1 className="text-xl font-bold text-text-primary">
                 Create Gem

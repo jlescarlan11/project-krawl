@@ -416,7 +416,7 @@ export function CreateMenu({ variant = "header", className }: CreateMenuProps) {
                           "bg-bg-white rounded-lg shadow-elevation-3",
                           "border border-[var(--color-border-subtle)]",
                           variant === "header" ? "min-w-[200px]" : "min-w-[280px]",
-                          "py-2"
+                          "py-2 px-2"
                           // No animation - instant pop up
                         )}
                         style={{
@@ -452,7 +452,7 @@ export function CreateMenu({ variant = "header", className }: CreateMenuProps) {
                             type="button"
                             onClick={handleCreateGem}
                             className={cn(
-                              "flex items-center gap-3 px-4 py-3 text-left",
+                              "flex items-center gap-3 px-3 py-3 text-left",
                               "text-base font-medium text-text-primary",
                               "hover:bg-light-green/10 hover:text-primary-green",
                               "transition-colors rounded-lg",
@@ -473,7 +473,7 @@ export function CreateMenu({ variant = "header", className }: CreateMenuProps) {
                             type="button"
                             onClick={handleCreateKrawl}
                             className={cn(
-                              "flex items-center gap-3 px-4 py-3 text-left",
+                              "flex items-center gap-3 px-3 py-3 text-left",
                               "text-base font-medium text-text-primary",
                               "hover:bg-light-green/10 hover:text-primary-green",
                               "transition-colors rounded-lg",

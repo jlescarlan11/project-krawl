@@ -24,7 +24,8 @@ import { useToast } from "@/components";
  * Props for PreviewStep component
  */
 export interface PreviewStepProps {
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -39,7 +40,10 @@ export interface PreviewStepProps {
  * - Validates data completeness
  * - Mobile-responsive
  */
-export function PreviewStep({ onBack }: PreviewStepProps) {
+export function PreviewStep({
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: PreviewStepProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const { error: toastError } = useToast();
@@ -288,7 +292,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
           <div className="p-4">
             <div className="flex items-center mb-3 relative">
               <button
-                onClick={onBack}
+                onClick={onBackToPreviousPage}
                 className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors absolute left-0"
                 aria-label="Go back"
                 type="button"
@@ -334,7 +338,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         {/* Footer */}
         <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
           <div className="flex flex-row gap-3 items-center">
-            <Button variant="outline" size="lg" onClick={onBack} className="flex-1 sm:flex-initial sm:min-w-[120px]">
+            <Button variant="outline" size="lg" onClick={onBackToPreviousStep} className="flex-1 sm:flex-initial sm:min-w-[120px]">
               Back
             </Button>
             <Button variant="primary" size="lg" disabled className="flex-1 sm:flex-1">
@@ -353,7 +357,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={onBack}
+              onClick={onBackToPreviousPage}
               className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
@@ -468,7 +472,7 @@ export function PreviewStep({ onBack }: PreviewStepProps) {
           <Button
             variant="outline"
             size="lg"
-            onClick={onBack}
+            onClick={onBackToPreviousStep}
             disabled={isSubmitting}
             className="flex-1 sm:flex-initial sm:min-w-[120px]"
           >

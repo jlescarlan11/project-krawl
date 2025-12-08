@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
-import { Radio } from "@/components/ui/radio";
 import { FileUpload } from "@/components/ui/file-upload";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
@@ -29,7 +28,8 @@ import type { DifficultyLevel } from "@/lib/difficulty";
  */
 export interface BasicInfoStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -50,12 +50,16 @@ const DIFFICULTY_OPTIONS: { value: DifficultyLevel; label: string }[] = [
  * - Krawl name input (max 100 characters)
  * - Description textarea (min 50, max 500 characters)
  * - Category selection (dropdown)
- * - Difficulty level selection (radio buttons: Easy/Medium/Hard/Expert)
+ * - Difficulty level selection (dropdown: Easy/Medium/Hard/Expert)
  * - Character counters with color-coded warnings
  * - Real-time validation
  * - Form data persistence via Zustand
  */
-export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
+export function BasicInfoStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: BasicInfoStepProps) {
   const { basicInfo, setBasicInfo } = useKrawlCreationStore();
 
   // Form state
@@ -321,6 +325,12 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     label: cat.label,
   }));
 
+  // Difficulty options for Select
+  const difficultyOptions = DIFFICULTY_OPTIONS.map((option) => ({
+    value: option.value,
+    label: option.label,
+  }));
+
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
       {/* Header */}
@@ -328,7 +338,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={onBack}
+              onClick={onBackToPreviousPage}
               className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
@@ -451,45 +461,22 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
           />
 
           {/* Difficulty Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-primary">
-              Difficulty <span className="text-error ml-1">*</span>
-            </label>
-            <div className="space-y-3">
-              {DIFFICULTY_OPTIONS.map((option) => (
-                <Radio
-                  key={option.value}
-                  name="difficulty"
-                  label={option.label}
-                  value={option.value}
-                  checked={difficulty === option.value}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setDifficulty(option.value);
-                      // Mark as touched on change for immediate feedback
-                      if (!touched.difficulty) {
-                        setTouched((prev) => ({ ...prev, difficulty: true }));
-                      }
-                    }
-                  }}
-                />
-              ))}
-            </div>
-            {shouldShowError("difficulty") && (
-              <p
-                className="text-sm text-error flex items-center gap-1"
-                role="alert"
-              >
-                {errors.difficulty}
-              </p>
-            )}
-            {!shouldShowError("difficulty") && difficulty && (
-              <p className="text-sm text-success flex items-center gap-1">
-                <CheckCircle className="w-4 h-4" />
-                Difficulty selected
-              </p>
-            )}
-          </div>
+          <Select
+            label="Difficulty"
+            required
+            value={difficulty}
+            onChange={(e) => {
+              setDifficulty(e.target.value as DifficultyLevel);
+              // Mark as touched on change for immediate feedback
+              if (!touched.difficulty) {
+                setTouched((prev) => ({ ...prev, difficulty: true }));
+              }
+            }}
+            onBlur={() => handleBlur("difficulty")}
+            error={shouldShowError("difficulty") ? errors.difficulty : undefined}
+            options={difficultyOptions}
+            placeholder="Select difficulty level"
+          />
         </div>
       </div>
 

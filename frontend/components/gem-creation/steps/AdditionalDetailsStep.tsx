@@ -20,7 +20,8 @@ import { getTagSuggestionsByCategory } from "@/lib/constants/gem-tag-suggestions
  */
 export interface AdditionalDetailsStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -37,7 +38,8 @@ export interface AdditionalDetailsStepProps {
  */
 export function AdditionalDetailsStep({
   onNext,
-  onBack,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
 }: AdditionalDetailsStepProps) {
   const {
     details,
@@ -182,7 +184,7 @@ export function AdditionalDetailsStep({
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={onBack}
+              onClick={onBackToPreviousPage}
               className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
@@ -302,7 +304,7 @@ export function AdditionalDetailsStep({
           <Button
             variant="outline"
             size="lg"
-            onClick={onBack}
+            onClick={onBackToPreviousStep}
             className="flex-1 sm:flex-initial sm:min-w-[120px]"
           >
             Back

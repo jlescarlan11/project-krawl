@@ -9,7 +9,6 @@ import { MediaStep } from "./steps/MediaStep";
 import { AdditionalDetailsStep } from "./steps/AdditionalDetailsStep";
 import { PreviewStep } from "./steps/PreviewStep";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
-import { ROUTES } from "@/lib/routes";
 import { useAutoSaveDraft } from "./hooks/useAutoSaveDraft";
 
 /**
@@ -87,20 +86,20 @@ export function GemCreationFlow() {
   }, [currentStep, isNavigating, goToStep]);
 
   /**
-   * Navigate to previous step
+   * Header back arrow navigates to previous page (browser history)
    */
-  const goToPreviousStep = useCallback(() => {
+  const handleBackToPreviousPage = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  /**
+   * Footer Back button navigates to previous step
+   */
+  const handleBackToPreviousStep = useCallback(() => {
     if (currentStep > 0 && !isNavigating) {
       goToStep(currentStep - 1);
     }
   }, [currentStep, isNavigating, goToStep]);
-
-  /**
-   * Handle back navigation from first step
-   */
-  const handleBackFromFirstStep = useCallback(() => {
-    router.push(ROUTES.GEMS);
-  }, [router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-white">
@@ -109,7 +108,8 @@ export function GemCreationFlow() {
         {currentStep === 0 && (
           <LocationStep
             onNext={goToNextStep}
-            onBack={handleBackFromFirstStep}
+            onBackToPreviousPage={handleBackToPreviousPage}
+            onBackToPreviousStep={handleBackToPreviousStep}
           />
         )}
 
@@ -117,26 +117,35 @@ export function GemCreationFlow() {
         {currentStep === 1 && (
           <BasicInfoStep
             onNext={goToNextStep}
-            onBack={goToPreviousStep}
+            onBackToPreviousPage={handleBackToPreviousPage}
+            onBackToPreviousStep={handleBackToPreviousStep}
           />
         )}
 
         {/* Step 3: Media Upload (TASK-089) */}
         {currentStep === 2 && (
-          <MediaStep onNext={goToNextStep} onBack={goToPreviousStep} />
+          <MediaStep
+            onNext={goToNextStep}
+            onBackToPreviousPage={handleBackToPreviousPage}
+            onBackToPreviousStep={handleBackToPreviousStep}
+          />
         )}
 
         {/* Step 4: Additional Details (TASK-090) */}
         {currentStep === 3 && (
           <AdditionalDetailsStep
             onNext={goToNextStep}
-            onBack={goToPreviousStep}
+            onBackToPreviousPage={handleBackToPreviousPage}
+            onBackToPreviousStep={handleBackToPreviousStep}
           />
         )}
 
         {/* Step 5: Preview (TASK-095) */}
         {currentStep === 4 && (
-          <PreviewStep onBack={goToPreviousStep} />
+          <PreviewStep
+            onBackToPreviousPage={handleBackToPreviousPage}
+            onBackToPreviousStep={handleBackToPreviousStep}
+          />
         )}
       </StepTransition>
     </div>

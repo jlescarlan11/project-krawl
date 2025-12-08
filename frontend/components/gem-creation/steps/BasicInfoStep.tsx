@@ -24,7 +24,8 @@ import { useDebounce } from "@/hooks/useDebounce";
  */
 export interface BasicInfoStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -39,7 +40,11 @@ export interface BasicInfoStepProps {
  * - Real-time validation
  * - Form data persistence via Zustand
  */
-export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
+export function BasicInfoStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: BasicInfoStepProps) {
   const {
     details,
     setDetails,
@@ -329,7 +334,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={onBack}
+              onClick={onBackToPreviousPage}
               className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
@@ -420,7 +425,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
           <Button
             variant="outline"
             size="lg"
-            onClick={onBack}
+            onClick={onBackToPreviousStep}
             className="flex-1 sm:flex-initial sm:min-w-[120px]"
           >
             Back

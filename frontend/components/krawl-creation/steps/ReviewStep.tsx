@@ -21,7 +21,8 @@ import type { KrawlBasicInfo, SelectedGem } from "@/stores/krawl-creation-store"
 
 interface ReviewStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -37,7 +38,7 @@ function createPreviewKrawl(
   // Sort gems by order
   const sortedGems = [...selectedGems].sort((a, b) => a.order - b.order);
 
-  return {
+  const previewKrawl: KrawlDetail = {
     id: "preview", // Temporary ID for preview
     name: basicInfo.name,
     description: basicInfo.description,
@@ -55,6 +56,8 @@ function createPreviewKrawl(
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
+  
+  return previewKrawl;
 }
 
 /**
@@ -99,7 +102,11 @@ function validateData(
   };
 }
 
-export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
+export function ReviewStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: ReviewStepProps) {
   const { basicInfo, selectedGems, setCurrentStep, clearForm, currentDraftId, deleteDraftFromBackend } = useKrawlCreationStore();
   const { error: toastError } = useToast();
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -203,6 +210,11 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
     setSubmissionError(null);
 
     try {
+      // Ensure coverImage is present (should be validated already)
+      if (!basicInfo.coverImage) {
+        throw new Error("Cover image is required");
+      }
+
       // Prepare krawl data for API
       const krawlData: CreateKrawlRequest = {
         name: basicInfo.name,
@@ -309,7 +321,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
           <div className="p-4">
             <div className="flex items-center gap-3 relative">
               <button
-                onClick={onBack}
+                onClick={onBackToPreviousPage}
                 className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
                 aria-label="Go back"
                 type="button"
@@ -347,7 +359,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
               ))}
             </ul>
             <div className="flex gap-3 pt-4">
-              <Button variant="secondary" onClick={onBack} className="flex-1">
+              <Button variant="secondary" onClick={onBackToPreviousStep} className="flex-1">
                 Go Back
               </Button>
               <Button
@@ -373,7 +385,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
           <div className="p-4">
             <div className="flex items-center gap-3 relative">
               <button
-                onClick={onBack}
+                onClick={onBackToPreviousPage}
                 className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
                 aria-label="Go back"
                 type="button"
@@ -413,7 +425,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
           <div className="p-4">
             <div className="flex items-center gap-3 relative">
               <button
-                onClick={onBack}
+                onClick={onBackToPreviousPage}
                 className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
                 aria-label="Go back"
                 type="button"
@@ -476,7 +488,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={onBack}
+              onClick={onBackToPreviousPage}
               className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
@@ -534,7 +546,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
         <div className="max-w-7xl mx-auto">
           {/* Krawl Header - Preview Version (with custom onBack) */}
           <div className="relative">
-            <KrawlHeader krawl={previewKrawl} onBack={onBack} />
+            <KrawlHeader krawl={previewKrawl} onBack={onBackToPreviousPage} />
           </div>
 
           {/* Main Content - Two Column Layout on Desktop */}
@@ -598,7 +610,7 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
             <Button
               variant="outline"
               size="lg"
-              onClick={onBack}
+              onClick={onBackToPreviousStep}
               disabled={isPublishing}
               className="flex-1 sm:flex-initial sm:min-w-[120px]"
             >

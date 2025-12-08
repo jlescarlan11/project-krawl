@@ -34,7 +34,8 @@ import { validateGemPhotos } from "@/lib/validation/gem-validation";
  */
 export interface MediaStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -140,7 +141,11 @@ function PhotoCard({
  * - File validation (type, size)
  * - Form data persistence via Zustand
  */
-export function MediaStep({ onNext, onBack }: MediaStepProps) {
+export function MediaStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: MediaStepProps) {
   const { media, setMedia } = useGemCreationStore();
 
   // Form state
@@ -366,7 +371,7 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
         <div className="p-4">
           <div className="flex items-center gap-3 relative">
             <button
-              onClick={onBack}
+              onClick={onBackToPreviousPage}
               className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
               aria-label="Go back"
               type="button"
@@ -533,7 +538,7 @@ export function MediaStep({ onNext, onBack }: MediaStepProps) {
           <Button
             variant="outline"
             size="lg"
-            onClick={onBack}
+            onClick={onBackToPreviousStep}
             className="flex-1 sm:flex-initial sm:min-w-[120px]"
             type="button"
           >
