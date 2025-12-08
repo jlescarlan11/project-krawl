@@ -4,48 +4,51 @@ import { CheckCircle, Eye, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
-import { useGemCreationStore } from "@/stores/gem-creation-store";
+import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
 
 /**
- * Props for SuccessScreen component
+ * Props for KrawlSuccessScreen component
  */
-export interface SuccessScreenProps {
-  gemId: string;
-  gemName: string;
+export interface KrawlSuccessScreenProps {
+  krawlId: string;
+  krawlName: string;
 }
 
 /**
- * SuccessScreen Component
+ * KrawlSuccessScreen Component
  *
- * Displays success message after gem creation with options to:
- * - View the created gem
- * - Create another gem
+ * Displays success message after krawl creation with options to:
+ * - View the created krawl
+ * - Create another krawl
  *
  * Features:
- * - Success message with gem name
- * - View Gem button (navigates to gem detail page)
+ * - Success message with krawl name
+ * - View Krawl button (navigates to krawl detail page)
  * - Create Another button (resets form and starts new creation)
  * - Mobile-responsive design
  */
-export function SuccessScreen({ gemId, gemName }: SuccessScreenProps) {
+export function KrawlSuccessScreen({
+  krawlId,
+  krawlName,
+}: KrawlSuccessScreenProps) {
   const router = useRouter();
-  const { clearForm } = useGemCreationStore();
+  const { clearForm } = useKrawlCreationStore();
 
   /**
-   * Handle viewing the created gem
+   * Handle viewing the created krawl
    */
-  const handleViewGem = () => {
-    router.push(ROUTES.GEM_DETAIL(gemId));
+  const handleViewKrawl = () => {
+    router.push(ROUTES.KRAWL_DETAIL(krawlId));
   };
 
   /**
-   * Handle creating another gem
+   * Handle creating another krawl
    */
   const handleCreateAnother = () => {
     clearForm();
     // Stay on the same page, but reset to step 0
-    // The GemCreationFlow will handle resetting to step 0
-    router.push(ROUTES.GEM_CREATE);
+    // The KrawlCreationFlow will handle resetting to step 0
+    router.push(ROUTES.KRAWL_CREATE);
   };
 
   return (
@@ -63,11 +66,13 @@ export function SuccessScreen({ gemId, gemName }: SuccessScreenProps) {
           {/* Success Message */}
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-text-primary">
-              Gem Created Successfully!
+              Krawl Created Successfully!
             </h1>
             <p className="text-base text-text-secondary">
-              <span className="font-semibold text-text-primary">{gemName}</span>{" "}
-              has been submitted and is pending review.
+              <span className="font-semibold text-text-primary">
+                {krawlName}
+              </span>{" "}
+              has been created and is now available for others to discover.
             </p>
           </div>
 
@@ -76,12 +81,12 @@ export function SuccessScreen({ gemId, gemName }: SuccessScreenProps) {
             <Button
               variant="primary"
               size="lg"
-              onClick={handleViewGem}
+              onClick={handleViewKrawl}
               icon={<Eye className="w-5 h-5" />}
               iconPosition="left"
               className="flex-1"
             >
-              View Gem
+              View Krawl
             </Button>
             <Button
               variant="outline"
@@ -93,14 +98,6 @@ export function SuccessScreen({ gemId, gemName }: SuccessScreenProps) {
             >
               Create Another
             </Button>
-          </div>
-
-          {/* Info Message */}
-          <div className="pt-4">
-            <p className="text-sm text-text-tertiary">
-              Your Gem will be visible on the map once it's been verified by our
-              team.
-            </p>
           </div>
         </div>
       </div>

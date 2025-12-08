@@ -16,6 +16,7 @@ export interface KrawlBasicInfo {
   category: string;
   difficulty: string;
   coverImage?: string; // Cloudinary URL
+  coverImagePublicId?: string; // Cloudinary public ID for optimized URL generation
 }
 
 /**

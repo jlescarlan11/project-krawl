@@ -1,17 +1,20 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { ArrowLeft, Edit2, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Edit2, AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import { SaveDraftButton } from "../SaveDraftButton";
 import { KrawlHeader } from "@/components/krawls/KrawlHeader";
 import { KrawlInfo } from "@/components/krawls/KrawlInfo";
 import { KrawlGemList } from "@/components/krawls/KrawlGemList";
 import { KrawlTrailMap } from "@/components/krawls/KrawlTrailMap";
 import { getCachedRoute } from "@/lib/map/routingUtils";
+import { createKrawl, type CreateKrawlRequest } from "@/lib/api/krawls";
+import { useToast } from "@/components";
+import { handleApiError, getErrorMessage } from "@/lib/api-error-handler";
+import { KrawlSuccessScreen } from "../SuccessScreen";
 import type { KrawlDetail } from "@/types/krawl-detail";
 import type { Coordinates } from "@/components/map/gem-types";
 import type { KrawlBasicInfo, SelectedGem } from "@/stores/krawl-creation-store";
@@ -97,11 +100,17 @@ function validateData(
 }
 
 export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
-  const { basicInfo, selectedGems, setCurrentStep } = useKrawlCreationStore();
+  const { basicInfo, selectedGems, setCurrentStep, clearForm, currentDraftId, deleteDraftFromBackend } = useKrawlCreationStore();
+  const { error: toastError } = useToast();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(true);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [successState, setSuccessState] = useState<{
+    krawlId: string;
+    krawlName: string;
+  } | null>(null);
   const [routeMetrics, setRouteMetrics] = useState<{
     distance: number;
     duration: number;
@@ -191,24 +200,71 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
     }
 
     setIsPublishing(true);
+    setSubmissionError(null);
 
     try {
-      // TODO: Implement krawl creation API call
-      console.log("Publishing krawl:", {
-        basicInfo,
-        selectedGems: sortedGems,
-        routeMetrics,
+      // Prepare krawl data for API
+      const krawlData: CreateKrawlRequest = {
+        name: basicInfo.name,
+        description: basicInfo.description,
+        fullDescription: basicInfo.description, // Use description as full description if not provided
+        category: basicInfo.category,
+        difficulty: basicInfo.difficulty,
+        coverImage: basicInfo.coverImage,
+        coverImagePublicId: basicInfo.coverImagePublicId,
+        gems: sortedGems.map((sg) => ({
+          gemId: sg.gemId,
+          sequenceOrder: sg.order + 1, // Backend expects 1-based order
+          creatorNote: sg.creatorNote,
+          lokalSecret: sg.lokalSecret,
+        })),
+        tags: [], // Tags can be added later if needed
+      };
+
+      console.log("[Krawl Creation] Submitting krawl data:", {
+        name: krawlData.name,
+        category: krawlData.category,
+        gemCount: krawlData.gems.length,
       });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const createResponse = await createKrawl(krawlData);
 
-      // Navigate to success or krawls list
-      onNext();
+      if (createResponse.success && createResponse.krawlId) {
+        // Success! Delete current draft if it exists
+        if (currentDraftId) {
+          try {
+            await deleteDraftFromBackend(currentDraftId);
+            console.log("[Krawl Creation] Draft deleted after successful krawl creation");
+          } catch (draftError) {
+            // Log error but don't fail the krawl creation
+            console.error("[Krawl Creation] Failed to delete draft after krawl creation:", draftError);
+          }
+        }
+
+        // Store krawl name before clearing form
+        const createdKrawlName = basicInfo.name;
+        
+        // Clear form state so user starts fresh when creating next krawl
+        clearForm();
+
+        // Show success screen
+        setSuccessState({
+          krawlId: createResponse.krawlId,
+          krawlName: createdKrawlName,
+        });
+        setIsPublishing(false);
+      } else {
+        throw new Error(createResponse.message || "Failed to create krawl");
+      }
     } catch (error) {
-      console.error("Error publishing krawl:", error);
-      alert("Failed to publish krawl. Please try again.");
-    } finally {
+      console.error("[Krawl Creation] Error publishing krawl:", error);
+      
+      // Handle error using API error handler
+      const apiError = await handleApiError(error);
+      const errorMessage = getErrorMessage(apiError);
+      
+      setSubmissionError(errorMessage);
+      toastError("Submission Failed", errorMessage);
       setIsPublishing(false);
     }
   }, [
@@ -216,15 +272,33 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
     validation.isValid,
     basicInfo,
     sortedGems,
-    routeMetrics,
-    onNext,
+    currentDraftId,
+    deleteDraftFromBackend,
+    clearForm,
+    toastError,
   ]);
+
+  const handleRetry = useCallback(() => {
+    setSubmissionError(null);
+    handlePublish();
+  }, [handlePublish]);
 
   const canPublish =
     termsAccepted &&
     validation.isValid &&
     basicInfo &&
-    sortedGems.length >= 2;
+    sortedGems.length >= 2 &&
+    !isPublishing;
+
+  // Show success screen if submission was successful
+  if (successState) {
+    return (
+      <KrawlSuccessScreen
+        krawlId={successState.krawlId}
+        krawlName={successState.krawlName}
+      />
+    );
+  }
 
   // Show validation errors if data is incomplete
   if (!validation.isValid) {
@@ -491,18 +565,52 @@ export function ReviewStep({ onNext, onBack }: ReviewStepProps) {
         </div>
       </div>
 
-      {/* Footer - Publish Button and Save Draft */}
+      {/* Footer - Back and Publish Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex gap-3">
-            <SaveDraftButton />
+          {/* Error Message */}
+          {submissionError && (
+            <div className="mb-4 p-4 bg-error/10 border border-error/20 rounded-lg">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-error mb-1">
+                    Submission Failed
+                  </h3>
+                  <p className="text-sm text-text-secondary mb-3">
+                    {submissionError}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRetry}
+                    icon={<RefreshCw className="w-4 h-4" />}
+                    iconPosition="left"
+                  >
+                    Retry Submission
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-row gap-3 items-center">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onBack}
+              disabled={isPublishing}
+              className="flex-1 sm:flex-initial sm:min-w-[120px]"
+            >
+              Back
+            </Button>
             <Button
               variant="primary"
               size="lg"
               onClick={handlePublish}
-              disabled={!canPublish || isPublishing}
+              disabled={!canPublish}
               loading={isPublishing}
-              className="flex-1"
+              className="flex-1 sm:flex-1"
             >
               {isPublishing ? "Publishing..." : "Publish Krawl"}
             </Button>

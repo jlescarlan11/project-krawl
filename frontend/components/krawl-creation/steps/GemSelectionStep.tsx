@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import { SaveDraftButton } from "../SaveDraftButton";
 import { MapGem } from "@/components/map/gem-types";
 import { ContextInjectionForm } from "../ContextInjectionForm";
 import { cn } from "@/lib/utils";
@@ -418,16 +417,23 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer - Back and Continue Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <div className="flex gap-3">
-          <SaveDraftButton />
+        <div className="flex flex-row gap-3 items-center">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            className="flex-1 sm:flex-initial sm:min-w-[120px]"
+          >
+            Back
+          </Button>
           <Button
             variant="primary"
             size="lg"
             onClick={handleContinue}
             disabled={!canProceed}
-            className="flex-1"
+            className="flex-1 sm:flex-1"
           >
             Continue ({selectedGems.length}/{MIN_GEMS} gems)
           </Button>

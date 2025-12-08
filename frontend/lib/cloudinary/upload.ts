@@ -47,6 +47,7 @@ export interface UploadOptions {
   onError?: (error: string, file: File) => void;
   maxRetries?: number;
   timeout?: number; // milliseconds
+  folder?: string; // Cloudinary folder (default: 'krawl-gems')
 }
 
 /**
@@ -124,7 +125,7 @@ export async function uploadSingleFile(
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
-      formData.append('folder', 'krawl-gems'); // Store in specific folder
+      formData.append('folder', options.folder || 'krawl-gems'); // Store in specific folder
       
       // Note: Transformations are not allowed in unsigned uploads
       // Configure transformations in the upload preset or apply via URL transformations when displaying
@@ -345,4 +346,29 @@ export async function retryUpload(
 export function cancelUpload(fileIndex: number): void {
   // TODO: Implement cancel logic with XHR reference storage
   console.warn('Cancel upload not yet implemented');
+}
+
+/**
+ * Upload a Krawl cover image to Cloudinary
+ * 
+ * This is a specialized function for uploading Krawl cover images with:
+ * - Specific folder (krawl-covers)
+ * - Optimized for 16:9 aspect ratio display
+ * - WebP format conversion (applied via URL transformations)
+ * 
+ * @param file - Image file to upload
+ * @param fileIndex - Index of file (for progress tracking)
+ * @param options - Upload options
+ * @returns Upload result with public ID for URL transformations
+ */
+export async function uploadKrawlCoverImage(
+  file: File,
+  fileIndex: number = 0,
+  options: UploadOptions = {}
+): Promise<UploadResult> {
+  // Use krawl-covers folder specifically for Krawl cover images
+  return uploadSingleFile(file, fileIndex, {
+    ...options,
+    folder: 'krawl-covers',
+  });
 }

@@ -53,6 +53,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/gems/**").permitAll() // Public gem GET endpoints only
+                .requestMatchers("/api/landing/**").permitAll() // Public landing endpoints (statistics, featured krawls, etc.)
                 .requestMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )

@@ -1,9 +1,10 @@
 "use client";
 
-import { memo, useMemo, useCallback, useSyncExternalStore } from "react";
+import { memo, useMemo, useCallback, useSyncExternalStore, useState, useEffect, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { User, Home, Map, Search, Plus } from "lucide-react";
+import { User, Home, Map, Search } from "lucide-react";
 import { useAuthStore } from "@/stores";
 import { ROUTES } from "@/lib/routes";
 import { NavLink } from "./NavLink";
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { ProtectedActionGate } from "@/components/guest";
 import { Logo } from "@/components/brand";
 import { getAvatarUrl } from "@/lib/cloudinary/urls";
+import { CreateMenu } from "./CreateMenu";
 
 /**
  * Get cached auth from localStorage synchronously - OPTIMIZATION
@@ -122,13 +124,101 @@ export const Sidebar = memo(function Sidebar() {
   const avatarWrapperClasses =
     "h-full w-full overflow-hidden rounded-full bg-gradient-to-br from-primary-green/10 to-light-green/10 text-text-secondary";
   const avatarImageClasses = "h-full w-full object-cover";
+  
+  // Track avatar image load errors
+  const [avatarError, setAvatarError] = useState(false);
+  
+  // Reset avatar error when user or avatar changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [currentUser?.id, currentUser?.avatar]);
 
-  const guestNavClasses = cn(
-    "flex items-center justify-center px-3 py-3 rounded-xl",
-    "text-base font-medium transition-all duration-200",
-    "focus:outline-2 focus:outline-accent-orange focus:outline-offset-2",
-    "text-text-primary hover:bg-primary-green/10 hover:text-primary-green hover:scale-105 active:scale-95"
-  );
+  // Tooltip state for logo, profile, and sign in button
+  const [logoHovered, setLogoHovered] = useState(false);
+  const [profileHovered, setProfileHovered] = useState(false);
+  const [signInHovered, setSignInHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [logoTooltipPos, setLogoTooltipPos] = useState({ top: 0, left: 0 });
+  const [profileTooltipPos, setProfileTooltipPos] = useState({ top: 0, left: 0 });
+  const [signInTooltipPos, setSignInTooltipPos] = useState({ top: 0, left: 0 });
+  const logoRef = useRef<HTMLAnchorElement>(null);
+  const profileRef = useRef<HTMLElement>(null);
+  const signInRef = useRef<HTMLButtonElement>(null);
+
+  // Track mount state for portal
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Calculate logo tooltip position
+  useLayoutEffect(() => {
+    if (logoHovered && logoRef.current) {
+      const updatePosition = () => {
+        if (logoRef.current) {
+          const rect = logoRef.current.getBoundingClientRect();
+          const sidebarGap = 16;
+          setLogoTooltipPos({
+            top: rect.top + rect.height / 2,
+            left: rect.right + sidebarGap,
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [logoHovered]);
+
+  // Calculate profile tooltip position
+  useLayoutEffect(() => {
+    if (profileHovered && profileRef.current) {
+      const updatePosition = () => {
+        if (profileRef.current) {
+          const rect = profileRef.current.getBoundingClientRect();
+          const sidebarGap = 16;
+          setProfileTooltipPos({
+            top: rect.top + rect.height / 2,
+            left: rect.right + sidebarGap,
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [profileHovered]);
+
+  // Calculate sign in button tooltip position
+  useLayoutEffect(() => {
+    if (signInHovered && signInRef.current) {
+      const updatePosition = () => {
+        if (signInRef.current) {
+          const rect = signInRef.current.getBoundingClientRect();
+          const sidebarGap = 16;
+          setSignInTooltipPos({
+            top: rect.top + rect.height / 2,
+            left: rect.right + sidebarGap,
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [signInHovered]);
+
 
   return (
     <aside
@@ -145,7 +235,10 @@ export const Sidebar = memo(function Sidebar() {
         {/* Logo */}
         <div className="flex items-center justify-center border-b border-[var(--color-border-subtle)] p-4">
           <Link
+            ref={logoRef}
             href={ROUTES.HOME}
+            onMouseEnter={() => setLogoHovered(true)}
+            onMouseLeave={() => setLogoHovered(false)}
             className={cn(
               "flex items-center justify-center rounded-xl p-2",
               "transition-all duration-200 hover:scale-110 hover:rotate-3",
@@ -153,7 +246,6 @@ export const Sidebar = memo(function Sidebar() {
               "focus:outline-2 focus:outline-primary-green focus:outline-offset-2"
             )}
             aria-label="Krawl Home"
-            title="Krawl Home"
           >
             <Logo
               variant="full-color"
@@ -188,39 +280,7 @@ export const Sidebar = memo(function Sidebar() {
               hideLabel={true}
               className="w-full justify-center"
             />
-            <ProtectedActionGate
-              context="create"
-              message="Sign in to unlock creator tools"
-              promptOptions={{
-                redirectTo: ROUTES.GEM_CREATE,
-                preserveFilters: false,
-              }}
-            >
-              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-                isGuest ? (
-                  <>
-                    <button
-                      type="button"
-                      className={guestNavClasses}
-                      onClick={() => requestSignIn()}
-                      aria-describedby={promptId}
-                      title={promptMessage}
-                    >
-                      <Plus className="w-5 h-5 shrink-0" />
-                    </button>
-                    <span className="sr-only">{Prompt}</span>
-                  </>
-                ) : (
-                  <NavLink
-                    href={ROUTES.GEM_CREATE}
-                    label="Create"
-                    icon={Plus}
-                    hideLabel={true}
-                    className="w-full justify-center"
-                  />
-                )
-              }
-            </ProtectedActionGate>
+            <CreateMenu variant="sidebar" />
           </div>
         </nav>
 
@@ -243,29 +303,34 @@ export const Sidebar = memo(function Sidebar() {
               </div>
             ) : isGuest ? (
               <Button
+                ref={signInRef}
                 variant="primary"
                 size="sm"
                 onClick={handleSignIn}
+                onMouseEnter={() => setSignInHovered(true)}
+                onMouseLeave={() => setSignInHovered(false)}
                 aria-label="Sign in"
-                title="Sign in to access your profile"
                 className="w-11 h-11 p-0 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
               >
                 <User className="w-5 h-5" />
               </Button>
             ) : (
               <Link
+                ref={profileRef as React.RefObject<HTMLAnchorElement>}
                 href={profileHref}
+                onMouseEnter={() => setProfileHovered(true)}
+                onMouseLeave={() => setProfileHovered(false)}
                 className={profileChipClasses}
-                title={`View ${profileName} profile`}
                 aria-label={`View ${profileName} profile`}
               >
                 <span className={avatarWrapperClasses}>
-                  {currentUser?.avatar ? (
+                  {currentUser?.avatar && !avatarError ? (
                     <img
                       src={getAvatarUrl(currentUser.avatar) || currentUser.avatar}
                       alt={`${profileName} avatar`}
                       className={`${avatarImageClasses} block`}
                       loading="lazy"
+                      onError={() => setAvatarError(true)}
                     />
                   ) : (
                     <User className="h-5 w-5" />
@@ -277,6 +342,108 @@ export const Sidebar = memo(function Sidebar() {
           </div>
         </div>
       </div>
+
+      {/* Logo tooltip */}
+      {logoHovered && mounted && (
+        createPortal(
+          <div
+            className={cn(
+              "fixed z-[1000]",
+              "bg-bg-white rounded-lg shadow-elevation-3",
+              "border border-[var(--color-border-subtle)]",
+              "px-3 py-2",
+              "text-sm font-medium text-text-primary",
+              "whitespace-nowrap"
+            )}
+            style={{
+              top: `${logoTooltipPos.top}px`,
+              left: `${logoTooltipPos.left}px`,
+              transform: "translateY(-50%)",
+            }}
+            role="tooltip"
+            aria-hidden="true"
+          >
+            <div
+              className="absolute left-0 top-1/2 -translate-x-full -translate-y-1/2 flex items-center"
+              aria-hidden="true"
+            >
+              <div
+                className="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-t-transparent border-b-transparent border-r-bg-white"
+              />
+            </div>
+            Krawl Home
+          </div>,
+          document.body
+        )
+      )}
+
+      {/* Profile tooltip */}
+      {profileHovered && mounted && !isGuest && (
+        createPortal(
+          <div
+            className={cn(
+              "fixed z-[1000]",
+              "bg-bg-white rounded-lg shadow-elevation-3",
+              "border border-[var(--color-border-subtle)]",
+              "px-3 py-2",
+              "text-sm font-medium text-text-primary",
+              "whitespace-nowrap"
+            )}
+            style={{
+              top: `${profileTooltipPos.top}px`,
+              left: `${profileTooltipPos.left}px`,
+              transform: "translateY(-50%)",
+            }}
+            role="tooltip"
+            aria-hidden="true"
+          >
+            <div
+              className="absolute left-0 top-1/2 -translate-x-full -translate-y-1/2 flex items-center"
+              aria-hidden="true"
+            >
+              <div
+                className="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-t-transparent border-b-transparent border-r-bg-white"
+              />
+            </div>
+            {`View ${profileName} profile`}
+          </div>,
+          document.body
+        )
+      )}
+
+      {/* Sign in button tooltip */}
+      {signInHovered && mounted && isGuest && (
+        createPortal(
+          <div
+            className={cn(
+              "fixed z-[1000]",
+              "bg-bg-white rounded-lg shadow-elevation-3",
+              "border border-[var(--color-border-subtle)]",
+              "px-3 py-2",
+              "text-sm font-medium text-text-primary",
+              "whitespace-nowrap"
+            )}
+            style={{
+              top: `${signInTooltipPos.top}px`,
+              left: `${signInTooltipPos.left}px`,
+              transform: "translateY(-50%)",
+            }}
+            role="tooltip"
+            aria-hidden="true"
+          >
+            <div
+              className="absolute left-0 top-1/2 -translate-x-full -translate-y-1/2 flex items-center"
+              aria-hidden="true"
+            >
+              <div
+                className="w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-t-transparent border-b-transparent border-r-bg-white"
+              />
+            </div>
+            Sign in to access your profile
+          </div>,
+          document.body
+        )
+      )}
     </aside>
   );
 });

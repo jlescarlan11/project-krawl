@@ -11,7 +11,6 @@ import { Radio } from "@/components/ui/radio";
 import { FileUpload } from "@/components/ui/file-upload";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import { SaveDraftButton } from "../SaveDraftButton";
 import {
   validateKrawlName,
   validateKrawlDescription,
@@ -21,7 +20,7 @@ import {
   validateCoverImageUrl,
   getCharacterCountColor,
 } from "@/lib/validation/krawl-validation";
-import { uploadSingleFile } from "@/lib/cloudinary/upload";
+import { uploadKrawlCoverImage } from "@/lib/cloudinary/upload";
 import { GEM_CATEGORIES } from "@/lib/constants/gem-categories";
 import type { DifficultyLevel } from "@/lib/difficulty";
 
@@ -67,6 +66,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     (basicInfo?.difficulty as DifficultyLevel) || ""
   );
   const [coverImageUrl, setCoverImageUrl] = useState(basicInfo?.coverImage || "");
+  const [coverImagePublicId, setCoverImagePublicId] = useState(basicInfo?.coverImagePublicId || "");
 
   // Cover image upload state
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -191,6 +191,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       setCoverImagePreview(null);
       setCoverImageFile(null);
       setCoverImageUrl("");
+      setCoverImagePublicId("");
       setUploadProgress(0);
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -223,12 +224,12 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       return newErrors;
     });
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary using Krawl-specific upload function
     setIsUploadingCover(true);
     setUploadProgress(0);
 
     try {
-      const result = await uploadSingleFile(file, 0, {
+      const result = await uploadKrawlCoverImage(file, 0, {
         onProgress: (progress) => {
           setUploadProgress(progress.progress);
         },
@@ -244,6 +245,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
 
       if (result.success) {
         setCoverImageUrl(result.url);
+        setCoverImagePublicId(result.publicId);
         setErrors((prev) => {
           const newErrors = { ...prev };
           delete newErrors.coverImage;
@@ -295,6 +297,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       category,
       difficulty: difficulty as DifficultyLevel,
       coverImage: coverImageUrl,
+      coverImagePublicId: coverImagePublicId,
     });
 
     // Navigate to next step
@@ -306,6 +309,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     category,
     difficulty,
     coverImageUrl,
+    coverImagePublicId,
     setBasicInfo,
     onNext,
     validateFields,
@@ -489,20 +493,17 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
         </div>
       </div>
 
-      {/* Footer - Continue Button and Save Draft */}
+      {/* Footer - Continue Button */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <div className="flex gap-3">
-          <SaveDraftButton />
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleContinue}
-            disabled={!canProceed}
-            className="flex-1"
-          >
-            Continue
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={handleContinue}
+          disabled={!canProceed}
+          className="w-full"
+        >
+          Continue
+        </Button>
       </div>
     </div>
   );

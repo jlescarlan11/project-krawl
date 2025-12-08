@@ -264,3 +264,83 @@ export function getAvatarUrl(
   return avatarUrl;
 }
 
+/**
+ * Generate optimized Krawl cover image URL with 16:9 aspect ratio
+ * @param publicIdOrUrl - Public ID or full Cloudinary URL
+ * @param width - Image width (default: 1920)
+ * @returns Optimized cover image URL with 16:9 aspect ratio
+ */
+export function getKrawlCoverUrl(
+  publicIdOrUrl: string,
+  width: number = 1920
+): string {
+  // Calculate height for 16:9 aspect ratio
+  const height = Math.round((width * 9) / 16);
+  
+  return getOptimizedUrl(publicIdOrUrl, {
+    width,
+    height,
+    format: 'webp',
+    quality: 'auto',
+    crop: 'fill',
+    gravity: 'auto', // Auto-detect best crop area
+  });
+}
+
+/**
+ * Generate thumbnail URL for Krawl cover image (16:9 aspect ratio)
+ * @param publicIdOrUrl - Public ID or full Cloudinary URL
+ * @param width - Thumbnail width (default: 400)
+ * @returns Thumbnail URL with 16:9 aspect ratio
+ */
+export function getKrawlCoverThumbnail(
+  publicIdOrUrl: string,
+  width: number = 400
+): string {
+  return getKrawlCoverUrl(publicIdOrUrl, width);
+}
+
+/**
+ * Generate medium size URL for Krawl cover image (16:9 aspect ratio)
+ * @param publicIdOrUrl - Public ID or full Cloudinary URL
+ * @param width - Medium width (default: 800)
+ * @returns Medium size URL with 16:9 aspect ratio
+ */
+export function getKrawlCoverMedium(
+  publicIdOrUrl: string,
+  width: number = 800
+): string {
+  return getKrawlCoverUrl(publicIdOrUrl, width);
+}
+
+/**
+ * Generate large size URL for Krawl cover image (16:9 aspect ratio)
+ * @param publicIdOrUrl - Public ID or full Cloudinary URL
+ * @param width - Large width (default: 1920)
+ * @returns Large size URL with 16:9 aspect ratio
+ */
+export function getKrawlCoverLarge(
+  publicIdOrUrl: string,
+  width: number = 1920
+): string {
+  return getKrawlCoverUrl(publicIdOrUrl, width);
+}
+
+/**
+ * Generate responsive srcset for Krawl cover image (16:9 aspect ratio)
+ * @param publicIdOrUrl - Public ID or full Cloudinary URL
+ * @param sizes - Array of widths for responsive images (default: [400, 800, 1200, 1920])
+ * @returns Srcset string with 16:9 aspect ratio images
+ */
+export function getKrawlCoverSrcset(
+  publicIdOrUrl: string,
+  sizes: number[] = [400, 800, 1200, 1920]
+): string {
+  return sizes
+    .map((width) => {
+      const url = getKrawlCoverUrl(publicIdOrUrl, width);
+      return `${url} ${width}w`;
+    })
+    .join(', ');
+}
+

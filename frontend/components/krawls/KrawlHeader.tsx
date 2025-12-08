@@ -100,13 +100,14 @@ export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
             
             {/* Image */}
             <Image
-              src={krawl.coverImage}
+              src={krawl.coverImage || ''}
               alt={krawl.name}
               fill
               className={`object-cover transition-opacity duration-300 ${
                 imageLoading ? "opacity-0" : "opacity-100"
               }`}
               priority
+              sizes="100vw"
               onLoad={() => setImageLoading(false)}
               onError={() => {
                 setImageLoading(false);
