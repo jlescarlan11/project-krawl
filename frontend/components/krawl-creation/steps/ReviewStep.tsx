@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { ArrowLeft, AlertCircle, Loader2, RefreshCw, Info } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
 import { PreviewKrawlHeader } from "@/components/krawls/PreviewKrawlHeader";
 import { KrawlInfo } from "@/components/krawls/KrawlInfo";
@@ -14,6 +13,7 @@ import { createKrawl, type CreateKrawlRequest } from "@/lib/api/krawls";
 import { useToast } from "@/components";
 import { handleApiError, getErrorMessage } from "@/lib/api-error-handler";
 import { KrawlSuccessScreen } from "../SuccessScreen";
+import { StepHeader, InfoBanner, LoadingState, ErrorDisplay } from "@/components/shared/creation";
 import type { KrawlDetail } from "@/types/krawl-detail";
 import type { Coordinates } from "@/components/map/gem-types";
 import type { KrawlBasicInfo, SelectedGem } from "@/stores/krawl-creation-store";
@@ -304,49 +304,19 @@ export function ReviewStep({
   if (!validation.isValid) {
     return (
       <div className="flex flex-col h-dvh bg-bg-white">
-        {/* Header */}
-        <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-          <div className="p-4">
-            <div className="flex items-center gap-3 relative">
-              <button
-                onClick={onBackToPreviousPage}
-                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-                aria-label="Go back"
-                type="button"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <h1 className="text-xl font-bold text-text-primary">
-                  Create Krawl
-                </h1>
-                <ProgressDots total={3} currentIndex={2} />
-              </div>
-              <p className="text-sm text-text-secondary shrink-0">
-                Step 3 of 3
-              </p>
-            </div>
-          </div>
-        </header>
-
-        {/* Error State */}
-        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-bg-light rounded-lg p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-error flex-shrink-0" />
-              <h2 className="text-lg font-semibold text-text-primary">
-                Preview Unavailable
-              </h2>
-            </div>
-            <p className="text-sm text-text-secondary">
-              Please complete all required fields before previewing your Krawl:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-sm text-text-secondary">
-              {validation.errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-            <div className="flex gap-3 pt-4">
+        <StepHeader
+          title="Create Krawl"
+          totalSteps={3}
+          currentStep={2}
+          onBack={onBackToPreviousPage}
+        />
+        <ErrorDisplay
+          title="Preview Unavailable"
+          subtitle="Please complete all required fields before previewing your Krawl:"
+          message={validation.errors}
+          centered
+          actions={
+            <>
               <Button variant="secondary" onClick={onBackToPreviousStep} className="flex-1">
                 Go Back
               </Button>
@@ -357,9 +327,9 @@ export function ReviewStep({
               >
                 Complete Form
               </Button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
       </div>
     );
   }
@@ -368,38 +338,13 @@ export function ReviewStep({
   if (isLoadingPreview || !previewKrawl) {
     return (
       <div className="flex flex-col h-dvh bg-bg-white">
-        {/* Header */}
-        <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-          <div className="p-4">
-            <div className="flex items-center gap-3 relative">
-              <button
-                onClick={onBackToPreviousPage}
-                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-                aria-label="Go back"
-                type="button"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <h1 className="text-xl font-bold text-text-primary">
-                  Create Krawl
-                </h1>
-                <ProgressDots total={3} currentIndex={2} />
-              </div>
-              <p className="text-sm text-text-secondary shrink-0">
-                Step 3 of 3
-              </p>
-            </div>
-          </div>
-        </header>
-
-        {/* Loading State */}
-        <div className="flex-1 overflow-y-auto flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
-            <p className="text-sm text-text-secondary">Loading preview...</p>
-          </div>
-        </div>
+        <StepHeader
+          title="Create Krawl"
+          totalSteps={3}
+          currentStep={2}
+          onBack={onBackToPreviousPage}
+        />
+        <LoadingState message="Loading preview..." fullScreen />
       </div>
     );
   }
@@ -408,42 +353,18 @@ export function ReviewStep({
   if (previewError) {
     return (
       <div className="flex flex-col h-dvh bg-bg-white">
-        {/* Header */}
-        <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-          <div className="p-4">
-            <div className="flex items-center gap-3 relative">
-              <button
-                onClick={onBackToPreviousPage}
-                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-                aria-label="Go back"
-                type="button"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <h1 className="text-xl font-bold text-text-primary">
-                  Create Krawl
-                </h1>
-                <ProgressDots total={3} currentIndex={2} />
-              </div>
-              <p className="text-sm text-text-secondary shrink-0">
-                Step 3 of 3
-              </p>
-            </div>
-          </div>
-        </header>
-
-        {/* Error State */}
-        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-bg-light rounded-lg p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-error flex-shrink-0" />
-              <h2 className="text-lg font-semibold text-text-primary">
-                Preview Error
-              </h2>
-            </div>
-            <p className="text-sm text-text-secondary">{previewError}</p>
-            <div className="flex gap-3 pt-4">
+        <StepHeader
+          title="Create Krawl"
+          totalSteps={3}
+          currentStep={2}
+          onBack={onBackToPreviousPage}
+        />
+        <ErrorDisplay
+          title="Preview Error"
+          message={previewError}
+          centered
+          actions={
+            <>
               <Button
                 variant="secondary"
                 onClick={() => setCurrentStep(1)}
@@ -461,9 +382,9 @@ export function ReviewStep({
               >
                 Retry
               </Button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
       </div>
     );
   }
@@ -471,39 +392,16 @@ export function ReviewStep({
   // Main preview view
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            <button
-              onClick={onBackToPreviousPage}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-              aria-label="Go back"
-              type="button"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">
-                Create Krawl
-              </h1>
-              <ProgressDots total={3} currentIndex={2} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">Step 3 of 3</p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Create Krawl"
+        totalSteps={3}
+        currentStep={2}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Preview Banner */}
       <div className="shrink-0 p-4 border-b border-border-subtle bg-bg-white">
-        <div className="flex items-start gap-2 p-3 bg-primary-green/5 border border-primary-green/20 rounded-lg">
-          <Info className="w-4 h-4 text-primary-green shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-xs text-text-secondary leading-relaxed">
-              This is how your Krawl will appear to others
-            </p>
-          </div>
-        </div>
+        <InfoBanner message="This is how your Krawl will appear to others" />
       </div>
 
       {/* Preview Content - Using Detail Page Components */}

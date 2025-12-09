@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { ArrowLeft, Search, Plus, X, Edit2, MapPin, GripVertical } from "lucide-react";
+import { Search, Plus, X, Edit2, MapPin, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
+import { StepHeader } from "@/components/shared/creation";
 import { MapGem } from "@/components/map/gem-types";
 import { ContextInjectionForm } from "../ContextInjectionForm";
 import { cn } from "@/lib/utils";
@@ -389,26 +389,12 @@ export function GemSelectionStep({
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            <button
-              onClick={onBackToPreviousPage}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-              aria-label="Go back"
-              type="button"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">Create Krawl</h1>
-              <ProgressDots total={3} currentIndex={1} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">Step 2 of 3</p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Create Krawl"
+        totalSteps={3}
+        currentStep={1}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto">

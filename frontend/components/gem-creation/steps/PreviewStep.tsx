@@ -3,10 +3,10 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, Loader2, AlertCircle, Info, RefreshCw } from "lucide-react";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
+import { StepHeader, InfoBanner, ErrorDisplay } from "@/components/shared/creation";
 import { PreviewGemHeader } from "../PreviewGemHeader";
 import { GemInfo } from "@/components/gems/GemInfo";
 import { transformFormDataToGemDetail } from "../utils/transformFormDataToGemDetail";
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { GemDetailSkeleton } from "@/components/gems/GemDetailSkeleton";
 import { SuccessScreen } from "../SuccessScreen";
 import { useToast } from "@/components";
+import { handleApiError, getErrorMessage } from "@/lib/api-error-handler";
 
 /**
  * Props for PreviewStep component
@@ -90,44 +91,7 @@ export function PreviewStep({
     return validatePreviewData(location, details, media);
   }, [location, details, media]);
 
-  /**
-   * Get user-friendly error message based on error type
-   */
-  const getErrorMessage = useCallback((error: unknown): string => {
-    if (error instanceof Error) {
-      const message = error.message.toLowerCase();
-      
-      // Network errors
-      if (message.includes("network") || message.includes("fetch") || message.includes("failed to fetch")) {
-        return "Network error. Please check your internet connection and try again.";
-      }
-      
-      // Timeout errors
-      if (message.includes("timeout") || message.includes("aborted")) {
-        return "Request timed out. Please try again.";
-      }
-      
-      // Validation errors
-      if (message.includes("validation") || message.includes("invalid") || message.includes("missing")) {
-        return error.message;
-      }
-      
-      // Server errors
-      if (message.includes("server") || message.includes("500") || message.includes("internal")) {
-        return "Server error. Please try again in a few moments.";
-      }
-      
-      // Authentication errors
-      if (message.includes("unauthorized") || message.includes("401") || message.includes("authentication")) {
-        return "Authentication required. Please sign in and try again.";
-      }
-      
-      // Return the original error message if it's user-friendly
-      return error.message;
-    }
-    
-    return "An unexpected error occurred. Please try again.";
-  }, []);
+  // Use shared API error handler instead of duplicate logic
 
   /**
    * Handle gem submission
@@ -259,7 +223,9 @@ export function PreviewStep({
       }
     } catch (error) {
       console.error("Gem creation error:", error);
-      const errorMessage = getErrorMessage(error);
+      // Use shared API error handler
+      const apiError = await handleApiError(error);
+      const errorMessage = getErrorMessage(apiError);
       setSubmissionError(errorMessage);
       toastError("Submission Failed", errorMessage);
       setIsSubmitting(false);
@@ -274,7 +240,6 @@ export function PreviewStep({
     updatePhotoUploadStatus,
     setUploadedUrls,
     setUploadedPublicIds,
-    getErrorMessage,
     toastError,
   ]);
 
@@ -287,50 +252,22 @@ export function PreviewStep({
   if (!gemDetail) {
     return (
       <div className="flex flex-col h-dvh bg-bg-white">
-        {/* Header */}
-        <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-          <div className="p-4">
-            <div className="flex items-center mb-3 relative">
-              <button
-                onClick={onBackToPreviousPage}
-                className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors absolute left-0"
-                aria-label="Go back"
-                type="button"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex-1 text-center">
-                <h1 className="text-xl font-bold text-text-primary">Preview</h1>
-              </div>
-              <p className="text-sm text-text-secondary absolute right-0">Step 5 of 5</p>
-            </div>
-            <ProgressDots total={5} currentIndex={4} />
-          </div>
-        </header>
+        <StepHeader
+          title="Preview"
+          totalSteps={5}
+          currentStep={4}
+          onBack={onBackToPreviousPage}
+        />
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-yellow-800 mb-1">
-                    Incomplete Data
-                  </p>
-                  <p className="text-sm text-yellow-700">
-                    Please complete all required steps before previewing.
-                  </p>
-                  {validation.missingFields.length > 0 && (
-                    <ul className="mt-2 list-disc list-inside text-sm text-yellow-700">
-                      {validation.missingFields.map((field) => (
-                        <li key={field}>{field}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ErrorDisplay
+              title="Incomplete Data"
+              subtitle="Please complete all required steps before previewing."
+              message={validation.missingFields}
+              variant="warning"
+            />
             <GemDetailSkeleton />
           </div>
         </div>
@@ -352,37 +289,16 @@ export function PreviewStep({
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            <button
-              onClick={onBackToPreviousPage}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-              aria-label="Go back"
-              type="button"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">Preview</h1>
-              <ProgressDots total={5} currentIndex={4} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">Step 5 of 5</p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Preview"
+        totalSteps={5}
+        currentStep={4}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Preview Banner */}
       <div className="shrink-0 p-4 border-b border-border-subtle bg-bg-white">
-        <div className="flex items-start gap-2 p-3 bg-primary-green/5 border border-primary-green/20 rounded-lg">
-          <Info className="w-4 h-4 text-primary-green shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-xs text-text-secondary leading-relaxed">
-              This is how your Gem will appear to others
-            </p>
-          </div>
-        </div>
+        <InfoBanner message="This is how your Gem will appear to others" />
       </div>
 
       {/* Content Area (Scrollable) */}
@@ -390,65 +306,39 @@ export function PreviewStep({
         {/* Validation Errors */}
         {!validation.isValid && (
           <div className="p-4">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-yellow-800 mb-1">
-                    Please fix the following issues:
-                  </p>
-                  {validation.missingFields.length > 0 && (
-                    <div className="mb-2">
-                      <p className="text-xs font-medium text-yellow-700 mb-1">
-                        Missing fields:
-                      </p>
-                      <ul className="list-disc list-inside text-xs text-yellow-700">
-                        {validation.missingFields.map((field) => (
-                          <li key={field}>{field}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {validation.errors.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-yellow-700 mb-1">Errors:</p>
-                      <ul className="list-disc list-inside text-xs text-yellow-700">
-                        {validation.errors.map((error) => (
-                          <li key={error}>{error}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ErrorDisplay
+              title="Please fix the following issues:"
+              message={[
+                ...(validation.missingFields.length > 0
+                  ? [`Missing fields: ${validation.missingFields.join(", ")}`]
+                  : []),
+                ...validation.errors,
+              ]}
+              variant="warning"
+            />
           </div>
         )}
 
         {/* Submission Error */}
         {submissionError && (
           <div className="p-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-red-800 mb-1">
-                    Submission Failed
-                  </p>
-                  <p className="text-sm text-red-700 mb-3">{submissionError}</p>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || !validation.isValid}
-                    icon={<RefreshCw className="w-4 h-4" />}
-                    iconPosition="left"
-                  >
-                    Retry Submission
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <ErrorDisplay
+              title="Submission Failed"
+              message={submissionError}
+              variant="error"
+              actions={
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !validation.isValid}
+                  icon={<RefreshCw className="w-4 h-4" />}
+                  iconPosition="left"
+                >
+                  Retry Submission
+                </Button>
+              }
+            />
           </div>
         )}
 

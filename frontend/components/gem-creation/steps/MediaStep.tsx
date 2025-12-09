@@ -8,7 +8,6 @@ import React, {
   useRef,
 } from "react";
 import {
-  ArrowLeft,
   Camera,
   GripVertical,
   X,
@@ -25,8 +24,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
+import { StepHeader } from "@/components/shared/creation";
 import { validateGemPhotos } from "@/lib/validation/gem-validation";
 
 /**
@@ -366,28 +365,12 @@ export function MediaStep({
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            <button
-              onClick={onBackToPreviousPage}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-              aria-label="Go back"
-              type="button"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">Create Gem</h1>
-              <ProgressDots total={5} currentIndex={2} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">
-              Step 3 of 5
-            </p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Create Gem"
+        totalSteps={5}
+        currentStep={2}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Content Area (Scrollable) */}
       <div className="flex-1 overflow-y-auto">
