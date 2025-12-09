@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { FileUpload } from "@/components/ui/file-upload";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
+import { CategoryChipSelector } from "@/components/gem-creation/CategoryChipSelector";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
 import {
   validateKrawlName,
@@ -319,12 +320,6 @@ export function BasicInfoStep({
     validateFields,
   ]);
 
-  // Category options for Select
-  const categoryOptions = GEM_CATEGORIES.map((cat) => ({
-    value: cat.value,
-    label: cat.label,
-  }));
-
   // Difficulty options for Select
   const difficultyOptions = DIFFICULTY_OPTIONS.map((option) => ({
     value: option.value,
@@ -388,6 +383,20 @@ export function BasicInfoStep({
             </div>
           </div>
 
+          {/* Category Selection */}
+          <CategoryChipSelector
+            value={category}
+            onChange={(value) => {
+              setCategory(value);
+              // Mark as touched on change for immediate feedback
+              if (!touched.category) {
+                setTouched((prev) => ({ ...prev, category: true }));
+              }
+            }}
+            error={shouldShowError("category") ? errors.category : undefined}
+            required
+          />
+
           {/* Description Textarea */}
           <div className="space-y-2">
             <Textarea
@@ -441,24 +450,6 @@ export function BasicInfoStep({
               previewUrl={coverImageUrl || coverImagePreview || undefined}
             />
           </div>
-
-          {/* Category Selection */}
-          <Select
-            label="Category"
-            required
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              // Mark as touched on change for immediate feedback
-              if (!touched.category) {
-                setTouched((prev) => ({ ...prev, category: true }));
-              }
-            }}
-            onBlur={() => handleBlur("category")}
-            error={shouldShowError("category") ? errors.category : undefined}
-            options={categoryOptions}
-            placeholder="Select a category"
-          />
 
           {/* Difficulty Selection */}
           <Select

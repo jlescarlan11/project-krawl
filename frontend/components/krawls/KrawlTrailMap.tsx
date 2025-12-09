@@ -22,9 +22,10 @@ const MapWithBoundary = dynamic(
 
 interface KrawlTrailMapProps {
   krawl: KrawlDetail;
+  isPreview?: boolean;
 }
 
-export function KrawlTrailMap({ krawl }: KrawlTrailMapProps) {
+export function KrawlTrailMap({ krawl, isPreview = false }: KrawlTrailMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const [mapKrawl, setMapKrawl] = useState<MapKrawl | null>(null);
@@ -118,16 +119,25 @@ export function KrawlTrailMap({ krawl }: KrawlTrailMapProps) {
     const [lng, lat] = krawl.gems[0].coordinates;
     return (
       <div className="w-full h-[400px] md:h-[500px] rounded-lg overflow-hidden relative">
-        <MapWithBoundary
-          ref={mapRef}
-          initialCenter={[lng, lat]}
-          initialZoom={15}
-          showKrawlTrails={false}
-          showGemMarkers={true}
-          containerStyle={{ width: "100%", height: "100%" }}
-          onLoad={handleMapLoad}
-          krawl={mapKrawl}
-        />
+      <MapWithBoundary
+        ref={mapRef}
+        initialCenter={[lng, lat]}
+        initialZoom={15}
+        showKrawlTrails={false}
+        showGemMarkers={true}
+        navigationControlPosition="bottom-right"
+        containerStyle={{ width: "100%", height: "100%" }}
+        onLoad={handleMapLoad}
+        krawl={mapKrawl}
+        interactive={!isPreview}
+        scrollZoom={!isPreview}
+        dragPan={!isPreview}
+        doubleClickZoom={!isPreview}
+        boxZoom={!isPreview}
+        showNavigationControl={!isPreview}
+        showGeolocateControl={!isPreview}
+        showMyLocationControl={!isPreview}
+      />
       </div>
     );
   }
@@ -173,37 +183,22 @@ export function KrawlTrailMap({ krawl }: KrawlTrailMapProps) {
         showKrawlTrails={true}
         selectedKrawlId={krawl.id}
         showGemMarkers={true}
+        navigationControlPosition="bottom-right"
         containerStyle={{ width: "100%", height: "100%" }}
         onLoad={handleMapLoad}
         krawl={mapKrawl}
         onKrawlTrailClick={(krawl) => {
           console.log("Trail clicked:", krawl.name);
         }}
+        interactive={!isPreview}
+        scrollZoom={!isPreview}
+        dragPan={!isPreview}
+        doubleClickZoom={!isPreview}
+        boxZoom={!isPreview}
+        showNavigationControl={!isPreview}
+        showGeolocateControl={!isPreview}
+        showMyLocationControl={!isPreview}
       />
-      
-      {/* Fit Bounds Button */}
-      {mapLoaded && krawl.gems.length > 1 && (
-        <button
-          onClick={fitBoundsToTrail}
-          className="absolute top-4 right-4 z-10 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-md border border-gray-200 flex items-center gap-2 transition-colors"
-          aria-label="Fit trail to view"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-            />
-          </svg>
-          <span className="text-sm font-medium">Fit Trail</span>
-        </button>
-      )}
     </div>
   );
 }

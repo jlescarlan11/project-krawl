@@ -193,7 +193,7 @@ export function AdditionalDetailsStep({
             </button>
             <div className="flex-1 flex flex-col items-center justify-center gap-3">
               <h1 className="text-xl font-bold text-text-primary">
-                Additional Details
+                Create Gem
               </h1>
               <ProgressDots total={5} currentIndex={3} />
             </div>

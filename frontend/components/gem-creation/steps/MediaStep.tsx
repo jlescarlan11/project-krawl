@@ -379,7 +379,7 @@ export function MediaStep({
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">Add Media</h1>
+              <h1 className="text-xl font-bold text-text-primary">Create Gem</h1>
               <ProgressDots total={5} currentIndex={2} />
             </div>
             <p className="text-sm text-text-secondary shrink-0">

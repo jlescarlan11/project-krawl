@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { ArrowLeft, Edit2, AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, AlertCircle, Loader2, RefreshCw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import { KrawlHeader } from "@/components/krawls/KrawlHeader";
+import { PreviewKrawlHeader } from "@/components/krawls/PreviewKrawlHeader";
 import { KrawlInfo } from "@/components/krawls/KrawlInfo";
 import { KrawlGemList } from "@/components/krawls/KrawlGemList";
 import { KrawlTrailMap } from "@/components/krawls/KrawlTrailMap";
@@ -109,7 +108,6 @@ export function ReviewStep({
 }: ReviewStepProps) {
   const { basicInfo, selectedGems, setCurrentStep, clearForm, currentDraftId, deleteDraftFromBackend } = useKrawlCreationStore();
   const { error: toastError } = useToast();
-  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(true);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -188,17 +186,9 @@ export function ReviewStep({
     return createPreviewKrawl(basicInfo, selectedGems, routeMetrics);
   }, [basicInfo, selectedGems, routeMetrics]);
 
-  const handleEditBasicInfo = useCallback(() => {
-    setCurrentStep(0);
-  }, [setCurrentStep]);
-
-  const handleEditRoute = useCallback(() => {
-    setCurrentStep(1);
-  }, [setCurrentStep]);
 
   const handlePublish = useCallback(async () => {
     if (
-      !termsAccepted ||
       !validation.isValid ||
       !basicInfo ||
       sortedGems.length < 2
@@ -280,7 +270,6 @@ export function ReviewStep({
       setIsPublishing(false);
     }
   }, [
-    termsAccepted,
     validation.isValid,
     basicInfo,
     sortedGems,
@@ -296,7 +285,6 @@ export function ReviewStep({
   }, [handlePublish]);
 
   const canPublish =
-    termsAccepted &&
     validation.isValid &&
     basicInfo &&
     sortedGems.length >= 2 &&
@@ -458,7 +446,7 @@ export function ReviewStep({
             <div className="flex gap-3 pt-4">
               <Button
                 variant="secondary"
-                onClick={handleEditRoute}
+                onClick={() => setCurrentStep(1)}
                 className="flex-1"
               >
                 Edit Route
@@ -506,83 +494,46 @@ export function ReviewStep({
         </div>
       </header>
 
-      {/* Preview Content - Using Detail Page Components */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Review & Publish Heading with Edit Buttons */}
-        <div className="p-4 border-b border-border-subtle bg-bg-white sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h2 className="text-2xl font-bold text-text-primary">
-                  Review & Publish
-                </h2>
-                <p className="text-sm text-text-secondary mt-1">
-                  Review your krawl details before publishing
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleEditBasicInfo}
-                className="text-primary-green text-sm font-medium hover:underline flex items-center gap-1"
-                type="button"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit Basic Info
-              </button>
-              <button
-                onClick={handleEditRoute}
-                className="text-primary-green text-sm font-medium hover:underline flex items-center gap-1"
-                type="button"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit Route & Gems
-              </button>
-            </div>
+      {/* Preview Banner */}
+      <div className="shrink-0 p-4 border-b border-border-subtle bg-bg-white">
+        <div className="flex items-start gap-2 p-3 bg-primary-green/5 border border-primary-green/20 rounded-lg">
+          <Info className="w-4 h-4 text-primary-green shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-xs text-text-secondary leading-relaxed">
+              This is how your Krawl will appear to others
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Preview Content - Reuse Detail Page Layout */}
-        <div className="max-w-7xl mx-auto">
-          {/* Krawl Header - Preview Version (with custom onBack) */}
-          <div className="relative">
-            <KrawlHeader krawl={previewKrawl} onBack={onBackToPreviousPage} />
+      {/* Preview Content - Using Detail Page Components */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Preview Content - Non-interactive */}
+        <div className="pointer-events-none">
+          {/* Krawl Header - Preview Version (Full Width) */}
+          <div className="relative w-full">
+            <PreviewKrawlHeader krawl={previewKrawl} />
           </div>
 
-          {/* Main Content - Two Column Layout on Desktop */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 lg:px-0 mt-6">
-            {/* Left Column - Main Content (2/3 width on desktop) */}
-            <div className="lg:col-span-2 space-y-6">
-              <KrawlInfo krawl={previewKrawl} />
-              <KrawlTrailMap krawl={previewKrawl} />
-              <KrawlGemList krawl={previewKrawl} />
-            </div>
-
-            {/* Right Column - Sidebar (1/3 width on desktop) */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Terms & Conditions Card */}
-              <div className="bg-bg-white rounded-xl border border-bg-medium shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">
-                  Terms & Conditions
-                </h3>
-                <Checkbox
-                  label="I agree to the Terms & Conditions and confirm all information provided is accurate"
-                  checked={termsAccepted}
-                  onCheckedChange={setTermsAccepted}
-                  required
-                />
+          <div className="max-w-7xl mx-auto">
+            {/* Main Content - Full Width Layout */}
+            <div className="px-4 lg:px-0 mt-6">
+              <div className="space-y-6">
+                <KrawlInfo krawl={previewKrawl} />
+                <KrawlTrailMap krawl={previewKrawl} isPreview={true} />
+                <KrawlGemList krawl={previewKrawl} title="Route & Gems" />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer - Back and Publish Buttons */}
+      {/* Footer - Back and Submit Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* Error Message */}
-          {submissionError && (
-            <div className="mb-4 p-4 bg-error/10 border border-error/20 rounded-lg">
+        {/* Error Message */}
+        {submissionError && (
+          <div className="max-w-7xl mx-auto mb-4">
+            <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
@@ -604,34 +555,33 @@ export function ReviewStep({
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="flex flex-row gap-3 items-center">
+        <div className="flex flex-row gap-3 items-center">
+          <div className="relative min-w-0 flex-1 flex sm:flex-initial sm:min-w-[120px]">
             <Button
               variant="outline"
               size="lg"
               onClick={onBackToPreviousStep}
               disabled={isPublishing}
-              className="flex-1 sm:flex-initial sm:min-w-[120px]"
+              className="flex-1 sm:flex-initial sm:min-w-[120px] min-w-0"
             >
               Back
             </Button>
+          </div>
+          <div className="relative flex-1 sm:flex-1 min-w-0 flex">
             <Button
               variant="primary"
               size="lg"
               onClick={handlePublish}
               disabled={!canPublish}
               loading={isPublishing}
-              className="flex-1 sm:flex-1"
+              className="w-full"
             >
-              {isPublishing ? "Publishing..." : "Publish Krawl"}
+              {isPublishing ? "Submitting..." : "Submit"}
             </Button>
           </div>
-          {!termsAccepted && (
-            <p className="text-sm text-error text-center mt-2">
-              Please accept the Terms & Conditions to publish
-            </p>
-          )}
         </div>
       </div>
     </div>

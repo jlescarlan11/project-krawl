@@ -25,6 +25,7 @@ interface GemLocationMapProps {
   district: string;
   gemName: string;
   gemId: string;
+  isPreview?: boolean;
 }
 
 export function GemLocationMap({
@@ -33,6 +34,7 @@ export function GemLocationMap({
   district,
   gemName,
   gemId,
+  isPreview = false,
 }: GemLocationMapProps) {
   // Refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -101,12 +103,12 @@ export function GemLocationMap({
           "mapbox://styles/mapbox/standard",
         center: coordinates,
         zoom: 16, // Street-level detail
-        interactive: true,
+        interactive: !isPreview,
         scrollZoom: false, // Disable scroll-zoom to prevent page scroll hijacking
-        dragPan: true,
+        dragPan: !isPreview,
         dragRotate: false, // Keep map north-up
-        doubleClickZoom: true,
-        touchZoomRotate: true, // Enable pinch-zoom on mobile
+        doubleClickZoom: !isPreview,
+        touchZoomRotate: !isPreview, // Enable pinch-zoom on mobile
         keyboard: false, // Avoid conflicts with page navigation
         minZoom: 13,
         maxZoom: 18,
@@ -114,11 +116,13 @@ export function GemLocationMap({
         maxBounds: CEBU_CITY_MAX_BOUNDS, // Limit panning to Cebu City region
       });
 
-      // Add navigation controls
-      map.addControl(
-        new mapboxgl.NavigationControl({ showCompass: false }),
-        "bottom-right"
-      );
+      // Add navigation controls only if not in preview mode
+      if (!isPreview) {
+        map.addControl(
+          new mapboxgl.NavigationControl({ showCompass: false }),
+          "bottom-right"
+        );
+      }
 
       // Handle map load
       map.on("load", () => {

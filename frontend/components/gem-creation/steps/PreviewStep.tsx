@@ -460,7 +460,7 @@ export function PreviewStep({
 
             {/* Main Content - Full Width (Location Map is already in GemInfo) */}
             <div className="max-w-7xl mx-auto px-4 mt-6 pb-4 sm:pb-8">
-              <GemInfo gem={gemDetail} />
+              <GemInfo gem={gemDetail} isPreview={true} />
             </div>
           </article>
         </div>
