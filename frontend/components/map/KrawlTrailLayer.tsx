@@ -2,15 +2,24 @@
  * KrawlTrailLayer Component
  *
  * Renders Krawl trails (polylines) on the map connecting Gems in sequence.
+ * 
+ * Refactored for better maintainability and scalability:
+ * - Extracted constants and utilities
+ * - Separated layer management into custom hooks
+ * - Simplified event handling
  */
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import type mapboxgl from 'mapbox-gl';
 import { useKrawlTrails } from './useKrawlTrails';
-import { krawlToGeoJSONWithRouting, DEFAULT_TRAIL_STYLE } from './krawl-types';
+import { krawlToGeoJSONWithRouting } from './krawl-types';
 import type { MapKrawl } from './krawl-types';
+import { useTrailLayerManagement } from './useTrailLayerManagement';
+import { useTrailEventHandlers } from './useTrailEventHandlers';
+import { TRAIL_LAYER_IDS } from './trailLayerConstants';
+import { updateLineLayerStyle, updateArrowLayerStyle } from './trailLayerUtils';
 
 export interface KrawlTrailLayerProps {
   /**
@@ -58,7 +67,7 @@ export interface KrawlTrailLayerProps {
  * Displays Krawl trails on the map as polylines connecting Gems.
  * Handles trail styling, interactions, and selection states.
  */
-export function KrawlTrailLayer({
+function KrawlTrailLayer({
   map,
   selectedKrawlId,
   showTrails = true,
@@ -76,11 +85,23 @@ export function KrawlTrailLayer({
     enabled: showTrails && !krawl, // Disable fetch if krawl prop provided
   });
 
-  // Use provided krawl or fetched krawls
-  const krawls = krawl ? [krawl] : fetchedKrawls;
+  // Use provided krawl or fetched krawls - memoize to prevent unnecessary rerenders
+  const krawls = useMemo(() => {
+    return krawl ? [krawl] : fetchedKrawls;
+  }, [krawl, fetchedKrawls]);
+
+  // Layer management hook
+  const { addTrailLayers, removeTrailLayers } = useTrailLayerManagement(map);
+
+  // Event handlers hook
+  const { handleTrailClick, handleMouseEnter, handleMouseLeave } = useTrailEventHandlers({
+    krawls,
+    onTrailClick,
+    map,
+  });
 
   // Notify when trails are loaded
-  const onTrailsLoadRef = React.useRef(onTrailsLoad);
+  const onTrailsLoadRef = useRef(onTrailsLoad);
   useEffect(() => {
     onTrailsLoadRef.current = onTrailsLoad;
   }, [onTrailsLoad]);
@@ -91,17 +112,33 @@ export function KrawlTrailLayer({
     }
   }, [krawls, isLoading]);
 
-  // Store callback in ref to prevent effect reruns
-  const onTrailClickRef = React.useRef(onTrailClick);
-  useEffect(() => {
-    onTrailClickRef.current = onTrailClick;
-  }, [onTrailClick]);
+  // Create stable dependency key from krawl content to prevent unnecessary effect reruns
+  const krawlDependency = useMemo(() => {
+    if (!krawl) return null;
+    return {
+      id: krawl.id,
+      name: krawl.name,
+      gemIds: krawl.gems.map(g => g.id).join(','),
+      gemCoords: krawl.gems.map(g => `${g.coordinates[0]},${g.coordinates[1]}`).join('|'),
+    };
+  }, [krawl]);
+
+  const krawlDependencyKey = useMemo(() =>
+    JSON.stringify(krawlDependency),
+    [krawlDependency]
+  );
 
   // Add trails to map
   useEffect(() => {
     // If krawl prop is provided, don't wait for loading state
     const shouldWaitForLoad = !krawl && isLoading;
+
     if (!map || !showTrails || shouldWaitForLoad || krawls.length === 0) {
+      // Clean up if we're not showing trails
+      if (!showTrails || krawls.length === 0) {
+        removeTrailLayers();
+        setLayersAdded(false);
+      }
       return;
     }
 
@@ -120,234 +157,67 @@ export function KrawlTrailLayer({
     async function addTrailsToMap() {
       if (!map) return;
 
-      // Remove existing trail layers and sources
-      removeTrailLayers();
-
       setIsProcessingRoutes(true);
 
-      // Convert Krawls to GeoJSON with road-based routing
-      const features = await Promise.all(
-        krawls.map((krawl) => krawlToGeoJSONWithRouting(krawl, routingProfile))
-      );
-
-      const validFeatures = features.filter((feature) => feature !== null);
-
-      setIsProcessingRoutes(false);
-
-      if (validFeatures.length === 0) {
-        console.warn('No valid Krawl trails to display');
-        return;
-      }
-
-      // Create GeoJSON source
-      const sourceId = 'krawl-trails';
-      const sourceData: mapboxgl.AnySourceData = {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: validFeatures,
-        },
-      };
-
-      // Add source
-      if (!map.getSource(sourceId)) {
-        map.addSource(sourceId, sourceData);
-      }
-
-      // Add trail lines layer
-      const lineLayerId = 'krawl-trail-lines';
-      if (!map.getLayer(lineLayerId)) {
-        map.addLayer({
-          id: lineLayerId,
-          type: 'line',
-          source: sourceId,
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': ['get', 'color'],
-            'line-width': [
-              'case',
-              ['==', ['get', 'id'], selectedKrawlId || ''],
-              DEFAULT_TRAIL_STYLE.selectedLineWidth,
-              DEFAULT_TRAIL_STYLE.lineWidth,
-            ],
-            'line-opacity': [
-              'case',
-              ['==', ['get', 'id'], selectedKrawlId || ''],
-              DEFAULT_TRAIL_STYLE.selectedLineOpacity,
-              DEFAULT_TRAIL_STYLE.lineOpacity,
-            ],
-          },
-        });
-      }
-
-      // Add direction arrows layer
-      const arrowLayerId = 'krawl-trail-arrows';
-      const arrowIconId = 'krawl-trail-arrow-icon';
-      
-      // Load arrow icon if not already loaded
-      if (!map.hasImage(arrowIconId)) {
-        // Create arrow icon using canvas
-        const size = 24;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        
-        if (ctx) {
-          // Draw arrow pointing right
-          ctx.strokeStyle = '#3b82f6';
-          ctx.lineWidth = 2;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          
-          // Arrow body (horizontal line)
-          ctx.beginPath();
-          ctx.moveTo(4, size / 2);
-          ctx.lineTo(size - 4, size / 2);
-          ctx.stroke();
-          
-          // Arrow head (pointing right)
-          ctx.beginPath();
-          ctx.moveTo(size - 4, size / 2);
-          ctx.lineTo(size - 10, 6);
-          ctx.moveTo(size - 4, size / 2);
-          ctx.lineTo(size - 10, size - 6);
-          ctx.stroke();
-          
-          // Convert canvas to image element
-          const img = new Image();
-          img.src = canvas.toDataURL();
-          await new Promise<void>((resolve) => {
-            img.onload = () => {
-              map.addImage(arrowIconId, img);
-              resolve();
-            };
-            img.onerror = () => resolve(); // Continue even if image load fails
-          });
-        }
-      }
-      
-      // Add arrow layer if it doesn't exist
-      if (!map.getLayer(arrowLayerId)) {
-        map.addLayer({
-          id: arrowLayerId,
-          type: 'symbol',
-          source: sourceId,
-          layout: {
-            'symbol-placement': 'line',
-            'symbol-spacing': DEFAULT_TRAIL_STYLE.directionArrowSpacing || 50,
-            'icon-image': arrowIconId,
-            'icon-size': 0.8,
-            'icon-rotate': 90, // Rotate to point along line direction
-            'icon-rotation-alignment': 'map',
-            'icon-allow-overlap': true,
-            'icon-ignore-placement': true,
-          },
-          paint: {
-            'icon-opacity': [
-              'case',
-              ['==', ['get', 'id'], selectedKrawlId || ''],
-              0.8,
-              0.5,
-            ],
-          },
-        });
-      }
-
-      setLayersAdded(true);
-
-      // Set up click handlers
-      map.on('click', lineLayerId, handleTrailClick);
-      map.on('mouseenter', lineLayerId, () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', lineLayerId, () => {
-        map.getCanvas().style.cursor = '';
-      });
-    }
-
-    function handleTrailClick(e: mapboxgl.MapMouseEvent) {
-      if (!e.features || e.features.length === 0) return;
-
-      const feature = e.features[0];
-      const krawlId = feature.properties?.id;
-
-      if (krawlId) {
-        const krawl = krawls.find((k) => k.id === krawlId);
-        if (krawl) {
-          onTrailClickRef.current?.(krawl);
-        }
-      }
-    }
-
-    function removeTrailLayers() {
-      if (!map) return;
-
       try {
-        const layerIds = ['krawl-trail-lines', 'krawl-trail-arrows'];
-        const sourceIds = ['krawl-trails'];
+        // Convert Krawls to GeoJSON with road-based routing
+        const features = await Promise.all(
+          krawls.map((krawl) => krawlToGeoJSONWithRouting(krawl, routingProfile))
+        );
 
-        layerIds.forEach((layerId) => {
-          if (map && map.getLayer && map.getLayer(layerId)) {
-            map.off('click', layerId, handleTrailClick);
-            map.off('mouseenter', layerId, () => {});
-            map.off('mouseleave', layerId, () => {});
-            map.removeLayer(layerId);
-          }
+        const validFeatures = features.filter((feature) => feature !== null) as GeoJSON.Feature[];
+
+        if (validFeatures.length === 0) {
+          console.warn('No valid Krawl trails to display');
+          removeTrailLayers();
+          setLayersAdded(false);
+          return;
+        }
+
+        // Add layers using the management hook
+        await addTrailLayers(validFeatures, selectedKrawlId, {
+          click: handleTrailClick,
+          mouseenter: handleMouseEnter,
+          mouseleave: handleMouseLeave,
         });
 
-        sourceIds.forEach((sourceId) => {
-          if (map && map.getSource && map.getSource(sourceId)) {
-            map.removeSource(sourceId);
-          }
-        });
-
-        setLayersAdded(false);
+        setLayersAdded(true);
       } catch (error) {
-        console.warn('Error removing trail layers:', error);
+        console.error('Error adding trails to map:', error);
+        removeTrailLayers();
+        setLayersAdded(false);
+      } finally {
+        setIsProcessingRoutes(false);
       }
     }
 
     // Cleanup on unmount
     return () => {
       removeTrailLayers();
+      setLayersAdded(false);
     };
-  }, [map, krawls, isLoading, showTrails, selectedKrawlId, routingProfile, krawl]);
+  }, [
+    map,
+    krawls,
+    isLoading,
+    showTrails,
+    selectedKrawlId,
+    routingProfile,
+    krawlDependencyKey,
+    removeTrailLayers,
+    addTrailLayers,
+    handleTrailClick,
+    handleMouseEnter,
+    handleMouseLeave,
+    krawl,
+  ]);
 
   // Update trail styling when selection changes
   useEffect(() => {
     if (!map || !layersAdded) return;
 
-    const lineLayerId = 'krawl-trail-lines';
-    if (map.getLayer(lineLayerId)) {
-      map.setPaintProperty(lineLayerId, 'line-width', [
-        'case',
-        ['==', ['get', 'id'], selectedKrawlId || ''],
-        DEFAULT_TRAIL_STYLE.selectedLineWidth,
-        DEFAULT_TRAIL_STYLE.lineWidth,
-      ]);
-
-      map.setPaintProperty(lineLayerId, 'line-opacity', [
-        'case',
-        ['==', ['get', 'id'], selectedKrawlId || ''],
-        DEFAULT_TRAIL_STYLE.selectedLineOpacity,
-        DEFAULT_TRAIL_STYLE.lineOpacity,
-      ]);
-    }
-
-    // Update arrow opacity when selection changes
-    const arrowLayerId = 'krawl-trail-arrows';
-    if (map.getLayer(arrowLayerId)) {
-      map.setPaintProperty(arrowLayerId, 'icon-opacity', [
-        'case',
-        ['==', ['get', 'id'], selectedKrawlId || ''],
-        0.8,
-        0.5,
-      ]);
-    }
+    updateLineLayerStyle(map, selectedKrawlId, TRAIL_LAYER_IDS.LINES);
+    updateArrowLayerStyle(map, selectedKrawlId, TRAIL_LAYER_IDS.ARROWS);
   }, [map, selectedKrawlId, layersAdded]);
 
   // Log errors
@@ -360,3 +230,48 @@ export function KrawlTrailLayer({
   // This component doesn't render any UI elements
   return null;
 }
+
+// Memoize KrawlTrailLayer to prevent unnecessary re-renders
+const MemoizedKrawlTrailLayer = React.memo(
+  KrawlTrailLayer,
+  (prevProps, nextProps) => {
+    // Map reference check
+    if (prevProps.map !== nextProps.map) return false;
+    if (prevProps.selectedKrawlId !== nextProps.selectedKrawlId) return false;
+    if (prevProps.showTrails !== nextProps.showTrails) return false;
+    if (prevProps.routingProfile !== nextProps.routingProfile) return false;
+
+    // Krawl deep comparison
+    const prevKrawl = prevProps.krawl;
+    const nextKrawl = nextProps.krawl;
+
+    if (!prevKrawl && !nextKrawl) return true;
+    if (!prevKrawl || !nextKrawl) return false;
+
+    if (prevKrawl.id !== nextKrawl.id ||
+        prevKrawl.name !== nextKrawl.name ||
+        prevKrawl.color !== nextKrawl.color) return false;
+
+    if (prevKrawl.gems.length !== nextKrawl.gems.length) return false;
+
+    for (let i = 0; i < prevKrawl.gems.length; i++) {
+      const prevGem = prevKrawl.gems[i];
+      const nextGem = nextKrawl.gems[i];
+
+      if (prevGem.id !== nextGem.id ||
+          prevGem.coordinates[0] !== nextGem.coordinates[0] ||
+          prevGem.coordinates[1] !== nextGem.coordinates[1]) {
+        return false;
+      }
+    }
+
+    if (prevProps.onTrailClick !== nextProps.onTrailClick ||
+        prevProps.onTrailsLoad !== nextProps.onTrailsLoad) return false;
+
+    return true;
+  }
+);
+
+MemoizedKrawlTrailLayer.displayName = 'MemoizedKrawlTrailLayer';
+
+export { MemoizedKrawlTrailLayer as KrawlTrailLayer };

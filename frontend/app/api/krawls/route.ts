@@ -73,7 +73,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.jwt) {
+
+    // Validate session exists
+    if (!session) {
+      console.error("[POST /api/krawls] No session found");
       return NextResponse.json(
         {
           success: false,
@@ -82,6 +85,57 @@ export async function POST(request: NextRequest) {
         },
         { status: 401 }
       );
+    }
+
+    // Validate JWT exists
+    if (!session.jwt) {
+      console.error("[POST /api/krawls] Session exists but no JWT token", {
+        hasUser: !!session.user,
+        userId: session.user?.id,
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "Authentication token is missing. Please sign in again.",
+        },
+        { status: 401 }
+      );
+    }
+
+    // Validate JWT is not expired
+    try {
+      const jwtParts = session.jwt.split('.');
+      if (jwtParts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+
+      const payload = JSON.parse(Buffer.from(jwtParts[1], 'base64url').toString('utf-8'));
+      const now = Math.floor(Date.now() / 1000);
+
+      if (payload.exp && payload.exp < now) {
+        console.error("[POST /api/krawls] JWT token expired", {
+          exp: new Date(payload.exp * 1000).toISOString(),
+          now: new Date(now * 1000).toISOString(),
+        });
+        return NextResponse.json(
+          {
+            success: false,
+            error: "TokenExpired",
+            message: "Your session has expired. Please sign in again.",
+          },
+          { status: 401 }
+        );
+      }
+
+      console.log("[POST /api/krawls] JWT validation passed", {
+        userId: payload.sub,
+        expiresAt: payload.exp ? new Date(payload.exp * 1000).toISOString() : 'no expiration',
+        timeUntilExpiry: payload.exp ? `${Math.floor((payload.exp - now) / 60)} minutes` : 'N/A',
+      });
+    } catch (error) {
+      console.error("[POST /api/krawls] JWT validation error:", error);
+      // Continue anyway - let backend validate
     }
 
     const body = await request.json();

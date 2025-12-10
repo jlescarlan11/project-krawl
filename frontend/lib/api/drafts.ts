@@ -161,7 +161,9 @@ export async function saveKrawlDraft(data: KrawlDraftData): Promise<SaveDraftRes
     const result: SaveDraftResponse = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error || "Failed to save krawl draft");
+      // Include both error and message for better debugging
+      const errorMsg = result.message || result.error || "Failed to save krawl draft";
+      throw new Error(errorMsg);
     }
 
     return result;

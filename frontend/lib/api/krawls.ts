@@ -158,11 +158,16 @@ export async function createKrawl(
         );
       }
 
-      // Forbidden errors (403)
+      // Forbidden errors (403) - likely JWT validation failure
       if (response.status === 403) {
+        console.error("[createKrawl] 403 Forbidden - JWT validation likely failed", {
+          status: response.status,
+          responseData,
+        });
+
         throw new Error(
           responseData.message ||
-            "You don't have permission to perform this action."
+            "Authentication failed. Your session may have expired. Please sign out and sign in again."
         );
       }
 

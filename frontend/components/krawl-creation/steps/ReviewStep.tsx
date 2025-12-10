@@ -126,6 +126,22 @@ export function ReviewStep({
     return [...selectedGems].sort((a, b) => a.order - b.order);
   }, [selectedGems]);
 
+  // Create stable dependency for previewKrawl to prevent unnecessary recomputation
+  // when selectedGems array reference changes but gem data hasn't changed
+  const gemsDependency = useMemo(() => {
+    return sortedGems.map(sg => ({
+      id: sg.gemId,
+      order: sg.order,
+      name: sg.gem.name,
+      coordinates: sg.gem.coordinates,
+    }));
+  }, [sortedGems]);
+
+  const gemsDependencyKey = useMemo(() =>
+    JSON.stringify(gemsDependency),
+    [gemsDependency]
+  );
+
   // Validate data completeness
   const validation = useMemo(() => {
     return validateData(basicInfo, selectedGems);
@@ -184,7 +200,7 @@ export function ReviewStep({
   // Create preview KrawlDetail object
   const previewKrawl = useMemo(() => {
     return createPreviewKrawl(basicInfo, selectedGems, routeMetrics);
-  }, [basicInfo, selectedGems, routeMetrics]);
+  }, [basicInfo, selectedGems, routeMetrics, gemsDependencyKey]);
 
 
   const handlePublish = useCallback(async () => {
@@ -243,13 +259,11 @@ export function ReviewStep({
           }
         }
 
-        // Store krawl name before clearing form
+        // Store krawl name before showing success screen
         const createdKrawlName = basicInfo.name;
-        
-        // Clear form state so user starts fresh when creating next krawl
-        clearForm();
 
         // Show success screen
+        // Note: Don't clear form here - let the success screen handle it when user clicks "Create Another"
         setSuccessState({
           krawlId: createResponse.krawlId,
           krawlName: createdKrawlName,
@@ -260,11 +274,21 @@ export function ReviewStep({
       }
     } catch (error) {
       console.error("[Krawl Creation] Error publishing krawl:", error);
-      
+
       // Handle error using API error handler
       const apiError = await handleApiError(error);
-      const errorMessage = getErrorMessage(apiError);
-      
+      let errorMessage = getErrorMessage(apiError);
+
+      // Special handling for authentication errors
+      if (error instanceof Error) {
+        if (error.message.includes("Authentication failed") ||
+            error.message.includes("session has expired")) {
+          errorMessage = "Your session has expired. Please sign out and sign in again to create a krawl.";
+        } else if (error.message.includes("permission")) {
+          errorMessage = "Authentication error. Please try signing out and signing in again.";
+        }
+      }
+
       setSubmissionError(errorMessage);
       toastError("Submission Failed", errorMessage);
       setIsPublishing(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { KrawlDetail } from "@/types/krawl-detail";
 import type { MapKrawl } from "@/components/map/krawl-types";
@@ -28,25 +28,35 @@ interface KrawlTrailMapProps {
 export function KrawlTrailMap({ krawl, isPreview = false }: KrawlTrailMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
-  const [mapKrawl, setMapKrawl] = useState<MapKrawl | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Convert KrawlDetail to MapKrawl format
-  useEffect(() => {
-    if (krawl.gems && krawl.gems.length > 0) {
-      setMapKrawl({
-        id: krawl.id,
-        name: krawl.name,
-        description: krawl.description,
-        gems: krawl.gems,
-        coverImage: krawl.coverImage,
-        rating: krawl.rating,
-        difficulty: krawl.difficulty,
-        estimatedDurationMinutes: krawl.estimatedDurationMinutes,
-        color: "#3b82f6",
-      });
+  // Convert KrawlDetail to MapKrawl format using useMemo for stable reference
+  const mapKrawl = useMemo<MapKrawl | null>(() => {
+    if (!krawl.gems || krawl.gems.length === 0) {
+      return null;
     }
-  }, [krawl]);
+
+    return {
+      id: krawl.id,
+      name: krawl.name,
+      description: krawl.description,
+      gems: krawl.gems,
+      coverImage: krawl.coverImage,
+      rating: krawl.rating,
+      difficulty: krawl.difficulty,
+      estimatedDurationMinutes: krawl.estimatedDurationMinutes,
+      color: "#3b82f6",
+    };
+  }, [
+    krawl.id,
+    krawl.name,
+    krawl.description,
+    krawl.gems,
+    krawl.coverImage,
+    krawl.rating,
+    krawl.difficulty,
+    krawl.estimatedDurationMinutes,
+  ]);
 
   // Fit bounds to show entire trail
   const fitBoundsToTrail = useCallback(() => {

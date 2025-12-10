@@ -33,7 +33,7 @@ public class KrawlGem {
     @JoinColumn(name = "gem_id", nullable = false)
     private Gem gem;
 
-    @Column(name = "order", nullable = false)
+    @Column(name = "\"order\"", nullable = false, columnDefinition = "INTEGER")
     private Integer order;
 
     @Column(name = "creator_note", nullable = false, columnDefinition = "TEXT")
