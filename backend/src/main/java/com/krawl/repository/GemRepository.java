@@ -100,4 +100,30 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
             ORDER BY g.createdAt DESC
             """)
     List<Gem> findAllWithDetails();
+
+    /**
+     * Search gems using PostgreSQL full-text search with relevance ranking.
+     *
+     * Uses tsvector and plainto_tsquery for full-text search with weighted ranking:
+     * - Name matches get highest weight (A)
+     * - Category and district get medium weight (B)
+     * - Descriptions get lower weight (C, D)
+     *
+     * Results are ordered by relevance score (ts_rank) and view count.
+     * Only returns VERIFIED gems.
+     *
+     * @param query Search query text
+     * @param limit Maximum number of results
+     * @return List of Object arrays: [Gem, relevance_score]
+     */
+    @Query(value = """
+            SELECT g.*,
+                   ts_rank(g.search_vector, plainto_tsquery('english', :query)) as rank
+            FROM gems g
+            WHERE g.search_vector @@ plainto_tsquery('english', :query)
+              AND g.status = 'VERIFIED'
+            ORDER BY rank DESC, g.view_count DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Object[]> searchGems(@Param("query") String query, @Param("limit") int limit);
 }
