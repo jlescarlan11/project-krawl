@@ -604,19 +604,16 @@ export function GemSelectionStep({
       {/* Footer - Back and Continue Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
         <div className="flex flex-row gap-3 items-center">
-          <div className="relative min-w-0 flex-1 flex sm:flex-initial sm:min-w-[120px]">
-
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={onBackToPreviousStep}
-              className="flex-1 sm:flex-initial sm:min-w-[120px] min-w-0"
-            >
-              Back
-            </Button>
-            </div>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBackToPreviousStep}
+            className="flex-1 sm:flex-initial sm:min-w-[120px]"
+          >
+            Back
+          </Button>
           <div 
-            className="relative flex-1 sm:flex-1 min-w-0 flex"
+            className="relative flex-1 sm:flex-1"
             onMouseEnter={() => !canProceed && setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
           >

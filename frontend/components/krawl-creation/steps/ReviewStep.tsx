@@ -481,29 +481,25 @@ export function ReviewStep({
         )}
 
         <div className="flex flex-row gap-3 items-center">
-          <div className="relative min-w-0 flex-1 flex sm:flex-initial sm:min-w-[120px]">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={onBackToPreviousStep}
-              disabled={isPublishing}
-              className="flex-1 sm:flex-initial sm:min-w-[120px] min-w-0"
-            >
-              Back
-            </Button>
-          </div>
-          <div className="relative flex-1 sm:flex-1 min-w-0 flex">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handlePublish}
-              disabled={!canPublish}
-              loading={isPublishing}
-              className="w-full"
-            >
-              {isPublishing ? "Submitting..." : "Submit"}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBackToPreviousStep}
+            disabled={isPublishing}
+            className="flex-1 sm:flex-initial sm:min-w-[120px]"
+          >
+            Back
+          </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handlePublish}
+            disabled={!canPublish}
+            loading={isPublishing}
+            className="flex-1 sm:flex-1"
+          >
+            {isPublishing ? "Submitting..." : "Submit"}
+          </Button>
         </div>
       </div>
     </div>
