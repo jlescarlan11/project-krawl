@@ -61,6 +61,30 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
      */
     @Query("SELECT COUNT(v) > 0 FROM KrawlVouch v WHERE v.krawl.id = :krawlId AND v.user.id = :userId")
     Boolean hasUserVouchedForKrawl(@Param("krawlId") UUID krawlId, @Param("userId") UUID userId);
+
+    /**
+     * Search krawls using PostgreSQL full-text search with relevance ranking.
+     *
+     * Uses tsvector and plainto_tsquery for full-text search with weighted ranking:
+     * - Name matches get highest weight (A)
+     * - Category gets medium weight (B)
+     * - Descriptions get lower weight (C, D)
+     *
+     * Results are ordered by relevance score (ts_rank) and view count.
+     *
+     * @param query Search query text
+     * @param limit Maximum number of results
+     * @return List of Object arrays: [Krawl, relevance_score]
+     */
+    @Query(value = """
+            SELECT k.*,
+                   ts_rank(k.search_vector, plainto_tsquery('english', :query)) as rank
+            FROM krawls k
+            WHERE k.search_vector @@ plainto_tsquery('english', :query)
+            ORDER BY rank DESC, k.view_count DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    java.util.List<Object[]> searchKrawls(@Param("query") String query, @Param("limit") int limit);
 }
 
 
