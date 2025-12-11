@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useCallback } from "react";
+import { memo, useMemo, useCallback, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { User } from "lucide-react";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ProtectedActionGate } from "@/components/guest";
 import { Logo } from "@/components/brand";
 import { getAvatarUrl } from "@/lib/cloudinary/urls";
+import { CreateMenu } from "./CreateMenu";
 
 /**
  * Get cached auth from localStorage synchronously - OPTIMIZATION
@@ -104,13 +105,15 @@ export const Header = memo(function Header() {
   const avatarWrapperClasses =
     "h-full w-full overflow-hidden rounded-full bg-transparent text-text-secondary";
   const avatarImageClasses = "h-full w-full object-cover";
+  
+  // Track avatar image load errors
+  const [avatarError, setAvatarError] = useState(false);
+  
+  // Reset avatar error when user or avatar changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [currentUser?.id, currentUser?.avatar]);
 
-  const guestNavClasses = cn(
-    "inline-flex items-center gap-2 px-4 py-2 rounded-lg",
-    "text-base font-medium transition-colors",
-    "focus:outline-2 focus:outline-accent-orange focus:outline-offset-2",
-    "text-text-primary hover:bg-light-green/10 hover:text-primary-green"
-  );
 
   return (
     <header
@@ -144,33 +147,7 @@ export const Header = memo(function Header() {
             <NavLink href={ROUTES.HOME} label="Home" exact />
             <NavLink href={ROUTES.MAP} label="Map" />
             <NavLink href={ROUTES.SEARCH} label="Search" />
-            <ProtectedActionGate
-              context="create"
-              message="Sign in to unlock creator tools"
-              promptOptions={{
-                redirectTo: ROUTES.GEM_CREATE,
-                preserveFilters: false,
-              }}
-            >
-              {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-                isGuest ? (
-                  <div className="flex flex-col items-start gap-1">
-                    <button
-                      type="button"
-                      className={guestNavClasses}
-                      onClick={() => requestSignIn()}
-                      aria-describedby={promptId}
-                      title={promptMessage}
-                    >
-                      <span>Create</span>
-                    </button>
-                    <span className="sr-only">{Prompt}</span>
-                  </div>
-                ) : (
-                  <NavLink href={ROUTES.GEM_CREATE} label="Create" />
-                )
-              }
-            </ProtectedActionGate>
+            <CreateMenu variant="header" />
           </div>
 
           {/* User Menu */}
@@ -206,12 +183,13 @@ export const Header = memo(function Header() {
                 aria-label={`View ${profileName} profile`}
               >
                 <span className={avatarWrapperClasses}>
-                  {currentUser?.avatar ? (
+                  {currentUser?.avatar && !avatarError ? (
                     <img
                       src={getAvatarUrl(currentUser.avatar) || currentUser.avatar}
                       alt={`${profileName} avatar`}
                       className={`${avatarImageClasses} block`}
                       loading="lazy"
+                      onError={() => setAvatarError(true)}
                     />
                   ) : (
                     <User className="h-5 w-5" />

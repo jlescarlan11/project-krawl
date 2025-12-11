@@ -30,9 +30,10 @@ function Avatar({ src, alt, className }: { src?: string; alt: string; className?
 
 interface GemInfoProps {
   gem: GemDetail;
+  isPreview?: boolean;
 }
 
-export function GemInfo({ gem }: GemInfoProps) {
+export function GemInfo({ gem, isPreview = false }: GemInfoProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Calculate if text needs truncation (>300 chars ≈ 3-4 lines)
@@ -214,6 +215,7 @@ export function GemInfo({ gem }: GemInfoProps) {
         district={gem.district}
         gemName={gem.name}
         gemId={gem.id}
+        isPreview={isPreview}
       />
 
       {/* Creator Info */}

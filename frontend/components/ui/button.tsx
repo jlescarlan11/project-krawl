@@ -49,14 +49,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       primary:
-        "bg-primary-green text-white hover:bg-dark-green active:scale-[0.98] ",
+        "bg-primary-green text-white border-2 border-primary-green hover:bg-dark-green hover:border-dark-green active:scale-[0.98]",
       secondary:
         "bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10",
       outline:
         "bg-transparent text-primary-green border-2 border-primary-green hover:bg-light-green/10",
       text: "bg-transparent text-primary-green hover:bg-light-green/10 hover:underline",
       accent:
-        "bg-accent-orange text-white hover:bg-[#E55A2B] active:scale-[0.98]",
+        "bg-accent-orange text-white border-2 border-accent-orange hover:bg-[#E55A2B] hover:border-[#E55A2B] active:scale-[0.98]",
     };
 
     const sizeClasses = {
@@ -80,6 +80,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-disabled={disabled || loading}
         className={cn(
           "inline-flex items-center justify-center gap-2 rounded-lg font-medium",
+          "box-border",
           "transition-all duration-150",
           "focus:outline-2 focus:outline-accent-orange focus:outline-offset-2",
           "disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none",

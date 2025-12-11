@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { ArrowLeft, MapPin, Info, CheckCircle, XCircle } from "lucide-react";
+import { MapPin, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { GemLocationPicker, type GemLocationPickerRef } from "../GemLocationPicker";
 import { AddressSearch, reverseGeocode } from "../AddressSearch";
+import { StepHeader, InfoBanner } from "@/components/shared/creation";
 import { useGemCreationStore } from "@/stores/gem-creation-store";
 import { validateCoordinates, type BoundaryValidationResult } from "@/lib/map/boundaryValidation";
 import { CEBU_CITY_CENTER } from "@/lib/map/constants";
@@ -17,7 +17,8 @@ import type { GeocodingFeature } from "../types";
  */
 export interface LocationStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -31,7 +32,11 @@ export interface LocationStepProps {
  * - Cebu City boundary validation
  * - Real-time coordinate display
  */
-export function LocationStep({ onNext, onBack }: LocationStepProps) {
+export function LocationStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: LocationStepProps) {
   const { location, setLocation } = useGemCreationStore();
   const mapPickerRef = useRef<GemLocationPickerRef>(null);
 
@@ -155,36 +160,31 @@ export function LocationStep({ onNext, onBack }: LocationStepProps) {
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            {/* Hidden back button in step 1 - no back navigation */}
-            <div className="w-10 h-10 shrink-0" />
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">
-                Create Gem
-              </h1>
-              <ProgressDots total={5} currentIndex={0} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">Step 1 of 5</p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Create Gem"
+        totalSteps={5}
+        currentStep={0}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Search Bar */}
       <div className="shrink-0 p-4 border-b border-border-subtle bg-bg-white">
         <AddressSearch onSelect={handleAddressSelect} />
 
         {/* Info Banner - Boundary Guidance */}
-        <div className="mt-3 flex items-start gap-2 p-3 bg-primary-green/5 border border-primary-green/20 rounded-lg">
-          <Info className="w-4 h-4 text-primary-green shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-xs text-text-secondary leading-relaxed">
-              Select a location within the <span className="font-medium text-primary-green">highlighted green area</span> on the map.
-              This ensures your Gem is located within Cebu City boundaries.
-            </p>
-          </div>
+        <div className="mt-3">
+          <InfoBanner
+            message={
+              <>
+                Select a location within the{" "}
+                <span className="font-medium text-primary-green">
+                  highlighted green area
+                </span>{" "}
+                on the map. This ensures your Gem is located within Cebu City
+                boundaries.
+              </>
+            }
+          />
         </div>
       </div>
 

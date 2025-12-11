@@ -231,84 +231,93 @@ export function FileUpload({
           {required && <span className="text-error ml-1">*</span>}
         </label>
       )}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={cn(
-          "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
-          "cursor-pointer",
-          isDragging && !disabled && "border-primary-green bg-light-green/10",
-          hasError && "border-error bg-error/5",
-          !hasError &&
-            !isDragging &&
-            "border-bg-medium hover:border-primary-green hover:bg-bg-light",
-          disabled && "opacity-60 cursor-not-allowed",
-          isUploading && "pointer-events-none"
-        )}
-        onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
-      >
-        <input
-          ref={fileInputRef}
-          id={fileUploadId}
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          onChange={handleFileInputChange}
-          disabled={disabled}
-          required={required}
-          className="hidden"
-          aria-invalid={hasError}
-          aria-describedby={
-            error || uploadError
-              ? `${fileUploadId}-error`
-              : helperText
-                ? `${fileUploadId}-helper`
-                : undefined
-          }
-        />
-        {customIcon || (
-          <Upload
-            className={cn(
-              "w-8 h-8 mx-auto mb-2",
-              hasError ? "text-error" : "text-text-secondary"
-            )}
-          />
-        )}
-        {!isUploading ? (
-          <p
-            className={cn(
-              "text-sm font-medium mb-1",
-              hasError ? "text-error" : "text-text-primary"
-            )}
-          >
-            {isDragging ? "Drop files here" : "Click to upload or drag and drop"}
-          </p>
-        ) : (
-          <div className="space-y-2">
-            <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary-green" />
-            <p className="text-sm font-medium text-text-primary">
-              Uploading... {uploadProgress}%
+      {/* File input - always in DOM for accessibility */}
+      <input
+        ref={fileInputRef}
+        id={fileUploadId}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        onChange={handleFileInputChange}
+        disabled={disabled}
+        required={required}
+        className="hidden"
+        aria-invalid={hasError}
+        aria-describedby={
+          error || uploadError
+            ? `${fileUploadId}-error`
+            : helperText
+              ? `${fileUploadId}-helper`
+              : undefined
+        }
+      />
+      {/* Only show upload card if no preview in single image mode, or if not in single image mode */}
+      {(!singleImageMode || !previewUrl) && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className={cn(
+            "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
+            "cursor-pointer",
+            isDragging && !disabled && "border-primary-green bg-light-green/10",
+            hasError && "border-error bg-error/5",
+            !hasError &&
+              !isDragging &&
+              "border-bg-medium hover:border-primary-green hover:bg-bg-light",
+            disabled && "opacity-60 cursor-not-allowed",
+            isUploading && "pointer-events-none"
+          )}
+          onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
+        >
+          {customIcon || (
+            <Upload
+              className={cn(
+                "w-8 h-8 mx-auto mb-2",
+                hasError ? "text-error" : "text-text-secondary"
+              )}
+            />
+          )}
+          {!isUploading ? (
+            <p
+              className={cn(
+                "text-sm font-medium mb-1",
+                hasError ? "text-error" : "text-text-primary"
+              )}
+            >
+              {isDragging ? "Drop files here" : "Click to upload or drag and drop"}
             </p>
-            <div className="w-full bg-bg-medium rounded-full h-2">
-              <div
-                className="bg-primary-green h-2 rounded-full transition-all"
-                style={{ width: `${uploadProgress}%` }}
-              />
+          ) : (
+            <div className="space-y-2">
+              <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary-green" />
+              <p className="text-sm font-medium text-text-primary">
+                Uploading... {uploadProgress}%
+              </p>
+              <div className="w-full bg-bg-medium rounded-full h-2">
+                <div
+                  className="bg-primary-green h-2 rounded-full transition-all"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
             </div>
-          </div>
-        )}
-        <p className="text-xs text-text-secondary">
-          {accept && `Accepted: ${accept}`}
-          {maxSize && ` • Max size: ${formatFileSize(maxSize)}`}
-          {maxFiles && ` • Max files: ${maxFiles}`}
-        </p>
-      </div>
+          )}
+          <p className="text-xs text-text-secondary">
+            {accept && `Accepted: ${accept}`}
+            {maxSize && ` • Max size: ${formatFileSize(maxSize)}`}
+            {maxFiles && ` • Max files: ${maxFiles}`}
+          </p>
+        </div>
+      )}
 
       {/* Single Image Mode Preview */}
       {singleImageMode && !multiple && previewUrl && (
         <div className="relative group">
-          <div className={cn("relative w-full bg-bg-light rounded-lg overflow-hidden", imagePreviewHeight)}>
+          <div 
+            className={cn("relative w-full bg-bg-light rounded-lg overflow-hidden", imagePreviewHeight)}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
             <img
               src={previewUrl}
               alt="Preview"
@@ -331,33 +340,31 @@ export function FileUpload({
                 </div>
               </div>
             )}
+            {/* Overlay with Change Image button - always visible when not uploading */}
+            {!isUploading && showChangeButton && (
+              <div className={cn(
+                "absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none transition-all",
+                isDragging && "bg-primary-green/20 border-2 border-dashed border-primary-green"
+              )}>
+                {isDragging ? (
+                  <p className="text-primary-green font-medium text-sm pointer-events-auto">
+                    Drop image here
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="text"
+                    size="sm"
+                    onClick={handleChangeImage}
+                    disabled={disabled}
+                    className="bg-white/80 hover:bg-white/90 text-primary-green backdrop-blur-sm shadow-sm pointer-events-auto"
+                  >
+                    Change Image
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
-          {!isUploading && (showChangeButton || showRemoveButton) && (
-            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              {showChangeButton && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleChangeImage}
-                  disabled={disabled}
-                >
-                  Change Image
-                </Button>
-              )}
-              {showRemoveButton && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleRemoveImage}
-                  disabled={disabled}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          )}
         </div>
       )}
 

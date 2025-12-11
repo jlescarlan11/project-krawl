@@ -15,12 +15,14 @@ interface KrawlGemListProps {
   krawl: KrawlDetail;
   isLoading?: boolean;
   currentGemId?: string;
+  title?: string; // Optional custom title
 }
 
 export function KrawlGemList({
   krawl,
   isLoading = false,
   currentGemId,
+  title,
 }: KrawlGemListProps) {
   const currentGemRef = useRef<HTMLLIElement>(null);
 
@@ -39,11 +41,14 @@ export function KrawlGemList({
     }
   }, [currentGemId]);
 
+  // Default title
+  const defaultTitle = title || "Gems";
+
   // Loading state
   if (isLoading) {
     return (
       <div className="bg-bg-white rounded-xl border border-bg-medium shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-text-primary mb-4">Gems</h2>
+        <h2 className="text-xl font-semibold text-text-primary mb-4">{defaultTitle}</h2>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <LoadingSkeleton
@@ -62,7 +67,7 @@ export function KrawlGemList({
   if (!krawl.gems || krawl.gems.length === 0) {
     return (
       <div className="bg-bg-white rounded-xl border border-bg-medium shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-text-primary mb-4">Gems</h2>
+        <h2 className="text-xl font-semibold text-text-primary mb-4">{defaultTitle}</h2>
         <EmptyState
           size="md"
           icon={<MapPin className="w-full h-full" />}
@@ -78,7 +83,7 @@ export function KrawlGemList({
   return (
     <div className="bg-bg-white rounded-xl border border-bg-medium shadow-sm p-6">
       <h2 className="text-xl font-semibold text-text-primary mb-4">
-        {gemCount} {gemCount === 1 ? "Gem" : "Gems"}
+        {title || `${gemCount} ${gemCount === 1 ? "Gem" : "Gems"}`}
       </h2>
 
       {/* Scrollable list container */}

@@ -38,33 +38,40 @@ export function KrawlCreationFlow() {
     }
   };
 
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    } else {
-      // On first step, back button cancels
-      handleCancel();
-    }
+  // Header back arrow navigates to previous page (browser history)
+  const handleBackToPreviousPage = () => {
+    router.back();
   };
 
-  const handleCancel = () => {
-    if (
-      confirm("Are you sure you want to cancel? Unsaved changes will be lost.")
-    ) {
-      router.back();
+  // Footer Back button navigates to previous step
+  const handleBackToPreviousStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
   return (
     <div className="h-screen">
       {currentStep === 0 && (
-        <BasicInfoStep onNext={handleNext} onBack={handleCancel} />
+        <BasicInfoStep
+          onNext={handleNext}
+          onBackToPreviousPage={handleBackToPreviousPage}
+          onBackToPreviousStep={handleBackToPreviousStep}
+        />
       )}
       {currentStep === 1 && (
-        <GemSelectionStep onNext={handleNext} onBack={handleBack} />
+        <GemSelectionStep
+          onNext={handleNext}
+          onBackToPreviousPage={handleBackToPreviousPage}
+          onBackToPreviousStep={handleBackToPreviousStep}
+        />
       )}
       {currentStep === 2 && (
-        <ReviewStep onNext={handleNext} onBack={handleBack} />
+        <ReviewStep
+          onNext={handleNext}
+          onBackToPreviousPage={handleBackToPreviousPage}
+          onBackToPreviousStep={handleBackToPreviousStep}
+        />
       )}
     </div>
   );

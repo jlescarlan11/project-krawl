@@ -58,6 +58,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
             String requestUri = request.getRequestURI();
+            String method = request.getMethod();
+            boolean isPublic = isPublicEndpoint(requestUri, method);
             
             if (StringUtils.hasText(jwt)) {
                 // Log token preview for debugging (first 20 chars only)
@@ -67,7 +69,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 try {
                     // Check blacklist first (fast fail)
                     if (tokenBlacklistService.isBlacklisted(jwt)) {
-                        log.warn("JWT token is blacklisted - Request URI: {}", requestUri);
+                        if (!isPublic) {
+                            log.warn("JWT token is blacklisted - Request URI: {}", requestUri);
+                        } else {
+                            log.debug("JWT token is blacklisted for public endpoint - Request URI: {}", requestUri);
+                        }
                         SecurityContextHolder.clearContext();
                         filterChain.doFilter(request, response);
                         return;
@@ -97,12 +103,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } catch (AuthException e) {
                     // Invalid or expired token - clear security context
                     SecurityContextHolder.clearContext();
-                    log.warn("JWT authentication failed: {} - Request URI: {}", e.getMessage(), requestUri);
+                    // Only log warnings for protected endpoints to reduce log noise
+                    if (!isPublic) {
+                        log.warn("JWT authentication failed: {} - Request URI: {}", e.getMessage(), requestUri);
+                    } else {
+                        log.debug("JWT authentication failed for public endpoint: {} - Request URI: {}", e.getMessage(), requestUri);
+                    }
                     // Continue filter chain - Spring Security will handle unauthorized access
                 } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
                     // User not found in database
                     SecurityContextHolder.clearContext();
-                    log.warn("User not found during JWT authentication: {} - Request URI: {}", e.getMessage(), requestUri);
+                    // Only log warnings for protected endpoints
+                    if (!isPublic) {
+                        log.warn("User not found during JWT authentication: {} - Request URI: {}", e.getMessage(), requestUri);
+                    } else {
+                        log.debug("User not found during JWT authentication for public endpoint: {} - Request URI: {}", e.getMessage(), requestUri);
+                    }
                     // Continue filter chain - Spring Security will handle unauthorized access
                 } catch (Exception e) {
                     // Unexpected error during authentication
@@ -118,6 +134,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
+    }
+    
+    /**
+     * Checks if the request URI is a public endpoint that doesn't require authentication.
+     * 
+     * @param requestUri Request URI to check
+     * @param method HTTP method
+     * @return true if the endpoint is public, false otherwise
+     */
+    private boolean isPublicEndpoint(String requestUri, String method) {
+        // Public endpoints that don't require authentication
+        return requestUri.startsWith("/api/auth/") ||
+               (requestUri.startsWith("/api/gems") && "GET".equals(method)) ||
+               (requestUri.startsWith("/api/krawls") && "GET".equals(method)) ||
+               requestUri.startsWith("/api/landing/") ||
+               requestUri.equals("/actuator/health");
     }
     
     /**

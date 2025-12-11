@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { ArrowLeft, Search, Plus, X, Edit2, MapPin, GripVertical } from "lucide-react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { Search, Plus, X, Edit2, MapPin, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import { SaveDraftButton } from "../SaveDraftButton";
+import { StepHeader } from "@/components/shared/creation";
 import { MapGem } from "@/components/map/gem-types";
 import { ContextInjectionForm } from "../ContextInjectionForm";
 import { cn } from "@/lib/utils";
@@ -31,7 +30,8 @@ import type { SelectedGem } from "@/stores/krawl-creation-store";
 
 interface GemSelectionStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 const MIN_GEMS = 2;
@@ -120,17 +120,26 @@ function SortableGemCard({
   );
 }
 
-export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
+export function GemSelectionStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: GemSelectionStepProps) {
   const { selectedGems, addGem, removeGem, updateGemContext, reorderGems } =
     useKrawlCreationStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<MapGem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [nearbyGems, setNearbyGems] = useState<MapGem[]>([]);
+  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [showContextForm, setShowContextForm] = useState(false);
   const [selectedGemForContext, setSelectedGemForContext] =
     useState<MapGem | null>(null);
   const [editingGemId, setEditingGemId] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -148,6 +157,12 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
   const sortedGems = useMemo(() => {
     return [...selectedGems].sort((a, b) => a.order - b.order);
   }, [selectedGems]);
+
+  // Filter out already selected gems from nearby gems
+  const availableNearbyGems = useMemo(() => {
+    const selectedGemIds = new Set(selectedGems.map((g) => g.gemId));
+    return nearbyGems.filter((gem) => !selectedGemIds.has(gem.id)).slice(0, 5);
+  }, [nearbyGems, selectedGems]);
 
   // Handle drag end event for reordering
   const handleDragEnd = useCallback(
@@ -167,6 +182,108 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
     },
     [sortedGems, reorderGems]
   );
+
+  /**
+   * Calculate bounding box from center coordinates and radius in kilometers
+   */
+  const calculateBoundingBox = useCallback(
+    (latitude: number, longitude: number, radiusKm: number = 10) => {
+      // Approximate conversion: 1 degree latitude ≈ 111 km
+      // Longitude varies by latitude, but for Cebu (around 10°N), 1 degree ≈ 109 km
+      const latDelta = radiusKm / 111;
+      const lngDelta = radiusKm / 109;
+
+      return {
+        north: latitude + latDelta,
+        south: latitude - latDelta,
+        east: longitude + lngDelta,
+        west: longitude - lngDelta,
+      };
+    },
+    []
+  );
+
+  /**
+   * Fetch gems near user's location
+   */
+  const fetchNearbyGems = useCallback(
+    async (latitude: number, longitude: number) => {
+      setIsLoadingNearby(true);
+      setLocationError(null);
+      try {
+        const bounds = calculateBoundingBox(latitude, longitude, 10); // 10km radius
+        // Fetch more gems to account for already selected ones and ensure fresh suggestions
+        const params = new URLSearchParams({
+          north: bounds.north.toString(),
+          south: bounds.south.toString(),
+          east: bounds.east.toString(),
+          west: bounds.west.toString(),
+          zoom: "12",
+          limit: "30", // Fetch more to ensure we always have fresh suggestions
+        });
+
+        const response = await fetch(`/api/gems?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch nearby gems");
+        }
+
+        const data = await response.json();
+        setNearbyGems(data.gems || []);
+      } catch (error) {
+        console.error("Error fetching nearby gems:", error);
+        setLocationError("Unable to load nearby gems");
+        setNearbyGems([]);
+      } finally {
+        setIsLoadingNearby(false);
+      }
+    },
+    [calculateBoundingBox]
+  );
+
+  /**
+   * Get user's location and fetch nearby gems on mount
+   */
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError("Location services not available");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ latitude, longitude });
+        fetchNearbyGems(latitude, longitude);
+      },
+      (error) => {
+        console.warn("Location access denied or unavailable:", error);
+        setLocationError("Location access denied");
+        // Don't show error to user, just don't show nearby gems
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000, // Cache for 5 minutes
+      }
+    );
+  }, [fetchNearbyGems]);
+
+  // Track previous selected gems count to detect when a new gem is added
+  const prevSelectedCountRef = useRef(0);
+
+  /**
+   * Re-fetch nearby gems when a gem is selected to get fresh suggestions
+   */
+  useEffect(() => {
+    if (userLocation && selectedGems.length > prevSelectedCountRef.current) {
+      // A new gem was added, re-fetch to get fresh suggestions
+      prevSelectedCountRef.current = selectedGems.length;
+      fetchNearbyGems(userLocation.latitude, userLocation.longitude);
+    } else if (selectedGems.length < prevSelectedCountRef.current) {
+      // A gem was removed, update the ref
+      prevSelectedCountRef.current = selectedGems.length;
+    }
+  }, [selectedGems.length, userLocation, fetchNearbyGems]);
 
   // Debounced search
   useEffect(() => {
@@ -272,26 +389,12 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            <button
-              onClick={onBack}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-              aria-label="Go back"
-              type="button"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">Create Krawl</h1>
-              <ProgressDots total={3} currentIndex={1} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">Step 2 of 3</p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Create Krawl"
+        totalSteps={3}
+        currentStep={1}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto">
@@ -349,94 +452,191 @@ export function GemSelectionStep({ onNext, onBack }: GemSelectionStepProps) {
             />
           </div>
 
-          {/* Search Results */}
-          {isSearching ? (
-            <div className="text-center py-8">
-              <p className="text-text-secondary">Searching...</p>
-            </div>
-          ) : searchResults.length === 0 && searchQuery ? (
-            <div className="text-center py-8">
-              <p className="text-text-secondary">No gems found</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {searchResults.map((gem) => {
-                const added = isGemAdded(gem.id);
-                return (
-                  <div
-                    key={gem.id}
-                    className="p-3 bg-bg-light rounded-lg flex items-start gap-3"
-                  >
-                    {gem.thumbnailUrl ? (
-                      <img
-                        src={gem.thumbnailUrl}
-                        alt={gem.name}
-                        className="w-16 h-16 rounded-lg object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-lg bg-bg-white flex items-center justify-center shrink-0">
-                        <span className="text-2xl">📍</span>
+          {/* Show search results when searching */}
+          {searchQuery.trim() ? (
+            <>
+              {isSearching ? (
+                <div className="text-center py-8">
+                  <p className="text-text-secondary">Searching...</p>
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-text-secondary">No gems found</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {searchResults.map((gem) => {
+                    const added = isGemAdded(gem.id);
+                    return (
+                      <div
+                        key={gem.id}
+                        className="p-3 bg-bg-light rounded-lg flex items-start gap-3"
+                      >
+                        {gem.thumbnailUrl ? (
+                          <img
+                            src={gem.thumbnailUrl}
+                            alt={gem.name}
+                            className="w-16 h-16 rounded-lg object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-bg-white flex items-center justify-center shrink-0">
+                            <span className="text-2xl">📍</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-text-primary truncate">
+                            {gem.name}
+                          </h3>
+                          <p className="text-sm text-text-secondary line-clamp-2">
+                            {gem.shortDescription || gem.category}
+                          </p>
+                          {gem.coordinates && (
+                            <div className="flex items-center gap-1 mt-1 text-xs text-text-tertiary">
+                              <MapPin className="w-3 h-3" />
+                              <span>Location available</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="shrink-0">
+                          {added ? (
+                            <div className="px-3 py-1 bg-success/10 text-success rounded-lg text-sm font-medium">
+                              Added
+                            </div>
+                          ) : (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleAddClick(gem)}
+                              disabled={selectedGems.length >= MAX_GEMS}
+                              icon={<Plus className="w-4 h-4" />}
+                              iconPosition="left"
+                            >
+                              Add
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-text-primary truncate">
-                        {gem.name}
-                      </h3>
-                      <p className="text-sm text-text-secondary line-clamp-2">
-                        {gem.shortDescription || gem.category}
-                      </p>
-                      {gem.coordinates && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-text-tertiary">
-                          <MapPin className="w-3 h-3" />
-                          <span>Location available</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="shrink-0">
-                      {added ? (
-                        <div className="px-3 py-1 bg-success/10 text-success rounded-lg text-sm font-medium">
-                          Added
-                        </div>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleAddClick(gem)}
-                          disabled={selectedGems.length >= MAX_GEMS}
-                          icon={<Plus className="w-4 h-4" />}
-                          iconPosition="left"
-                        >
-                          Add
-                        </Button>
-                      )}
-                    </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            /* Show nearby gems when not searching */
+            <>
+              {isLoadingNearby ? (
+                <div className="text-center py-8">
+                  <p className="text-text-secondary">Loading gems near you...</p>
+                </div>
+              ) : availableNearbyGems.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-text-secondary" />
+                    <h3 className="text-sm font-medium text-text-secondary">
+                      Gems Near You
+                    </h3>
                   </div>
-                );
-              })}
-            </div>
+                  {availableNearbyGems.map((gem) => {
+                    return (
+                      <div
+                        key={gem.id}
+                        className="p-3 bg-bg-light rounded-lg flex items-start gap-3"
+                      >
+                        {gem.thumbnailUrl ? (
+                          <img
+                            src={gem.thumbnailUrl}
+                            alt={gem.name}
+                            className="w-16 h-16 rounded-lg object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-bg-white flex items-center justify-center shrink-0">
+                            <span className="text-2xl">📍</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-text-primary truncate">
+                            {gem.name}
+                          </h3>
+                          <p className="text-sm text-text-secondary line-clamp-2">
+                            {gem.shortDescription || gem.category}
+                          </p>
+                          {gem.coordinates && (
+                            <div className="flex items-center gap-1 mt-1 text-xs text-text-tertiary">
+                              <MapPin className="w-3 h-3" />
+                              <span>Location available</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="shrink-0">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleAddClick(gem)}
+                            disabled={selectedGems.length >= MAX_GEMS}
+                            icon={<Plus className="w-4 h-4" />}
+                            iconPosition="left"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : locationError ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-text-tertiary">
+                    Start typing to search for gems
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-sm text-text-tertiary">
+                    No gems found nearby. Start typing to search for gems.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer - Back and Continue Buttons */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <div className="flex gap-3">
-          <SaveDraftButton />
+        <div className="flex flex-row gap-3 items-center">
           <Button
-            variant="primary"
+            variant="outline"
             size="lg"
-            onClick={handleContinue}
-            disabled={!canProceed}
-            className="flex-1"
+            onClick={onBackToPreviousStep}
+            className="flex-1 sm:flex-initial sm:min-w-[120px]"
           >
-            Continue ({selectedGems.length}/{MIN_GEMS} gems)
+            Back
           </Button>
+          <div 
+            className="relative flex-1 sm:flex-1"
+            onMouseEnter={() => !canProceed && setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+          >
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleContinue}
+              disabled={!canProceed}
+              className="w-full"
+            >
+              Continue
+            </Button>
+            {showTooltip && !canProceed && selectedGems.length < MIN_GEMS && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-bg-white rounded-lg shadow-elevation-3 border border-border-subtle text-sm text-error whitespace-nowrap z-10">
+                Please add at least {MIN_GEMS} gems to continue
+                {/* Arrow pointing down */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+                  <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-bg-white" />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        {selectedGems.length < MIN_GEMS && (
-          <p className="text-sm text-error text-center mt-2">
-            Please add at least {MIN_GEMS} gems to continue
-          </p>
-        )}
       </div>
 
       {/* Context Injection Form Modal */}

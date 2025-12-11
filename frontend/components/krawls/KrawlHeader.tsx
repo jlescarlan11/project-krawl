@@ -1,9 +1,8 @@
 "use client";
 
 import { KrawlDetail } from "@/types/krawl-detail";
-import { Star, Clock, MapPin, ArrowLeft, Bookmark, Share2 } from "lucide-react";
+import { Star, Clock, MapPin, Bookmark, Share2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useKrawlRouteMetrics } from "./useKrawlRouteMetrics";
 import { formatDuration, formatDurationFromMinutes, formatDistance } from "@/lib/format";
@@ -18,7 +17,6 @@ interface KrawlHeaderProps {
 const UNIT_PREFERENCE_KEY = 'krawl:unit-system';
 
 export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
-  const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -52,14 +50,6 @@ export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
     : krawl.estimatedDistanceKm
       ? formatDistance(krawl.estimatedDistanceKm * 1000, unitSystem)
       : null;
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      router.back();
-    }
-  };
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
@@ -100,13 +90,14 @@ export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
             
             {/* Image */}
             <Image
-              src={krawl.coverImage}
+              src={krawl.coverImage || ''}
               alt={krawl.name}
               fill
               className={`object-cover transition-opacity duration-300 ${
                 imageLoading ? "opacity-0" : "opacity-100"
               }`}
               priority
+              sizes="100vw"
               onLoad={() => setImageLoading(false)}
               onError={() => {
                 setImageLoading(false);
@@ -126,18 +117,8 @@ export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
         )}
 
         {/* Overlay Buttons */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-start justify-between z-10">
-          {/* Back Button */}
-          <button
-            onClick={handleBack}
-            className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-5 h-5 text-text-primary" />
-          </button>
-
-          {/* Right Side Buttons - Hide in preview mode */}
-          {!onBack && (
+        {!onBack && (
+          <div className="absolute top-0 right-0 p-4 flex items-start justify-end z-10">
             <div className="flex gap-2">
               {/* Share Button */}
               <button
@@ -161,8 +142,8 @@ export function KrawlHeader({ krawl, onBack }: KrawlHeaderProps) {
                 />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Header Info */}

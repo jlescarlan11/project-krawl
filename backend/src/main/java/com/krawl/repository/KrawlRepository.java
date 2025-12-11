@@ -64,3 +64,5 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
 }
 
 
+
+

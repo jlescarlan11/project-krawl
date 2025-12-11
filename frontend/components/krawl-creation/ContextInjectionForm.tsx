@@ -78,10 +78,15 @@ export function ContextInjectionForm({
     lokalSecret.trim().length <= 500;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="p-4 border-b border-border-subtle flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center md:p-4">
+      <div className="bg-bg-white rounded-t-lg md:rounded-lg max-w-md md:max-w-xl w-full max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out">
+        {/* Drag Handle - Mobile Only */}
+        <div className="md:hidden pt-3 pb-2 flex justify-center shrink-0">
+          <div className="w-12 h-1.5 bg-border-subtle rounded-full" />
+        </div>
+
+        {/* Header - Fixed */}
+        <div className="px-4 pb-4 md:p-4 border-b border-border-subtle flex items-center justify-between shrink-0">
           <h2 className="text-lg font-semibold text-text-primary">
             {initialCreatorNote || initialLokalSecret
               ? "Edit Gem Context"
@@ -97,92 +102,95 @@ export function ContextInjectionForm({
           </button>
         </div>
 
-        {/* Gem Preview */}
-        <div className="p-4 border-b border-border-subtle">
-          <div className="flex gap-3">
-            {gem.thumbnailUrl ? (
-              <img
-                src={gem.thumbnailUrl}
-                alt={gem.name}
-                className="w-16 h-16 rounded-lg object-cover shrink-0"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-lg bg-bg-light flex items-center justify-center shrink-0">
-                <span className="text-2xl">📍</span>
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto flex-1 min-h-0">
+          {/* Gem Preview */}
+          <div className="p-4 border-b border-border-subtle">
+            <div className="flex gap-3">
+              {gem.thumbnailUrl ? (
+                <img
+                  src={gem.thumbnailUrl}
+                  alt={gem.name}
+                  className="w-16 h-16 rounded-lg object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-lg bg-bg-light flex items-center justify-center shrink-0">
+                  <span className="text-2xl">📍</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-text-primary truncate">
+                  {gem.name}
+                </h3>
+                <p className="text-sm text-text-secondary">{gem.category}</p>
               </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-text-primary truncate">
-                {gem.name}
-              </h3>
-              <p className="text-sm text-text-secondary">{gem.category}</p>
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className="p-4 space-y-4">
+            {/* Creator Note */}
+            <div className="space-y-2">
+              <Textarea
+                label="Creator Note"
+                required
+                value={creatorNote}
+                onChange={(e) => setCreatorNote(e.target.value)}
+                error={errors.creatorNote}
+                placeholder="Share practical logistics information (e.g., best time to visit, parking tips, entry fees)..."
+                helperText="Practical information to help others plan their visit"
+                rows={4}
+                maxLength={501}
+              />
+              <div className="flex justify-end">
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    creatorNote.length > 500
+                      ? "text-error"
+                      : creatorNote.length > 450
+                      ? "text-accent-orange"
+                      : "text-text-secondary"
+                  )}
+                >
+                  {creatorNote.length}/500
+                </span>
+              </div>
+            </div>
+
+            {/* Lokal Secret */}
+            <div className="space-y-2">
+              <Textarea
+                label="Lokal Secret"
+                required
+                value={lokalSecret}
+                onChange={(e) => setLokalSecret(e.target.value)}
+                error={errors.lokalSecret}
+                placeholder="Share an insider tip (e.g., hidden menu items, best photo spots, local customs)..."
+                helperText="An insider tip that makes this gem special"
+                rows={4}
+                maxLength={501}
+              />
+              <div className="flex justify-end">
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    lokalSecret.length > 500
+                      ? "text-error"
+                      : lokalSecret.length > 450
+                      ? "text-accent-orange"
+                      : "text-text-secondary"
+                  )}
+                >
+                  {lokalSecret.length}/500
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Form */}
-        <div className="p-4 space-y-4">
-          {/* Creator Note */}
-          <div className="space-y-2">
-            <Textarea
-              label="Creator Note"
-              required
-              value={creatorNote}
-              onChange={(e) => setCreatorNote(e.target.value)}
-              error={errors.creatorNote}
-              placeholder="Share practical logistics information (e.g., best time to visit, parking tips, entry fees)..."
-              helperText="Practical information to help others plan their visit"
-              rows={4}
-              maxLength={501}
-            />
-            <div className="flex justify-end">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  creatorNote.length > 500
-                    ? "text-error"
-                    : creatorNote.length > 450
-                    ? "text-accent-orange"
-                    : "text-text-secondary"
-                )}
-              >
-                {creatorNote.length}/500
-              </span>
-            </div>
-          </div>
-
-          {/* Lokal Secret */}
-          <div className="space-y-2">
-            <Textarea
-              label="Lokal Secret"
-              required
-              value={lokalSecret}
-              onChange={(e) => setLokalSecret(e.target.value)}
-              error={errors.lokalSecret}
-              placeholder="Share an insider tip (e.g., hidden menu items, best photo spots, local customs)..."
-              helperText="An insider tip that makes this gem special"
-              rows={4}
-              maxLength={501}
-            />
-            <div className="flex justify-end">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  lokalSecret.length > 500
-                    ? "text-error"
-                    : lokalSecret.length > 450
-                    ? "text-accent-orange"
-                    : "text-text-secondary"
-                )}
-              >
-                {lokalSecret.length}/500
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-border-subtle flex gap-3">
+        {/* Footer - Fixed */}
+        <div className="p-4 border-t border-border-subtle flex gap-3 shrink-0">
           <Button variant="secondary" onClick={onCancel} className="flex-1">
             Cancel
           </Button>

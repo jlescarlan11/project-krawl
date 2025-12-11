@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, Search, Plus, User } from "lucide-react";
+import { Home, Map, Search, User } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { ProtectedActionGate } from "@/components/guest";
 import { useAuthUser } from "@/stores";
 import { useEffect, useState } from "react";
+import { CreateMenu } from "./CreateMenu";
 
 /**
  * BottomNav component
@@ -84,54 +85,7 @@ export function BottomNav() {
           );
         })}
 
-        <ProtectedActionGate
-          context="create"
-          promptOptions={{ redirectTo: ROUTES.GEM_CREATE, preserveFilters: false }}
-        >
-          {({ isGuest, requestSignIn, promptId, promptMessage, Prompt }) =>
-            isGuest ? (
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => requestSignIn()}
-                  aria-describedby={promptId}
-                  title={promptMessage}
-                  aria-disabled="true"
-                  className={cn(
-                    "flex flex-col items-center justify-center",
-                    "w-14 h-14 rounded-full",
-                    "bg-primary-green text-white",
-                    "shadow-elevation-2",
-                    "transition-all",
-                    "opacity-70"
-                  )}
-                  aria-label="Sign in to create"
-                >
-                  <Plus className="w-6 h-6" aria-hidden="true" />
-                </button>
-                <span className="sr-only">{Prompt}</span>
-              </div>
-            ) : (
-              <Link
-                href={ROUTES.GEM_CREATE}
-                className={cn(
-                  "flex flex-col items-center justify-center",
-                  "w-14 h-14 rounded-full",
-                  "bg-primary-green text-white",
-                  "shadow-elevation-2 hover:shadow-elevation-3",
-                  "transition-all",
-                  pathname.startsWith(ROUTES.GEM_CREATE) ||
-                    pathname.startsWith(ROUTES.KRAWL_CREATE)
-                    ? "scale-110"
-                    : ""
-                )}
-                aria-label="Create"
-              >
-                <Plus className="w-6 h-6" aria-hidden="true" />
-              </Link>
-            )
-          }
-        </ProtectedActionGate>
+        <CreateMenu variant="mobile" />
 
         <Link
           href={ROUTES.SEARCH}

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import type mapboxgl from "mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import { smoothFitBounds } from "@/lib/map/animationUtils";
 import { getCachedRoute } from "@/lib/map/routingUtils";
 import type { SelectedGem } from "@/stores/krawl-creation-store";

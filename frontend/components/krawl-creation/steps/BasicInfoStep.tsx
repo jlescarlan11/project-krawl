@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
-import { Radio } from "@/components/ui/radio";
 import { FileUpload } from "@/components/ui/file-upload";
-import { ProgressDots } from "@/components/onboarding/ProgressDots";
+import { CategoryChipSelector } from "@/components/gem-creation/CategoryChipSelector";
+import { StepHeader } from "@/components/shared/creation";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import { SaveDraftButton } from "../SaveDraftButton";
 import {
   validateKrawlName,
   validateKrawlDescription,
@@ -21,7 +20,7 @@ import {
   validateCoverImageUrl,
   getCharacterCountColor,
 } from "@/lib/validation/krawl-validation";
-import { uploadSingleFile } from "@/lib/cloudinary/upload";
+import { uploadKrawlCoverImage } from "@/lib/cloudinary/upload";
 import { GEM_CATEGORIES } from "@/lib/constants/gem-categories";
 import type { DifficultyLevel } from "@/lib/difficulty";
 
@@ -30,7 +29,8 @@ import type { DifficultyLevel } from "@/lib/difficulty";
  */
 export interface BasicInfoStepProps {
   onNext: () => void;
-  onBack: () => void;
+  onBackToPreviousPage: () => void;
+  onBackToPreviousStep: () => void;
 }
 
 /**
@@ -51,12 +51,16 @@ const DIFFICULTY_OPTIONS: { value: DifficultyLevel; label: string }[] = [
  * - Krawl name input (max 100 characters)
  * - Description textarea (min 50, max 500 characters)
  * - Category selection (dropdown)
- * - Difficulty level selection (radio buttons: Easy/Medium/Hard/Expert)
+ * - Difficulty level selection (dropdown: Easy/Medium/Hard/Expert)
  * - Character counters with color-coded warnings
  * - Real-time validation
  * - Form data persistence via Zustand
  */
-export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
+export function BasicInfoStep({
+  onNext,
+  onBackToPreviousPage,
+  onBackToPreviousStep,
+}: BasicInfoStepProps) {
   const { basicInfo, setBasicInfo } = useKrawlCreationStore();
 
   // Form state
@@ -67,6 +71,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     (basicInfo?.difficulty as DifficultyLevel) || ""
   );
   const [coverImageUrl, setCoverImageUrl] = useState(basicInfo?.coverImage || "");
+  const [coverImagePublicId, setCoverImagePublicId] = useState(basicInfo?.coverImagePublicId || "");
 
   // Cover image upload state
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -191,6 +196,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       setCoverImagePreview(null);
       setCoverImageFile(null);
       setCoverImageUrl("");
+      setCoverImagePublicId("");
       setUploadProgress(0);
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -223,12 +229,12 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       return newErrors;
     });
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary using Krawl-specific upload function
     setIsUploadingCover(true);
     setUploadProgress(0);
 
     try {
-      const result = await uploadSingleFile(file, 0, {
+      const result = await uploadKrawlCoverImage(file, 0, {
         onProgress: (progress) => {
           setUploadProgress(progress.progress);
         },
@@ -244,6 +250,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
 
       if (result.success) {
         setCoverImageUrl(result.url);
+        setCoverImagePublicId(result.publicId);
         setErrors((prev) => {
           const newErrors = { ...prev };
           delete newErrors.coverImage;
@@ -295,6 +302,7 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
       category,
       difficulty: difficulty as DifficultyLevel,
       coverImage: coverImageUrl,
+      coverImagePublicId: coverImagePublicId,
     });
 
     // Navigate to next step
@@ -306,39 +314,26 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
     category,
     difficulty,
     coverImageUrl,
+    coverImagePublicId,
     setBasicInfo,
     onNext,
     validateFields,
   ]);
 
-  // Category options for Select
-  const categoryOptions = GEM_CATEGORIES.map((cat) => ({
-    value: cat.value,
-    label: cat.label,
+  // Difficulty options for Select
+  const difficultyOptions = DIFFICULTY_OPTIONS.map((option) => ({
+    value: option.value,
+    label: option.label,
   }));
 
   return (
     <div className="flex flex-col h-dvh bg-bg-white">
-      {/* Header */}
-      <header className="shrink-0 border-b border-border-subtle bg-bg-white">
-        <div className="p-4">
-          <div className="flex items-center gap-3 relative">
-            <button
-              onClick={onBack}
-              className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-bg-light transition-colors shrink-0"
-              aria-label="Go back"
-              type="button"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <h1 className="text-xl font-bold text-text-primary">Create Krawl</h1>
-              <ProgressDots total={3} currentIndex={0} />
-            </div>
-            <p className="text-sm text-text-secondary shrink-0">Step 1 of 3</p>
-          </div>
-        </div>
-      </header>
+      <StepHeader
+        title="Create Krawl"
+        totalSteps={3}
+        currentStep={0}
+        onBack={onBackToPreviousPage}
+      />
 
       {/* Content Area (Scrollable) */}
       <div className="flex-1 overflow-y-auto">
@@ -373,6 +368,20 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
               </span>
             </div>
           </div>
+
+          {/* Category Selection */}
+          <CategoryChipSelector
+            value={category}
+            onChange={(value) => {
+              setCategory(value);
+              // Mark as touched on change for immediate feedback
+              if (!touched.category) {
+                setTouched((prev) => ({ ...prev, category: true }));
+              }
+            }}
+            error={shouldShowError("category") ? errors.category : undefined}
+            required
+          />
 
           {/* Description Textarea */}
           <div className="space-y-2">
@@ -428,81 +437,37 @@ export function BasicInfoStep({ onNext, onBack }: BasicInfoStepProps) {
             />
           </div>
 
-          {/* Category Selection */}
+          {/* Difficulty Selection */}
           <Select
-            label="Category"
+            label="Difficulty"
             required
-            value={category}
+            value={difficulty}
             onChange={(e) => {
-              setCategory(e.target.value);
+              setDifficulty(e.target.value as DifficultyLevel);
               // Mark as touched on change for immediate feedback
-              if (!touched.category) {
-                setTouched((prev) => ({ ...prev, category: true }));
+              if (!touched.difficulty) {
+                setTouched((prev) => ({ ...prev, difficulty: true }));
               }
             }}
-            onBlur={() => handleBlur("category")}
-            error={shouldShowError("category") ? errors.category : undefined}
-            options={categoryOptions}
-            placeholder="Select a category"
+            onBlur={() => handleBlur("difficulty")}
+            error={shouldShowError("difficulty") ? errors.difficulty : undefined}
+            options={difficultyOptions}
+            placeholder="Select difficulty level"
           />
-
-          {/* Difficulty Selection */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-primary">
-              Difficulty <span className="text-error ml-1">*</span>
-            </label>
-            <div className="space-y-3">
-              {DIFFICULTY_OPTIONS.map((option) => (
-                <Radio
-                  key={option.value}
-                  name="difficulty"
-                  label={option.label}
-                  value={option.value}
-                  checked={difficulty === option.value}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setDifficulty(option.value);
-                      // Mark as touched on change for immediate feedback
-                      if (!touched.difficulty) {
-                        setTouched((prev) => ({ ...prev, difficulty: true }));
-                      }
-                    }
-                  }}
-                />
-              ))}
-            </div>
-            {shouldShowError("difficulty") && (
-              <p
-                className="text-sm text-error flex items-center gap-1"
-                role="alert"
-              >
-                {errors.difficulty}
-              </p>
-            )}
-            {!shouldShowError("difficulty") && difficulty && (
-              <p className="text-sm text-success flex items-center gap-1">
-                <CheckCircle className="w-4 h-4" />
-                Difficulty selected
-              </p>
-            )}
-          </div>
         </div>
       </div>
 
-      {/* Footer - Continue Button and Save Draft */}
+      {/* Footer - Continue Button */}
       <div className="shrink-0 p-4 border-t border-border-subtle bg-bg-white">
-        <div className="flex gap-3">
-          <SaveDraftButton />
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleContinue}
-            disabled={!canProceed}
-            className="flex-1"
-          >
-            Continue
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={handleContinue}
+          disabled={!canProceed}
+          className="w-full"
+        >
+          Continue
+        </Button>
       </div>
     </div>
   );
