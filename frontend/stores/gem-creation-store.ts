@@ -3,8 +3,18 @@
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { safeLocalStorage } from "./utils";
-import { saveDraft as saveDraftApi, loadDraft as loadDraftApi, deleteDraft as deleteDraftApi } from "@/lib/api/drafts";
-import type { DraftData } from "@/lib/types/draft";
+import { validateGemCreationStep } from "@/lib/validation/gem-creation-validation";
+import {
+  saveGemDraftToBackend,
+  loadGemDraftFromBackend,
+  deleteGemDraftFromBackend,
+} from "./utils/gem-draft-utils";
+import {
+  initializeGemUploadStatuses,
+  updateGemPhotoUploadStatus,
+  setGemUploadedUrls,
+  setGemUploadedPublicIds,
+} from "./utils/gem-upload-utils";
 
 /**
  * Location data for Step 1
@@ -261,79 +271,15 @@ export const useGemCreationStore = create<GemCreationStore>()(
         },
 
         validateCurrentStep: () => {
-          const { currentStep, location, details, media } = get();
-          const state = get();
-
-          switch (currentStep) {
-            case 0: // Location step
-              return !!(location && location.isValid && location.coordinates);
-            case 1: // Details step
-              return !!(
-                details &&
-                details.name &&
-                details.name.length > 0 &&
-                details.name.length <= 100 &&
-                details.category &&
-                details.shortDescription &&
-                details.shortDescription.length >= 50 &&
-                details.shortDescription.length <= 500 &&
-                // Allow if no duplicate OR user dismissed warning
-                (state.duplicateCheckStatus === "idle" ||
-                  state.duplicateCheckStatus === "dismissed")
-              );
-            case 2: // Media step
-              if (!media || !media.photos || media.photos.length === 0) {
-                return false;
-              }
-              if (media.photos.length > 5) {
-                return false;
-              }
-              // Validate thumbnail index
-              if (
-                media.thumbnailIndex < 0 ||
-                media.thumbnailIndex >= media.photos.length
-              ) {
-                return false;
-              }
-              return true;
-            case 3: // Additional Details step (all fields optional)
-              return true;
-            case 4: // Preview step - validate all required data is present
-              // Check location
-              if (!location || !location.isValid || !location.coordinates) {
-                return false;
-              }
-              // Check details
-              if (
-                !details ||
-                !details.name ||
-                details.name.length === 0 ||
-                details.name.length > 100 ||
-                !details.category ||
-                !details.shortDescription ||
-                details.shortDescription.length < 50 ||
-                details.shortDescription.length > 500
-              ) {
-                return false;
-              }
-              // Media is optional, but if provided, validate it
-              if (media) {
-                if (media.photos && media.photos.length > 5) {
-                  return false;
-                }
-                if (
-                  media.thumbnailIndex !== undefined &&
-                  media.photos &&
-                  (media.thumbnailIndex < 0 ||
-                    media.thumbnailIndex >= media.photos.length)
-                ) {
-                  return false;
-                }
-              }
-              return true;
-            default:
-              return false;
-          }
+          const { currentStep, location, details, media, duplicateCheckStatus } = get();
+          
+          return validateGemCreationStep(
+            currentStep,
+            location,
+            details,
+            media,
+            { duplicateCheckStatus }
+          );
         },
 
         setDuplicateCheckStatus: (status) => {
@@ -362,204 +308,92 @@ export const useGemCreationStore = create<GemCreationStore>()(
 
         // Photo upload actions
         updatePhotoUploadStatus: (fileIndex, status) => {
-          const { media } = get();
-          if (!media || !media.uploadStatuses) return;
-
-          const updatedStatuses = [...media.uploadStatuses];
-          updatedStatuses[fileIndex] = {
-            ...updatedStatuses[fileIndex],
-            ...status,
-          };
-
-          set({
-            media: {
-              ...media,
-              uploadStatuses: updatedStatuses,
-            },
-          });
+          updateGemPhotoUploadStatus(
+            fileIndex,
+            status,
+            () => get().media,
+            (media) => set({ media })
+          );
         },
 
         setUploadedUrls: (urls) => {
-          const { media } = get();
-          if (!media) return;
-
-          set({
-            media: {
-              ...media,
-              uploadedUrls: urls,
-            },
-          });
+          setGemUploadedUrls(
+            urls,
+            () => get().media,
+            (media) => set({ media })
+          );
         },
 
         setUploadedPublicIds: (publicIds) => {
-          const { media } = get();
-          if (!media) return;
-
-          set({
-            media: {
-              ...media,
-              uploadedPublicIds: publicIds,
-            },
-          });
+          setGemUploadedPublicIds(
+            publicIds,
+            () => get().media,
+            (media) => set({ media })
+          );
         },
 
         initializeUploadStatuses: (files) => {
-          const { media } = get();
-          if (!media) return;
-
-          const uploadStatuses: PhotoUploadStatus[] = files.map((file) => ({
-            file,
-            progress: 0,
-            status: 'pending',
-          }));
-
-          set({
-            media: {
-              ...media,
-              uploadStatuses,
-            },
-          });
+          initializeGemUploadStatuses(
+            files,
+            () => get().media,
+            (media) => set({ media })
+          );
         },
 
         // Draft actions
         saveDraftToBackend: async () => {
           const state = get();
-
-          // Set saving status
-          set({ draftSaveStatus: "saving", draftSaveError: null });
-
-          try {
-            // Prepare draft data
-            const draftData: DraftData = {
-              location: state.location || undefined,
-              details: state.details || undefined,
-              media: state.media
-                ? {
-                    photoUrls: state.media.uploadedUrls,
-                    thumbnailIndex: state.media.thumbnailIndex,
-                    photoMetadata: state.media.photos.map((file) => ({
-                      name: file.name,
-                      size: file.size,
-                      type: file.type,
-                    })),
-                  }
-                : undefined,
+          await saveGemDraftToBackend(
+            {
+              location: state.location,
+              details: state.details,
+              media: state.media,
               currentStep: state.currentStep,
               completedSteps: state.completedSteps,
-            };
-
-            // Save to backend
-            const response = await saveDraftApi(draftData);
-
-            if (response.success) {
-              set({
-                currentDraftId: response.draftId,
-                draftSaveStatus: "saved",
-                lastDraftSavedAt: new Date().toISOString(),
-                draftSaveError: null,
-              });
-
-              if (process.env.NODE_ENV === "development") {
-                console.log("[GemCreationStore] Draft saved to backend:", response.draftId);
-              }
-            } else {
-              throw new Error(response.error || "Failed to save draft");
+            },
+            {
+              setDraftSaveStatus: (status) => set({ draftSaveStatus: status }),
+              setDraftSaveError: (error) => set({ draftSaveError: error }),
+              setCurrentDraftId: (id) => set({ currentDraftId: id }),
+              setLastDraftSavedAt: (timestamp) =>
+                set({ lastDraftSavedAt: timestamp }),
+              setLocation: (location) => set({ location }),
+              setDetails: (details) => set({ details }),
+              setMedia: (media) => set({ media }),
+              setCurrentStep: (step) => set({ currentStep: step }),
+              setCompletedSteps: (steps) => set({ completedSteps: steps }),
+              setLastSavedAt: (timestamp) => set({ lastSavedAt: timestamp }),
             }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to save draft";
-            set({
-              draftSaveStatus: "error",
-              draftSaveError: errorMessage,
-            });
-
-            console.error("[GemCreationStore] Error saving draft:", error);
-          }
+          );
         },
 
         loadDraftFromBackend: async (draftId: string) => {
-          try {
-            const response = await loadDraftApi(draftId);
-
-            if (response.success && response.draft) {
-              const draft = response.draft;
-
-              // Restore state from draft
-              // Merge details and additionalDetails into DetailsData format
-              const details: DetailsData | null = draft.data.details
-                ? {
-                    name: draft.data.details.name,
-                    category: draft.data.details.category,
-                    shortDescription: draft.data.details.shortDescription,
-                    fullDescription: draft.data.additionalDetails?.culturalSignificance || "",
-                    tags: draft.data.additionalDetails?.tags || [],
-                    culturalSignificance: draft.data.additionalDetails?.culturalSignificance,
-                    hours: undefined,
-                    website: undefined,
-                    phone: undefined,
-                  }
-                : null;
-
-              set({
-                location: draft.data.location || null,
-                details,
-                media: draft.data.media
-                  ? {
-                      photos: [],
-                      thumbnailIndex: draft.data.media.thumbnailIndex || 0,
-                      uploadedUrls: draft.data.media.photoUrls,
-                    }
-                  : null,
-                currentStep: draft.data.currentStep || 0,
-                completedSteps: draft.data.completedSteps || [],
-                currentDraftId: draft.id,
-                lastSavedAt: draft.updatedAt,
-                lastDraftSavedAt: draft.updatedAt,
-                draftSaveStatus: "idle",
-                draftSaveError: null,
-              });
-
-              if (process.env.NODE_ENV === "development") {
-                console.log("[GemCreationStore] Draft loaded from backend:", draftId);
-              }
-            } else {
-              throw new Error(response.error || "Failed to load draft");
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "Failed to load draft";
-            set({
-              draftSaveStatus: "error",
-              draftSaveError: errorMessage,
-            });
-
-            console.error("[GemCreationStore] Error loading draft:", error);
-            throw error; // Re-throw so caller can handle it
-          }
+          await loadGemDraftFromBackend(draftId, {
+            setDraftSaveStatus: (status) => set({ draftSaveStatus: status }),
+            setDraftSaveError: (error) => set({ draftSaveError: error }),
+            setCurrentDraftId: (id) => set({ currentDraftId: id }),
+            setLastDraftSavedAt: (timestamp) =>
+              set({ lastDraftSavedAt: timestamp }),
+            setLocation: (location) => set({ location }),
+            setDetails: (details) => set({ details }),
+            setMedia: (media) => set({ media }),
+            setCurrentStep: (step) => set({ currentStep: step }),
+            setCompletedSteps: (steps) => set({ completedSteps: steps }),
+            setLastSavedAt: (timestamp) => set({ lastSavedAt: timestamp }),
+          });
         },
 
         deleteDraftFromBackend: async (draftId: string) => {
-          try {
-            const response = await deleteDraftApi(draftId);
-
-            if (response.success) {
-              // If we're deleting the current draft, clear the draft ID
-              const state = get();
-              if (state.currentDraftId === draftId) {
-                set({
-                  currentDraftId: null,
-                  lastDraftSavedAt: null,
-                });
-              }
-
-              if (process.env.NODE_ENV === "development") {
-                console.log("[GemCreationStore] Draft deleted from backend:", draftId);
-              }
-            } else {
-              throw new Error(response.error || "Failed to delete draft");
+          const state = get();
+          await deleteGemDraftFromBackend(
+            draftId,
+            state.currentDraftId,
+            {
+              setCurrentDraftId: (id) => set({ currentDraftId: id }),
+              setLastDraftSavedAt: (timestamp) =>
+                set({ lastDraftSavedAt: timestamp }),
             }
-          } catch (error) {
-            console.error("[GemCreationStore] Error deleting draft:", error);
-            throw error; // Re-throw so caller can handle it
-          }
+          );
         },
 
         setDraftSaveStatus: (status) => {

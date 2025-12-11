@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
@@ -8,15 +8,12 @@ import { PreviewKrawlHeader } from "@/components/krawls/PreviewKrawlHeader";
 import { KrawlInfo } from "@/components/krawls/KrawlInfo";
 import { KrawlGemList } from "@/components/krawls/KrawlGemList";
 import { KrawlTrailMap } from "@/components/krawls/KrawlTrailMap";
-import { getCachedRoute } from "@/lib/map/routingUtils";
-import { createKrawl, type CreateKrawlRequest } from "@/lib/api/krawls";
-import { useToast } from "@/components";
-import { handleApiError, getErrorMessage } from "@/lib/api-error-handler";
 import { KrawlSuccessScreen } from "../SuccessScreen";
 import { StepHeader, InfoBanner, LoadingState, ErrorDisplay } from "@/components/shared/creation";
-import type { KrawlDetail } from "@/types/krawl-detail";
-import type { Coordinates } from "@/components/map/gem-types";
-import type { KrawlBasicInfo, SelectedGem } from "@/stores/krawl-creation-store";
+import { validateKrawlReviewData } from "../utils/krawlValidation";
+import { useRouteMetrics } from "../hooks/useRouteMetrics";
+import { useKrawlPreview } from "../hooks/useKrawlPreview";
+import { useKrawlSubmission } from "../hooks/useKrawlSubmission";
 
 interface ReviewStepProps {
   onNext: () => void;
@@ -24,295 +21,59 @@ interface ReviewStepProps {
   onBackToPreviousStep: () => void;
 }
 
-/**
- * Convert form data to KrawlDetail format for preview
- */
-function createPreviewKrawl(
-  basicInfo: KrawlBasicInfo | null,
-  selectedGems: SelectedGem[],
-  routeMetrics: { distance: number; duration: number } | null
-): KrawlDetail | null {
-  if (!basicInfo) return null;
-
-  // Sort gems by order
-  const sortedGems = [...selectedGems].sort((a, b) => a.order - b.order);
-
-  const previewKrawl: KrawlDetail = {
-    id: "preview", // Temporary ID for preview
-    name: basicInfo.name,
-    description: basicInfo.description,
-    fullDescription: basicInfo.description,
-    category: basicInfo.category,
-    difficulty: basicInfo.difficulty as any,
-    coverImage: basicInfo.coverImage,
-    gems: sortedGems.map((sg) => sg.gem),
-    estimatedDurationMinutes: routeMetrics
-      ? Math.round(routeMetrics.duration / 60)
-      : undefined,
-    estimatedDistanceKm: routeMetrics
-      ? routeMetrics.distance / 1000
-      : undefined,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  
-  return previewKrawl;
-}
-
-/**
- * Validate data completeness
- */
-function validateData(
-  basicInfo: KrawlBasicInfo | null,
-  selectedGems: SelectedGem[]
-): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  if (!basicInfo) {
-    errors.push("Basic information is missing");
-  } else {
-    if (!basicInfo.name || basicInfo.name.trim().length === 0) {
-      errors.push("Krawl name is required");
-    }
-    if (
-      !basicInfo.description ||
-      basicInfo.description.trim().length < 50
-    ) {
-      errors.push("Description must be at least 50 characters");
-    }
-    if (!basicInfo.category || basicInfo.category.trim().length === 0) {
-      errors.push("Category is required");
-    }
-    if (!basicInfo.difficulty || basicInfo.difficulty.trim().length === 0) {
-      errors.push("Difficulty is required");
-    }
-    if (!basicInfo.coverImage || basicInfo.coverImage.trim().length === 0) {
-      errors.push("Cover image is required");
-    }
-  }
-
-  if (selectedGems.length < 2) {
-    errors.push("At least 2 gems are required");
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-}
-
 export function ReviewStep({
   onNext,
   onBackToPreviousPage,
   onBackToPreviousStep,
 }: ReviewStepProps) {
-  const { basicInfo, selectedGems, setCurrentStep, clearForm, currentDraftId, deleteDraftFromBackend } = useKrawlCreationStore();
-  const { error: toastError } = useToast();
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(true);
-  const [previewError, setPreviewError] = useState<string | null>(null);
-  const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [successState, setSuccessState] = useState<{
-    krawlId: string;
-    krawlName: string;
-  } | null>(null);
-  const [routeMetrics, setRouteMetrics] = useState<{
-    distance: number;
-    duration: number;
-  } | null>(null);
+  const {
+    basicInfo,
+    selectedGems,
+    setCurrentStep,
+    currentDraftId,
+    deleteDraftFromBackend,
+  } = useKrawlCreationStore();
 
   // Sort gems by order
   const sortedGems = useMemo(() => {
     return [...selectedGems].sort((a, b) => a.order - b.order);
   }, [selectedGems]);
 
-  // Create stable dependency for previewKrawl to prevent unnecessary recomputation
-  // when selectedGems array reference changes but gem data hasn't changed
-  const gemsDependency = useMemo(() => {
-    return sortedGems.map(sg => ({
-      id: sg.gemId,
-      order: sg.order,
-      name: sg.gem.name,
-      coordinates: sg.gem.coordinates,
-    }));
-  }, [sortedGems]);
-
-  const gemsDependencyKey = useMemo(() =>
-    JSON.stringify(gemsDependency),
-    [gemsDependency]
-  );
-
   // Validate data completeness
   const validation = useMemo(() => {
-    return validateData(basicInfo, selectedGems);
+    return validateKrawlReviewData(basicInfo, selectedGems);
   }, [basicInfo, selectedGems]);
 
   // Calculate route metrics
-  useEffect(() => {
-    setIsLoadingPreview(true);
-    setPreviewError(null);
+  const { routeMetrics, isLoading: isLoadingRoute, error: routeError } =
+    useRouteMetrics(sortedGems);
 
-    if (sortedGems.length < 2) {
-      setRouteMetrics(null);
-      setIsLoadingPreview(false);
-      return;
-    }
+  // Create preview krawl
+  const previewKrawl = useKrawlPreview({
+    basicInfo,
+    selectedGems,
+    routeMetrics,
+  });
 
-    const calculateMetrics = async () => {
-      try {
-        const waypoints: Coordinates[] = sortedGems
-          .map((sg) => sg.gem.coordinates)
-          .filter(
-            (coord): coord is Coordinates =>
-              coord !== undefined &&
-              coord.length === 2 &&
-              !isNaN(coord[0]) &&
-              !isNaN(coord[1])
-          );
-
-        if (waypoints.length < 2) {
-          setRouteMetrics(null);
-          setIsLoadingPreview(false);
-          return;
-        }
-
-        const route = await getCachedRoute(waypoints, "walking");
-        if (route) {
-          setRouteMetrics({
-            distance: route.distance,
-            duration: route.duration,
-          });
-        } else {
-          setRouteMetrics(null);
-        }
-      } catch (error) {
-        console.error("Error calculating route metrics:", error);
-        setPreviewError("Failed to calculate route metrics");
-        setRouteMetrics(null);
-      } finally {
-        setIsLoadingPreview(false);
-      }
-    };
-
-    calculateMetrics();
-  }, [sortedGems]);
-
-  // Create preview KrawlDetail object
-  const previewKrawl = useMemo(() => {
-    return createPreviewKrawl(basicInfo, selectedGems, routeMetrics);
-  }, [basicInfo, selectedGems, routeMetrics, gemsDependencyKey]);
-
-
-  const handlePublish = useCallback(async () => {
-    if (
-      !validation.isValid ||
-      !basicInfo ||
-      sortedGems.length < 2
-    ) {
-      return;
-    }
-
-    setIsPublishing(true);
-    setSubmissionError(null);
-
-    try {
-      // Ensure coverImage is present (should be validated already)
-      if (!basicInfo.coverImage) {
-        throw new Error("Cover image is required");
-      }
-
-      // Prepare krawl data for API
-      const krawlData: CreateKrawlRequest = {
-        name: basicInfo.name,
-        description: basicInfo.description,
-        fullDescription: basicInfo.description, // Use description as full description if not provided
-        category: basicInfo.category,
-        difficulty: basicInfo.difficulty,
-        coverImage: basicInfo.coverImage,
-        coverImagePublicId: basicInfo.coverImagePublicId,
-        gems: sortedGems.map((sg) => ({
-          gemId: sg.gemId,
-          sequenceOrder: sg.order + 1, // Backend expects 1-based order
-          creatorNote: sg.creatorNote,
-          lokalSecret: sg.lokalSecret,
-        })),
-        tags: [], // Tags can be added later if needed
-      };
-
-      console.log("[Krawl Creation] Submitting krawl data:", {
-        name: krawlData.name,
-        category: krawlData.category,
-        gemCount: krawlData.gems.length,
-      });
-
-      const createResponse = await createKrawl(krawlData);
-
-      if (createResponse.success && createResponse.krawlId) {
-        // Success! Delete current draft if it exists
-        if (currentDraftId) {
-          try {
-            await deleteDraftFromBackend(currentDraftId);
-            console.log("[Krawl Creation] Draft deleted after successful krawl creation");
-          } catch (draftError) {
-            // Log error but don't fail the krawl creation
-            console.error("[Krawl Creation] Failed to delete draft after krawl creation:", draftError);
-          }
-        }
-
-        // Store krawl name before showing success screen
-        const createdKrawlName = basicInfo.name;
-
-        // Show success screen
-        // Note: Don't clear form here - let the success screen handle it when user clicks "Create Another"
-        setSuccessState({
-          krawlId: createResponse.krawlId,
-          krawlName: createdKrawlName,
-        });
-        setIsPublishing(false);
-      } else {
-        throw new Error(createResponse.message || "Failed to create krawl");
-      }
-    } catch (error) {
-      console.error("[Krawl Creation] Error publishing krawl:", error);
-
-      // Handle error using API error handler
-      const apiError = await handleApiError(error);
-      let errorMessage = getErrorMessage(apiError);
-
-      // Special handling for authentication errors
-      if (error instanceof Error) {
-        if (error.message.includes("Authentication failed") ||
-            error.message.includes("session has expired")) {
-          errorMessage = "Your session has expired. Please sign out and sign in again to create a krawl.";
-        } else if (error.message.includes("permission")) {
-          errorMessage = "Authentication error. Please try signing out and signing in again.";
-        }
-      }
-
-      setSubmissionError(errorMessage);
-      toastError("Submission Failed", errorMessage);
-      setIsPublishing(false);
-    }
-  }, [
-    validation.isValid,
+  // Handle submission
+  const {
+    isPublishing,
+    submissionError,
+    successState,
+    handlePublish,
+    handleRetry,
+    canPublish,
+  } = useKrawlSubmission({
     basicInfo,
     sortedGems,
     currentDraftId,
     deleteDraftFromBackend,
-    clearForm,
-    toastError,
-  ]);
+    isValid: validation.isValid,
+  });
 
-  const handleRetry = useCallback(() => {
-    setSubmissionError(null);
-    handlePublish();
-  }, [handlePublish]);
-
-  const canPublish =
-    validation.isValid &&
-    basicInfo &&
-    sortedGems.length >= 2 &&
-    !isPublishing;
+  // Determine loading state (route calculation or preview generation)
+  const isLoadingPreview = isLoadingRoute || !previewKrawl;
+  const previewError = routeError;
 
   // Show success screen if submission was successful
   if (successState) {
@@ -399,8 +160,8 @@ export function ReviewStep({
               <Button
                 variant="primary"
                 onClick={() => {
-                  setPreviewError(null);
-                  setIsLoadingPreview(true);
+                  // Retry route calculation by navigating back to gem selection step
+                  setCurrentStep(1);
                 }}
                 className="flex-1"
               >

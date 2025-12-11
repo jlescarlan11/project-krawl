@@ -17,10 +17,10 @@ export interface DraftsListProps {
   draftType: 'gem' | 'krawl';
 
   /** Function to fetch drafts from the API */
-  listDrafts: () => Promise<{ success: boolean; drafts: Draft[]; error?: string }>;
+  listDrafts: () => Promise<{ success: boolean; drafts?: Draft[]; error?: string; message?: string }>;
 
   /** Function to delete a draft */
-  deleteDraft: (draftId: string) => Promise<void>;
+  deleteDraft: (draftId: string) => Promise<{ success: boolean; message?: string; error?: string }>;
 
   /** Function to load a draft from backend into the store */
   loadDraftFromBackend: (draftId: string) => Promise<void>;
@@ -88,9 +88,9 @@ export function DraftsList({
       const response = await listDrafts();
 
       if (response.success) {
-        setDrafts(response.drafts);
+        setDrafts(response.drafts || []);
       } else {
-        setError(response.error || "Failed to load drafts");
+        setError(response.error || response.message || "Failed to load drafts");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load drafts");

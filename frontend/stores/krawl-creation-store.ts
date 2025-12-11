@@ -342,13 +342,14 @@ export const useKrawlCreationStore = create<KrawlCreationStore>()(
 
             if (response.success && response.draft) {
               const draft = response.draft;
+              const krawlData = draft.data as KrawlDraftData;
 
               // Restore state from draft
               set({
-                basicInfo: draft.data.basicInfo || null,
-                selectedGems: draft.data.selectedGems || [],
-                currentStep: draft.data.currentStep || 0,
-                completedSteps: draft.data.completedSteps || [],
+                basicInfo: krawlData.basicInfo || null,
+                selectedGems: krawlData.selectedGems || [],
+                currentStep: krawlData.currentStep || 0,
+                completedSteps: krawlData.completedSteps || [],
                 currentDraftId: draft.id,
                 lastSavedAt: draft.updatedAt,
                 lastDraftSavedAt: draft.updatedAt,

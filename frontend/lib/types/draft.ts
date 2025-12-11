@@ -90,8 +90,9 @@ export interface SaveDraftResponse {
 
 export interface ListDraftsResponse {
   success: boolean;
-  drafts: Draft[];
+  drafts?: Draft[];
   error?: string;
+  message?: string;
 }
 
 export interface LoadDraftResponse {

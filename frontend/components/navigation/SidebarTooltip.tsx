@@ -52,19 +52,24 @@ export function SidebarTooltip({ label, children, className }: SidebarTooltipPro
     }
   }, [isHovered]);
 
-  // Clone the child element and add ref and event handlers
+  // Clone the child element and add className
+  // Note: Event handlers are on the wrapper span for proper ref handling
   const childWithProps = typeof children === "object" && children !== null && "type" in children
-    ? React.cloneElement(children as React.ReactElement, {
-        ref: triggerRef,
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
-        className: cn((children as React.ReactElement).props?.className, className),
-      })
+    ? React.cloneElement(children as React.ReactElement<any>, {
+        className: cn((children as React.ReactElement<any>).props?.className, className),
+      } as any)
     : children;
 
   return (
     <>
-      {childWithProps}
+      <span
+        ref={triggerRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="inline-block"
+      >
+        {childWithProps}
+      </span>
 
       {/* Custom tooltip with arrow */}
       {isHovered && mounted && (

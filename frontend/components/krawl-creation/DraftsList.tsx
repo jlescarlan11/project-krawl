@@ -3,7 +3,7 @@
 import { DraftsList as SharedDraftsList } from "@/components/shared/creation/DraftsList";
 import { listKrawlDrafts, deleteKrawlDraft as deleteKrawlDraftApi } from "@/lib/api/drafts";
 import { useKrawlCreationStore } from "@/stores/krawl-creation-store";
-import type { Draft } from "@/lib/types/draft";
+import type { Draft, KrawlDraftData } from "@/lib/types/draft";
 
 /**
  * Krawl DraftsList Component
@@ -24,8 +24,9 @@ export function DraftsList() {
 
   // Get draft preview text for krawls
   const getDraftPreview = (draft: Draft): string => {
-    if (draft.data.basicInfo?.name) {
-      return draft.data.basicInfo.name;
+    const krawlData = draft.data as KrawlDraftData;
+    if (krawlData.basicInfo?.name) {
+      return krawlData.basicInfo.name;
     }
     return "Untitled Draft";
   };

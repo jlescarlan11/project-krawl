@@ -226,6 +226,8 @@ export class MapPerformanceMonitor {
   private lastTime = performance.now();
   private fps = 60;
   private callback?: (fps: number) => void;
+  private isMonitoring = false;
+  private map: mapboxgl.Map | null = null;
 
   constructor(callback?: (fps: number) => void) {
     this.callback = callback;
@@ -235,7 +237,12 @@ export class MapPerformanceMonitor {
    * Start monitoring FPS
    */
   start(map: mapboxgl.Map): void {
+    this.map = map;
+    this.isMonitoring = true;
+    
     const measureFPS = () => {
+      if (!this.isMonitoring) return;
+      
       this.frameCount++;
       const currentTime = performance.now();
       const elapsed = currentTime - this.lastTime;
@@ -254,10 +261,22 @@ export class MapPerformanceMonitor {
       }
 
       // Continue monitoring on next frame
-      map.once('render', measureFPS);
+      if (this.isMonitoring && this.map) {
+        this.map.once('render', measureFPS);
+      }
     };
 
-    map.once('render', measureFPS);
+    if (this.map) {
+      this.map.once('render', measureFPS);
+    }
+  }
+
+  /**
+   * Stop monitoring FPS
+   */
+  stop(): void {
+    this.isMonitoring = false;
+    this.map = null;
   }
 
   /**

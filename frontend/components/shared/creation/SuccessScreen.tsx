@@ -143,7 +143,7 @@ export function SuccessScreen({
           <Button
             onClick={handleViewClick}
             className="flex-1 flex items-center justify-center gap-2"
-            variant="default"
+            variant="primary"
           >
             <Eye className="h-4 w-4" />
             {viewButtonText}
