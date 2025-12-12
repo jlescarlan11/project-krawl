@@ -70,3 +70,34 @@ export interface GemVouchesData {
   vouches: GemVouch[];
   isVouchedByCurrentUser?: boolean;
 }
+
+/**
+ * User's rating for a gem
+ */
+export interface UserRating {
+  id: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Rating submission request
+ */
+export interface RatingSubmission {
+  rating: number;
+  comment?: string;
+}
+
+/**
+ * Response after creating or updating a rating
+ */
+export interface CreateOrUpdateRatingResponse {
+  id: string;
+  rating: number;
+  comment?: string;
+  newAverageRating: number;
+  totalRatings: number;
+  isNewRating: boolean;
+}

@@ -2,15 +2,18 @@ package com.krawl.service;
 
 import com.krawl.constants.GemCategoryConstants;
 import com.krawl.dto.request.CreateGemRequest;
+import com.krawl.dto.request.CreateOrUpdateRatingRequest;
 import com.krawl.dto.request.UpdateGemRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.GemPhoto;
+import com.krawl.entity.GemRating;
 import com.krawl.entity.GemVouch;
 import com.krawl.entity.User;
 import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.GemPhotoRepository;
+import com.krawl.repository.GemRatingRepository;
 import com.krawl.repository.GemRepository;
 import com.krawl.repository.GemVouchRepository;
 import com.krawl.repository.UserRepository;
@@ -32,6 +35,7 @@ public class GemService {
 
     private final GemRepository gemRepository;
     private final GemVouchRepository vouchRepository;
+    private final GemRatingRepository gemRatingRepository;
     private final GemPhotoRepository gemPhotoRepository;
     private final UserRepository userRepository;
     private final BoundaryValidationService boundaryValidationService;
@@ -547,5 +551,138 @@ public class GemService {
     @Transactional(readOnly = true)
     public boolean hasUserVouchedForGem(UUID gemId, UUID userId) {
         return Boolean.TRUE.equals(gemRepository.hasUserVouchedForGem(gemId, userId));
+    }
+
+    /**
+     * Create or update a rating for a gem.
+     * If user has already rated, updates the existing rating.
+     * If user hasn't rated, creates a new rating.
+     *
+     * @param gemId The UUID of the gem
+     * @param userId The UUID of the user
+     * @param request The rating request containing rating value and optional comment
+     * @return CreateOrUpdateRatingResponse with updated statistics
+     * @throws ResourceNotFoundException if gem or user not found
+     * @throws ForbiddenException if user attempts to rate their own gem
+     */
+    @Transactional
+    public CreateOrUpdateRatingResponse createOrUpdateRating(
+            UUID gemId,
+            UUID userId,
+            CreateOrUpdateRatingRequest request) {
+        log.debug("Creating/updating rating for gemId: {} by userId: {}", gemId, userId);
+
+        // 1. Verify gem exists
+        Gem gem = gemRepository.findById(gemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+
+        // 2. 🚫 PREVENT SELF-RATING (same pattern as self-vouch prevention)
+        if (gem.getCreatedBy().getId().equals(userId)) {
+            log.warn("User {} attempted to rate their own gem {}", userId, gemId);
+            throw new ForbiddenException("You cannot rate your own gem");
+        }
+
+        // 3. Get user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // 4. Check if rating already exists (UPSERT logic)
+        Optional<GemRating> existingRating = gemRatingRepository.findByGemIdAndUserId(gemId, userId);
+
+        GemRating rating;
+        boolean isNewRating;
+
+        if (existingRating.isPresent()) {
+            // UPDATE existing rating
+            rating = existingRating.get();
+            rating.setRating(request.getRating());
+            rating.setComment(request.getComment());
+            isNewRating = false;
+            log.debug("Updating existing rating for gemId: {} by userId: {}", gemId, userId);
+        } else {
+            // CREATE new rating
+            rating = GemRating.builder()
+                    .gem(gem)
+                    .user(user)
+                    .rating(request.getRating())
+                    .comment(request.getComment())
+                    .build();
+            isNewRating = true;
+            log.debug("Creating new rating for gemId: {} by userId: {}", gemId, userId);
+        }
+
+        rating = gemRatingRepository.save(rating);
+
+        // 5. Calculate new statistics
+        Double newAverageRating = gemRepository.calculateAverageRating(gemId);
+        Long totalRatings = gemRepository.countRatingsByGemId(gemId);
+
+        log.info("Rating {} for gemId: {} by userId: {}. New average: {}, Total: {}",
+                isNewRating ? "created" : "updated", gemId, userId, newAverageRating, totalRatings);
+
+        // 6. Build response
+        return CreateOrUpdateRatingResponse.builder()
+                .id(rating.getId().toString())
+                .rating(rating.getRating())
+                .comment(rating.getComment())
+                .newAverageRating(newAverageRating)
+                .totalRatings(totalRatings)
+                .isNewRating(isNewRating)
+                .build();
+    }
+
+    /**
+     * Get the current user's rating for a gem
+     *
+     * @param gemId The UUID of the gem
+     * @param userId The UUID of the user
+     * @return Optional containing RatingResponse if user has rated, empty otherwise
+     */
+    @Transactional(readOnly = true)
+    public Optional<RatingResponse> getUserRatingForGem(UUID gemId, UUID userId) {
+        return gemRatingRepository.findByGemIdAndUserId(gemId, userId)
+                .map(this::mapToRatingResponse);
+    }
+
+    /**
+     * Get all ratings for a gem
+     *
+     * @param gemId The UUID of the gem
+     * @return List of all ratings for the gem
+     * @throws ResourceNotFoundException if gem not found
+     */
+    @Transactional(readOnly = true)
+    public List<RatingResponse> getAllRatingsForGem(UUID gemId) {
+        // Verify gem exists
+        gemRepository.findById(gemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+
+        List<GemRating> ratings = gemRatingRepository.findByGemId(gemId);
+        return ratings.stream()
+                .map(this::mapToRatingResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to map GemRating entity to RatingResponse DTO
+     *
+     * @param rating The GemRating entity
+     * @return RatingResponse DTO
+     */
+    private RatingResponse mapToRatingResponse(GemRating rating) {
+        GemCreatorResponse user = GemCreatorResponse.builder()
+                .id(rating.getUser().getId().toString())
+                .name(rating.getUser().getDisplayName())
+                .avatar(rating.getUser().getAvatarUrl())
+                .build();
+
+        return RatingResponse.builder()
+                .id(rating.getId().toString())
+                .rating(rating.getRating())
+                .comment(rating.getComment())
+                .createdAt(rating.getCreatedAt())
+                .updatedAt(rating.getUpdatedAt())
+                .user(user)
+                .build();
     }
 }
