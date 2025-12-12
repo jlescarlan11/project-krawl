@@ -504,6 +504,12 @@ public class GemService {
         Gem gem = gemRepository.findById(gemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
 
+        // 🚫 PREVENT SELF-VOUCHING
+        if (gem.getCreatedBy().getId().equals(userId)) {
+            log.warn("User {} attempted to vouch for their own gem {}", userId, gemId);
+            throw new ForbiddenException("You cannot vouch for your own gem");
+        }
+
         // Check if user already vouched
         Optional<GemVouch> existingVouch = vouchRepository.findByGemIdAndUserId(gemId, userId);
 

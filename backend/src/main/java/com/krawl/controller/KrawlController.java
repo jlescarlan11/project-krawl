@@ -5,6 +5,7 @@ import com.krawl.dto.request.UpdateKrawlRequest;
 import com.krawl.dto.response.CreateKrawlResponse;
 import com.krawl.dto.response.KrawlDetailResponse;
 import com.krawl.dto.response.KrawlDraftResponse;
+import com.krawl.dto.response.ToggleVouchResponse;
 import com.krawl.dto.response.UpdateKrawlResponse;
 import com.krawl.exception.AuthException;
 import com.krawl.service.KrawlDraftService;
@@ -448,6 +449,95 @@ public class KrawlController {
 
         krawlDraftService.deleteDraft(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * POST /api/krawls/{krawlId}/vouch
+     *
+     * Toggle vouch for a krawl.
+     * If user has vouched, removes the vouch.
+     * If user hasn't vouched, creates a new vouch.
+     * Requires authentication.
+     *
+     * @param krawlId The UUID of the Krawl
+     * @return ToggleVouchResponse with updated vouch count and whether user has vouched
+     */
+    @Operation(
+            summary = "Toggle vouch for a Krawl",
+            description = "Toggles the vouch status for a Krawl. If the user has already vouched, removes the vouch. " +
+                    "If the user hasn't vouched, creates a new vouch. Requires authentication."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vouch toggled successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ToggleVouchResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid Krawl ID format (must be a valid UUID)",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden - Cannot vouch for your own krawl",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Krawl not found with the given ID",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/{krawlId}/vouch")
+    public ResponseEntity<ToggleVouchResponse> toggleVouch(
+            @Parameter(description = "UUID of the Krawl to vouch/unvouch", required = true, example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable String krawlId) {
+        log.debug("POST /api/krawls/{}/vouch", krawlId);
+
+        // Validate UUID format
+        UUID krawlUuid;
+        try {
+            krawlUuid = UUID.fromString(krawlId);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid UUID format: {}", krawlId);
+            throw new IllegalArgumentException("Invalid Krawl ID format. Must be a valid UUID.");
+        }
+
+        // Get current user ID
+        UUID userId = getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("Authentication required to vouch for a krawl");
+        }
+
+        log.debug("Toggling vouch for krawlId: {} by userId: {}", krawlUuid, userId);
+
+        // Toggle vouch
+        Integer newVouchCount = krawlService.toggleVouch(krawlUuid, userId);
+
+        // Check if user has vouched after toggle
+        boolean isVouched = krawlService.hasUserVouchedForKrawl(krawlUuid, userId);
+
+        ToggleVouchResponse response = ToggleVouchResponse.builder()
+                .vouchCount(newVouchCount)
+                .isVouchedByCurrentUser(isVouched)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     /**

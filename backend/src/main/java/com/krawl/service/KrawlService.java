@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -406,6 +407,70 @@ public class KrawlService {
         log.info("Krawl updated: {} for user: {}", krawlId, userId);
 
         return krawl.getId();
+    }
+
+    /**
+     * Toggle vouch for a krawl
+     * If user has vouched, removes the vouch.
+     * If user hasn't vouched, creates a new vouch.
+     * Prevents users from vouching for their own krawls.
+     *
+     * @param krawlId The UUID of the krawl
+     * @param userId The UUID of the user
+     * @return Updated vouch count
+     * @throws ResourceNotFoundException if krawl or user not found
+     * @throws ForbiddenException if user tries to vouch for their own krawl
+     */
+    @Transactional
+    public Integer toggleVouch(UUID krawlId, UUID userId) {
+        log.debug("Toggling vouch for krawlId: {} by userId: {}", krawlId, userId);
+
+        // Verify krawl exists
+        Krawl krawl = krawlRepository.findById(krawlId)
+                .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
+
+        // Verify user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // 🚫 PREVENT SELF-VOUCHING
+        if (krawl.getCreatedBy().getId().equals(userId)) {
+            log.warn("User {} attempted to vouch for their own krawl {}", userId, krawlId);
+            throw new ForbiddenException("You cannot vouch for your own krawl");
+        }
+
+        // Check if user already vouched
+        Optional<KrawlVouch> existingVouch = krawlVouchRepository.findByKrawlIdAndUserId(krawlId, userId);
+
+        if (existingVouch.isPresent()) {
+            // Remove vouch
+            log.debug("Removing existing vouch for krawlId: {} by userId: {}", krawlId, userId);
+            krawlVouchRepository.delete(existingVouch.get());
+        } else {
+            // Create new vouch
+            log.debug("Creating new vouch for krawlId: {} by userId: {}", krawlId, userId);
+            KrawlVouch newVouch = KrawlVouch.builder()
+                    .krawl(krawl)
+                    .user(user)
+                    .build();
+            krawlVouchRepository.save(newVouch);
+        }
+
+        // Return updated vouch count
+        Integer vouchCount = krawlRepository.countVouchesByKrawlId(krawlId);
+        log.debug("New vouch count for krawlId {}: {}", krawlId, vouchCount);
+        return vouchCount;
+    }
+
+    /**
+     * Check if a user has vouched for a krawl
+     *
+     * @param krawlId The UUID of the krawl
+     * @param userId The UUID of the user
+     * @return true if user has vouched, false otherwise
+     */
+    public boolean hasUserVouchedForKrawl(UUID krawlId, UUID userId) {
+        return Boolean.TRUE.equals(krawlRepository.hasUserVouchedForKrawl(krawlId, userId));
     }
 }
 

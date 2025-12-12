@@ -1,5 +1,6 @@
 package com.krawl.controller;
 
+import com.krawl.dto.response.ToggleVouchResponse;
 import com.krawl.service.GemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,10 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -140,18 +137,6 @@ public class VouchController {
             log.warn("Failed to extract user ID from authentication", e);
             return null;
         }
-    }
-
-    /**
-     * Response DTO for toggle vouch endpoint
-     */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    static class ToggleVouchResponse {
-        private Integer vouchCount;
-        private Boolean isVouchedByCurrentUser;
     }
 }
 
