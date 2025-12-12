@@ -1,17 +1,20 @@
 package com.krawl.service;
 
 import com.krawl.dto.request.CreateKrawlRequest;
+import com.krawl.dto.request.CreateOrUpdateRatingRequest;
 import com.krawl.dto.request.UpdateKrawlRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.Krawl;
 import com.krawl.entity.KrawlGem;
+import com.krawl.entity.KrawlRating;
 import com.krawl.entity.KrawlVouch;
 import com.krawl.entity.User;
 import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.GemRepository;
 import com.krawl.repository.KrawlGemRepository;
+import com.krawl.repository.KrawlRatingRepository;
 import com.krawl.repository.KrawlRepository;
 import com.krawl.repository.KrawlVouchRepository;
 import com.krawl.repository.UserRepository;
@@ -33,6 +36,7 @@ public class KrawlService {
 
     private final KrawlRepository krawlRepository;
     private final KrawlVouchRepository krawlVouchRepository;
+    private final KrawlRatingRepository krawlRatingRepository;
     private final GemRepository gemRepository;
     private final KrawlGemRepository krawlGemRepository;
     private final UserRepository userRepository;
@@ -471,6 +475,139 @@ public class KrawlService {
      */
     public boolean hasUserVouchedForKrawl(UUID krawlId, UUID userId) {
         return Boolean.TRUE.equals(krawlRepository.hasUserVouchedForKrawl(krawlId, userId));
+    }
+
+    /**
+     * Create or update a rating for a krawl.
+     * If user has already rated, updates the existing rating.
+     * If user hasn't rated, creates a new rating.
+     *
+     * @param krawlId The UUID of the krawl
+     * @param userId The UUID of the user
+     * @param request The rating request containing rating value and optional comment
+     * @return CreateOrUpdateRatingResponse with updated statistics
+     * @throws ResourceNotFoundException if krawl or user not found
+     * @throws ForbiddenException if user attempts to rate their own krawl
+     */
+    @Transactional
+    public CreateOrUpdateRatingResponse createOrUpdateRating(
+            UUID krawlId,
+            UUID userId,
+            CreateOrUpdateRatingRequest request) {
+        log.debug("Creating/updating rating for krawlId: {} by userId: {}", krawlId, userId);
+
+        // 1. Verify krawl exists
+        Krawl krawl = krawlRepository.findById(krawlId)
+                .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
+
+        // 2. 🚫 PREVENT SELF-RATING (same pattern as self-vouch prevention)
+        if (krawl.getCreatedBy().getId().equals(userId)) {
+            log.warn("User {} attempted to rate their own krawl {}", userId, krawlId);
+            throw new ForbiddenException("You cannot rate your own krawl");
+        }
+
+        // 3. Get user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // 4. Check if rating already exists (UPSERT logic)
+        Optional<KrawlRating> existingRating = krawlRatingRepository.findByKrawlIdAndUserId(krawlId, userId);
+
+        KrawlRating rating;
+        boolean isNewRating;
+
+        if (existingRating.isPresent()) {
+            // UPDATE existing rating
+            rating = existingRating.get();
+            rating.setRating(request.getRating());
+            rating.setComment(request.getComment());
+            isNewRating = false;
+            log.debug("Updating existing rating for krawlId: {} by userId: {}", krawlId, userId);
+        } else {
+            // CREATE new rating
+            rating = KrawlRating.builder()
+                    .krawl(krawl)
+                    .user(user)
+                    .rating(request.getRating())
+                    .comment(request.getComment())
+                    .build();
+            isNewRating = true;
+            log.debug("Creating new rating for krawlId: {} by userId: {}", krawlId, userId);
+        }
+
+        rating = krawlRatingRepository.save(rating);
+
+        // 5. Calculate new statistics
+        Double newAverageRating = krawlRepository.calculateAverageRating(krawlId);
+        Long totalRatings = krawlRepository.countRatingsByKrawlId(krawlId);
+
+        log.info("Rating {} for krawlId: {} by userId: {}. New average: {}, Total: {}",
+                isNewRating ? "created" : "updated", krawlId, userId, newAverageRating, totalRatings);
+
+        // 6. Build response
+        return CreateOrUpdateRatingResponse.builder()
+                .id(rating.getId().toString())
+                .rating(rating.getRating())
+                .comment(rating.getComment())
+                .newAverageRating(newAverageRating)
+                .totalRatings(totalRatings)
+                .isNewRating(isNewRating)
+                .build();
+    }
+
+    /**
+     * Get the current user's rating for a krawl
+     *
+     * @param krawlId The UUID of the krawl
+     * @param userId The UUID of the user
+     * @return Optional containing RatingResponse if user has rated, empty otherwise
+     */
+    @Transactional(readOnly = true)
+    public Optional<RatingResponse> getUserRatingForKrawl(UUID krawlId, UUID userId) {
+        return krawlRatingRepository.findByKrawlIdAndUserId(krawlId, userId)
+                .map(this::mapToRatingResponse);
+    }
+
+    /**
+     * Get all ratings for a krawl
+     *
+     * @param krawlId The UUID of the krawl
+     * @return List of all ratings for the krawl
+     * @throws ResourceNotFoundException if krawl not found
+     */
+    @Transactional(readOnly = true)
+    public List<RatingResponse> getAllRatingsForKrawl(UUID krawlId) {
+        // Verify krawl exists
+        krawlRepository.findById(krawlId)
+                .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
+
+        List<KrawlRating> ratings = krawlRatingRepository.findByKrawlId(krawlId);
+        return ratings.stream()
+                .map(this::mapToRatingResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to map KrawlRating entity to RatingResponse DTO
+     *
+     * @param rating The KrawlRating entity
+     * @return RatingResponse DTO
+     */
+    private RatingResponse mapToRatingResponse(KrawlRating rating) {
+        GemCreatorResponse user = GemCreatorResponse.builder()
+                .id(rating.getUser().getId().toString())
+                .name(rating.getUser().getDisplayName())
+                .avatar(rating.getUser().getAvatarUrl())
+                .build();
+
+        return RatingResponse.builder()
+                .id(rating.getId().toString())
+                .rating(rating.getRating())
+                .comment(rating.getComment())
+                .createdAt(rating.getCreatedAt())
+                .updatedAt(rating.getUpdatedAt())
+                .user(user)
+                .build();
     }
 }
 

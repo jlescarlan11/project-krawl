@@ -26,3 +26,4 @@ SET search_vector =
   setweight(to_tsvector('english', COALESCE(full_description, '')), 'D')
 WHERE search_vector IS NULL;
 
+
