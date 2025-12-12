@@ -13,6 +13,9 @@ export type { SearchSuggestionsProps } from "./SearchSuggestions";
 export { SearchResults } from "./SearchResults";
 export type { SearchResultsProps } from "./SearchResults";
 
+export { SearchResultsHeader, SearchResultsHeaderSkeleton } from "./SearchResultsHeader";
+export type { SearchResultsHeaderProps } from "./SearchResultsHeader";
+
 export { GemSearchCard } from "./GemSearchCard";
 export type { GemSearchCardProps } from "./GemSearchCard";
 

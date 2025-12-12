@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { GemSearchCard } from "./GemSearchCard";
 import { KrawlSearchCard } from "./KrawlSearchCard";
+import { SearchResultsHeader, SearchResultsHeaderSkeleton } from "./SearchResultsHeader";
 import type { SearchResultsResponse } from "@/lib/api/search";
 
 export interface SearchResultsProps {
@@ -46,6 +47,7 @@ export function SearchResults({
           <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
           <span className="ml-3 text-text-secondary">Searching...</span>
         </div>
+        <SearchResultsHeaderSkeleton />
         <LoadingResults />
       </div>
     );
@@ -95,14 +97,12 @@ export function SearchResults({
   return (
     <div className={cn("space-y-8", className)}>
       {/* Results Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-primary">
-          Search Results for "{results.query}"
-        </h2>
-        <span className="text-sm text-text-secondary">
-          {results.totalResults} {results.totalResults === 1 ? "result" : "results"}
-        </span>
-      </div>
+      <SearchResultsHeader
+        query={results.query}
+        totalResults={results.totalResults}
+        gemsCount={results.gems.length}
+        krawlsCount={results.krawls.length}
+      />
 
       {/* Gems Results */}
       {results.gems.length > 0 && (
