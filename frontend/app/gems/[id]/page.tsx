@@ -9,6 +9,8 @@ import { GemComments } from "@/components/gems/GemComments";
 import { RelatedGems } from "@/components/gems/RelatedGems";
 import { RelatedKrawls } from "@/components/krawls/RelatedKrawls";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
+
 /**
  * Fetch gem detail from API
  * TODO: Replace with actual backend API call when backend is ready
@@ -91,6 +93,7 @@ export default async function GemDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
   const gem = await fetchGemById(id);
 
   // Handle 404
@@ -148,7 +151,7 @@ export default async function GemDetailPage({
 
             {/* Right Column - Sidebar (1/3 width on desktop) */}
             <div className="lg:col-span-1 space-y-6">
-              <GemRatingsVouches gem={gem} isAuthenticated={false} />
+              <GemRatingsVouches gem={gem} isAuthenticated={!!session?.jwt} />
               <GemActions gem={gem} />
             </div>
           </div>
