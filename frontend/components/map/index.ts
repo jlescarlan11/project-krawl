@@ -4,10 +4,10 @@
  * Central export point for all map-related components.
  */
 
-export { Map } from './Map';
+export { Map, MemoizedMap } from './Map';
 export { MapLoadingState } from './MapLoadingState';
 export { MapErrorState } from './MapErrorState';
-export { MapWithBoundary } from './MapWithBoundary';
+export { MapWithBoundary, MemoizedMapWithBoundary } from './MapWithBoundary';
 export type { MapWithBoundaryProps } from './MapWithBoundary';
 export { LocationPicker } from './LocationPicker';
 export type { LocationPickerProps } from './LocationPicker';
@@ -19,7 +19,7 @@ export { MyLocationButton } from './MyLocationButton';
 export type { MyLocationButtonProps } from './MyLocationButton';
 export { GemPopup, GemPopupMobile, adjustPopupPosition } from './GemPopup';
 export type { GemPopupProps, GemPopupMobileProps } from './GemPopup';
-export { GemMarkerLayer } from './GemMarkerLayer';
+export { GemMarkerLayer, MemoizedGemMarkerLayer } from './GemMarkerLayer';
 export type { GemMarkerLayerProps } from './GemMarkerLayer';
 export { calculateDistance, formatDistance, calculateBearing, formatBearing } from '@/lib/map/geoUtils';
 export { useBoundaryLayer } from './useBoundaryLayer';

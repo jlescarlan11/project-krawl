@@ -7,6 +7,9 @@ import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { GemSearchCard } from "./GemSearchCard";
 import { KrawlSearchCard } from "./KrawlSearchCard";
 import { SearchResultsHeader, SearchResultsHeaderSkeleton } from "./SearchResultsHeader";
+import { SearchMapView } from "./SearchMapView";
+import { InfiniteScrollLoader } from "./InfiniteScrollLoader";
+import { useSearchViewMode } from "@/stores/search-store";
 import type { SearchResultsResponse } from "@/lib/api/search";
 
 export interface SearchResultsProps {
@@ -22,6 +25,15 @@ export interface SearchResultsProps {
   /** Highlight query in results */
   highlightQuery?: string;
 
+  /** Whether more results are available */
+  hasMore?: boolean;
+
+  /** Whether currently loading more results */
+  isLoadingMore?: boolean;
+
+  /** Callback to load more results */
+  onLoadMore?: () => void;
+
   /** Optional className for styling */
   className?: string;
 }
@@ -30,6 +42,7 @@ export interface SearchResultsProps {
  * SearchResults Component
  *
  * Displays search results grouped by type (Gems and Krawls).
+ * Supports infinite scroll pagination for large result sets.
  * Shows loading state, empty state, and error state.
  */
 export function SearchResults({
@@ -37,8 +50,13 @@ export function SearchResults({
   isLoading,
   error,
   highlightQuery,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
   className,
 }: SearchResultsProps) {
+  const viewMode = useSearchViewMode();
+
   // Loading state
   if (isLoading) {
     return (
@@ -104,40 +122,58 @@ export function SearchResults({
         krawlsCount={results.krawls.length}
       />
 
-      {/* Gems Results */}
-      {results.gems.length > 0 && (
-        <section>
-          <h3 className="text-base font-semibold text-text-primary mb-4">
-            Gems ({results.gems.length})
-          </h3>
-          <div className="space-y-3">
-            {results.gems.map((gem) => (
-              <GemSearchCard
-                key={gem.id}
-                gem={gem}
-                highlightQuery={highlightQuery || results.query}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Conditional rendering based on view mode */}
+      {viewMode === "map" ? (
+        /* Map View */
+        <SearchMapView results={results} />
+      ) : (
+        /* List View */
+        <>
+          {/* Gems Results */}
+          {results.gems.length > 0 && (
+            <section>
+              <h3 className="text-base font-semibold text-text-primary mb-4">
+                Gems ({results.gems.length})
+              </h3>
+              <div className="space-y-3">
+                {results.gems.map((gem) => (
+                  <GemSearchCard
+                    key={gem.id}
+                    gem={gem}
+                    highlightQuery={highlightQuery || results.query}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-      {/* Krawls Results */}
-      {results.krawls.length > 0 && (
-        <section>
-          <h3 className="text-base font-semibold text-text-primary mb-4">
-            Krawls ({results.krawls.length})
-          </h3>
-          <div className="space-y-3">
-            {results.krawls.map((krawl) => (
-              <KrawlSearchCard
-                key={krawl.id}
-                krawl={krawl}
-                highlightQuery={highlightQuery || results.query}
-              />
-            ))}
-          </div>
-        </section>
+          {/* Krawls Results */}
+          {results.krawls.length > 0 && (
+            <section>
+              <h3 className="text-base font-semibold text-text-primary mb-4">
+                Krawls ({results.krawls.length})
+              </h3>
+              <div className="space-y-3">
+                {results.krawls.map((krawl) => (
+                  <KrawlSearchCard
+                    key={krawl.id}
+                    krawl={krawl}
+                    highlightQuery={highlightQuery || results.query}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Infinite Scroll Loader - Only in list view */}
+          {onLoadMore && (
+            <InfiniteScrollLoader
+              hasMore={hasMore}
+              isLoadingMore={isLoadingMore}
+              onLoadMore={onLoadMore}
+            />
+          )}
+        </>
       )}
     </div>
   );

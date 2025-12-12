@@ -212,7 +212,10 @@ function SuggestionItem({
 
   return (
     <button
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault(); // Prevent input blur when clicking
+        onClick();
+      }}
       className={cn(
         "w-full px-4 py-2 flex items-center gap-3",
         "text-left text-sm text-text-primary",

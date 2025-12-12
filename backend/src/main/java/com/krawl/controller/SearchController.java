@@ -39,10 +39,12 @@ public class SearchController {
      * Query Parameters:
      * - q (required): Search query string
      * - limit (optional): Maximum results to return (default: 20, max: 100)
+     * - offset (optional): Number of results to skip for pagination (default: 0)
      * - type (optional): Filter by type ("gems" or "krawls", omit for both)
      *
      * @param query Search query text
      * @param limit Maximum number of results (default: 20)
+     * @param offset Number of results to skip (default: 0)
      * @param type Optional filter by type
      * @return SearchResultsResponse with matching gems and krawls
      */
@@ -50,8 +52,9 @@ public class SearchController {
     public ResponseEntity<SearchResultsResponse> search(
             @RequestParam("q") String query,
             @RequestParam(defaultValue = "20") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset,
             @RequestParam(required = false) String type) {
-        log.debug("GET /api/search?q={}&limit={}&type={}", query, limit, type);
+        log.debug("GET /api/search?q={}&limit={}&offset={}&type={}", query, limit, offset, type);
 
         // Validate query parameter
         if (query == null || query.trim().isEmpty()) {
@@ -63,6 +66,11 @@ public class SearchController {
             throw new IllegalArgumentException("Limit must be between 1 and 100");
         }
 
+        // Validate offset parameter
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be >= 0");
+        }
+
         // Validate type parameter
         if (type != null && !type.isEmpty() &&
                 !type.equalsIgnoreCase("gems") &&
@@ -71,7 +79,7 @@ public class SearchController {
         }
 
         UUID userId = getCurrentUserId();
-        SearchResultsResponse results = searchService.search(query, limit, type, userId);
+        SearchResultsResponse results = searchService.search(query, limit, offset, type, userId);
 
         return ResponseEntity.ok(results);
     }

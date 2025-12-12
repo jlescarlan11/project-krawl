@@ -52,6 +52,7 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/search/**").permitAll() // Public search endpoints
                 .requestMatchers(HttpMethod.GET, "/api/gems/**").permitAll() // Public gem GET endpoints only
                 .requestMatchers(HttpMethod.GET, "/api/krawls/**").permitAll() // Public krawl GET endpoints only
                 .requestMatchers("/api/landing/**").permitAll() // Public landing endpoints (statistics, featured krawls, etc.)

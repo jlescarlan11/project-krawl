@@ -15,6 +15,8 @@ export interface GemSearchResult {
   shortDescription: string;
   thumbnailUrl?: string;
   district: string;
+  latitude: number;
+  longitude: number;
   relevanceScore: number;
   vouchCount: number;
   averageRating: number;
@@ -31,6 +33,8 @@ export interface KrawlSearchResult {
   difficulty: string;
   coverImage?: string;
   gemCount: number;
+  latitude?: number;
+  longitude?: number;
   relevanceScore: number;
   vouchCount: number;
   averageRating: number;
@@ -42,8 +46,20 @@ export interface KrawlSearchResult {
 export interface SearchResultsResponse {
   query: string;
   totalResults: number;
+  offset: number;
+  limit: number;
+  hasMore: boolean;
   gems: GemSearchResult[];
   krawls: KrawlSearchResult[];
+}
+
+/**
+ * Search options
+ */
+export interface SearchOptions {
+  limit?: number;
+  offset?: number;
+  type?: "gems" | "krawls";
 }
 
 /**
@@ -72,29 +88,28 @@ export interface PopularSearchesResponse {
 /**
  * Search across Gems and Krawls
  *
- * Calls GET /api/search?q={query}&limit={limit}&type={type}
+ * Calls GET /api/search?q={query}&limit={limit}&offset={offset}&type={type}
  * Uses PostgreSQL full-text search with relevance ranking
  *
  * @param query - Search query text
- * @param limit - Maximum number of results (default: 20, max: 100)
- * @param type - Filter by type: "gems", "krawls", or undefined for both
+ * @param options - Search options (limit, offset, type)
  * @param signal - Optional AbortSignal for request cancellation
  * @returns Search results with matching gems and krawls
  * @throws Error if API call fails
  */
 export async function search(
   query: string,
-  limit: number = 20,
-  type?: "gems" | "krawls",
+  options: SearchOptions = {},
   signal?: AbortSignal
 ): Promise<SearchResultsResponse> {
   const params = new URLSearchParams({
     q: query,
-    limit: String(limit),
+    limit: String(options.limit || 20),
+    offset: String(options.offset || 0),
   });
 
-  if (type) {
-    params.append("type", type);
+  if (options.type) {
+    params.append("type", options.type);
   }
 
   const response = await fetch(`/api/search?${params}`, { signal });

@@ -114,6 +114,7 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
      *
      * @param query Search query text
      * @param limit Maximum number of results
+     * @param offset Number of results to skip (for pagination)
      * @return List of Object arrays: [Gem, relevance_score]
      */
     @Query(value = """
@@ -123,7 +124,21 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
             WHERE g.search_vector @@ plainto_tsquery('english', :query)
               AND g.status = 'VERIFIED'
             ORDER BY rank DESC, g.view_count DESC
-            LIMIT :limit
+            LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
-    List<Object[]> searchGems(@Param("query") String query, @Param("limit") int limit);
+    List<Object[]> searchGems(@Param("query") String query, @Param("limit") int limit, @Param("offset") int offset);
+
+    /**
+     * Count total search results for a query (for pagination).
+     *
+     * @param query Search query text
+     * @return Total number of matching gems
+     */
+    @Query(value = """
+            SELECT COUNT(*)
+            FROM gems g
+            WHERE g.search_vector @@ plainto_tsquery('english', :query)
+              AND g.status = 'VERIFIED'
+            """, nativeQuery = true)
+    int countSearchResults(@Param("query") String query);
 }

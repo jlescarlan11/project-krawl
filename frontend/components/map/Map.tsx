@@ -110,7 +110,7 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
 
     // Map initialization hook
     const { initializeMap, mapInstance, loadTimeout } = useMapInitialization({
-      container: containerRef.current!,
+      container: containerRef,
       initialCenter,
       initialZoom,
       style,
@@ -149,31 +149,48 @@ export const Map = React.forwardRef<HTMLDivElement, MapProps>(
 
     // Initialize on mount when container is available
     useEffect(() => {
-      if (!containerRef.current) return;
+      // Wait for container to be available
+      if (!containerRef.current) {
+        // Use a small delay to ensure container is mounted
+        const timer = setTimeout(() => {
+          if (containerRef.current) {
+            initializeMap();
+          }
+        }, 0);
+        return () => clearTimeout(timer);
+      }
 
       initializeMap();
 
-      // Cleanup on unmount
+      // Cleanup on unmount only (not when initializeMap changes)
+      // The guard in initializeMap prevents re-initialization
       return () => {
         if (loadTimeout.current) {
           clearTimeout(loadTimeout.current);
+          loadTimeout.current = null;
         }
 
         if (mapInstance.current) {
-          mapInstance.current.remove();
+          try {
+            mapInstance.current.remove();
+          } catch (err) {
+            // Map might already be removed, ignore error
+            console.warn('Error removing map instance:', err);
+          }
           mapInstance.current = null;
         }
       };
-    }, [initializeMap]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount - initializeMap has guards to prevent re-init
 
-    // Event listeners hook
+    // Event listeners hook - don't pass setMapState to avoid unnecessary rerenders
     useMapEventListeners({
       map: mapInstance.current,
       onClick,
       onMoveEnd,
       onZoomEnd,
       onError: handleError,
-      setMapState,
+      // setMapState removed - map instance already tracks center/zoom, no need for React state
     });
 
     // Controls hook
@@ -256,12 +273,41 @@ Map.displayName = 'Map';
 // Memoize Map component to prevent unnecessary re-renders
 export const MemoizedMap = React.memo(Map, (prevProps, nextProps) => {
   // Custom comparison: only re-render if critical props change
-  return (
-    prevProps.initialCenter?.[0] === nextProps.initialCenter?.[0] &&
-    prevProps.initialCenter?.[1] === nextProps.initialCenter?.[1] &&
-    prevProps.initialZoom === nextProps.initialZoom &&
-    prevProps.style === nextProps.style
-  );
+  // Check all props that affect initializeMap to prevent premature cleanup
+  
+  // Map initialization props
+  if (prevProps.initialCenter?.[0] !== nextProps.initialCenter?.[0]) return false;
+  if (prevProps.initialCenter?.[1] !== nextProps.initialCenter?.[1]) return false;
+  if (prevProps.initialZoom !== nextProps.initialZoom) return false;
+  if (prevProps.style !== nextProps.style) return false;
+  if (prevProps.maxBounds !== nextProps.maxBounds) return false;
+  if (prevProps.minZoom !== nextProps.minZoom) return false;
+  if (prevProps.maxZoom !== nextProps.maxZoom) return false;
+  
+  // Interaction props that affect initialization
+  if (prevProps.interactive !== nextProps.interactive) return false;
+  if (prevProps.scrollZoom !== nextProps.scrollZoom) return false;
+  if (prevProps.dragPan !== nextProps.dragPan) return false;
+  if (prevProps.dragRotate !== nextProps.dragRotate) return false;
+  if (prevProps.doubleClickZoom !== nextProps.doubleClickZoom) return false;
+  if (prevProps.touchZoomRotate !== nextProps.touchZoomRotate) return false;
+  if (prevProps.boxZoom !== nextProps.boxZoom) return false;
+  if (prevProps.keyboard !== nextProps.keyboard) return false;
+  
+  // Rendering props
+  if (prevProps.preserveDrawingBuffer !== nextProps.preserveDrawingBuffer) return false;
+  if (prevProps.failIfMajorPerformanceCaveat !== nextProps.failIfMajorPerformanceCaveat) return false;
+  
+  // UI props
+  if (prevProps.className !== nextProps.className) return false;
+  if (prevProps.navigationControlPosition !== nextProps.navigationControlPosition) return false;
+  
+  // Callbacks - if they change, we should re-render (though they should be stable)
+  // Being lenient here - if callbacks change, allow re-render to ensure proper setup
+  if (prevProps.onLoad !== nextProps.onLoad) return false;
+  if (prevProps.onError !== nextProps.onError) return false;
+  
+  return true;
 });
 
 MemoizedMap.displayName = 'MemoizedMap';
