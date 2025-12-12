@@ -86,9 +86,15 @@ function KrawlTrailLayer({
   });
 
   // Use provided krawl or fetched krawls - memoize to prevent unnecessary rerenders
+  // Create stable reference by stringifying the IDs
   const krawls = useMemo(() => {
     return krawl ? [krawl] : fetchedKrawls;
   }, [krawl, fetchedKrawls]);
+
+  // Create stable key for krawls to prevent unnecessary effect runs
+  const krawlsKey = useMemo(() => {
+    return krawls.map(k => k.id).join(',');
+  }, [krawls]);
 
   // Layer management hook
   const { addTrailLayers, removeTrailLayers } = useTrailLayerManagement(map);
@@ -99,6 +105,21 @@ function KrawlTrailLayer({
     onTrailClick,
     map,
   });
+
+  // Store callbacks in refs to prevent dependency changes
+  const addTrailLayersRef = useRef(addTrailLayers);
+  const removeTrailLayersRef = useRef(removeTrailLayers);
+  const handleTrailClickRef = useRef(handleTrailClick);
+  const handleMouseEnterRef = useRef(handleMouseEnter);
+  const handleMouseLeaveRef = useRef(handleMouseLeave);
+
+  useEffect(() => {
+    addTrailLayersRef.current = addTrailLayers;
+    removeTrailLayersRef.current = removeTrailLayers;
+    handleTrailClickRef.current = handleTrailClick;
+    handleMouseEnterRef.current = handleMouseEnter;
+    handleMouseLeaveRef.current = handleMouseLeave;
+  }, [addTrailLayers, removeTrailLayers, handleTrailClick, handleMouseEnter, handleMouseLeave]);
 
   // Notify when trails are loaded
   const onTrailsLoadRef = useRef(onTrailsLoad);
@@ -130,13 +151,16 @@ function KrawlTrailLayer({
 
   // Add trails to map
   useEffect(() => {
+    // Capture current krawls value
+    const currentKrawls = krawls;
+    
     // If krawl prop is provided, don't wait for loading state
     const shouldWaitForLoad = !krawl && isLoading;
 
-    if (!map || !showTrails || shouldWaitForLoad || krawls.length === 0) {
+    if (!map || !showTrails || shouldWaitForLoad || currentKrawls.length === 0) {
       // Clean up if we're not showing trails
-      if (!showTrails || krawls.length === 0) {
-        removeTrailLayers();
+      if (!showTrails || currentKrawls.length === 0) {
+        removeTrailLayersRef.current();
         setLayersAdded(false);
       }
       return;
@@ -162,29 +186,29 @@ function KrawlTrailLayer({
       try {
         // Convert Krawls to GeoJSON with road-based routing
         const features = await Promise.all(
-          krawls.map((krawl) => krawlToGeoJSONWithRouting(krawl, routingProfile))
+          currentKrawls.map((krawl) => krawlToGeoJSONWithRouting(krawl, routingProfile))
         );
 
         const validFeatures = features.filter((feature) => feature !== null) as GeoJSON.Feature[];
 
         if (validFeatures.length === 0) {
           console.warn('No valid Krawl trails to display');
-          removeTrailLayers();
+          removeTrailLayersRef.current();
           setLayersAdded(false);
           return;
         }
 
         // Add layers using the management hook
-        await addTrailLayers(validFeatures, selectedKrawlId, {
-          click: handleTrailClick,
-          mouseenter: handleMouseEnter,
-          mouseleave: handleMouseLeave,
+        await addTrailLayersRef.current(validFeatures, selectedKrawlId, {
+          click: handleTrailClickRef.current,
+          mouseenter: handleMouseEnterRef.current,
+          mouseleave: handleMouseLeaveRef.current,
         });
 
         setLayersAdded(true);
       } catch (error) {
         console.error('Error adding trails to map:', error);
-        removeTrailLayers();
+        removeTrailLayersRef.current();
         setLayersAdded(false);
       } finally {
         setIsProcessingRoutes(false);
@@ -193,23 +217,18 @@ function KrawlTrailLayer({
 
     // Cleanup on unmount
     return () => {
-      removeTrailLayers();
+      removeTrailLayersRef.current();
       setLayersAdded(false);
     };
   }, [
     map,
-    krawls,
+    krawlsKey, // Use stable key instead of krawls array
     isLoading,
     showTrails,
     selectedKrawlId,
     routingProfile,
     krawlDependencyKey,
-    removeTrailLayers,
-    addTrailLayers,
-    handleTrailClick,
-    handleMouseEnter,
-    handleMouseLeave,
-    krawl,
+    // Removed callback dependencies - using refs instead
   ]);
 
   // Update trail styling when selection changes

@@ -219,7 +219,7 @@ const authConfig: NextAuthConfig = {
       // Handle session refresh trigger
       // This is called when NextAuth.js updateAge triggers (every hour) or when update() is called
       if (trigger === 'update') {
-        // Check if token is expiring soon (within 1 hour)
+        // Check if token is expiring soon (within 1 hour) or already expired
         const now = Math.floor(Date.now() / 1000);
         const currentExp = token.exp as number | undefined;
         
@@ -227,8 +227,9 @@ const authConfig: NextAuthConfig = {
           const expiresIn = currentExp - now;
           const oneHour = 60 * 60;
 
+          // Refresh if token is expiring soon OR already expired
           if (expiresIn < oneHour) {
-            // Token expiring soon, refresh via backend
+            // Token expiring soon or expired, refresh via backend
             const refreshToken = token.refreshToken as string | undefined;
             
             if (refreshToken) {
@@ -247,13 +248,30 @@ const authConfig: NextAuthConfig = {
                 
                 // Log refresh for monitoring
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('[Session] Backend token refreshed, new expiration:', newExpiresAt);
+                  const wasExpired = expiresIn <= 0;
+                  console.log(`[Session] Backend token refreshed (${wasExpired ? 'expired' : 'expiring soon'}), new expiration:`, newExpiresAt);
                 }
               } catch (error) {
                 // Backend refresh failed, fallback to frontend-only refresh
                 console.error('[Session] Backend token refresh failed:', error);
                 
-                // Extend frontend session expiration only
+                // If token was expired and refresh failed, don't extend expiration
+                // This will cause session to be invalidated
+                if (expiresIn <= 0) {
+                  // Token was expired and refresh failed - invalidate session
+                  console.error('[Session] Token expired and refresh failed, session will be invalidated');
+                  // Log to Sentry in production
+                  if (process.env.NODE_ENV === "production") {
+                    Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+                      tags: { component: "token-refresh", expired: "true" },
+                      level: "error",
+                    });
+                  }
+                  // Don't update expiration, let NextAuth handle invalidation
+                  return token;
+                }
+                
+                // Token was expiring soon but not expired - extend frontend session only
                 const newExpiresAt = new Date();
                 newExpiresAt.setHours(newExpiresAt.getHours() + 24);
                 token.exp = Math.floor(newExpiresAt.getTime() / 1000);
@@ -267,7 +285,13 @@ const authConfig: NextAuthConfig = {
                 }
               }
             } else {
-              // No refresh token available, extend frontend session only
+              // No refresh token available
+              if (expiresIn <= 0) {
+                // Token expired and no refresh token - invalidate session
+                console.error('[Session] Token expired and no refresh token available, session will be invalidated');
+                return token;
+              }
+              // Token expiring soon but no refresh token - extend frontend session only
               const newExpiresAt = new Date();
               newExpiresAt.setHours(newExpiresAt.getHours() + 24);
               token.exp = Math.floor(newExpiresAt.getTime() / 1000);

@@ -60,16 +60,24 @@ export function useTrailLayerManagement(map: mapboxgl.Map | null) {
         mouseleaveHandlerRef.current = null;
       }
 
-      // Remove layers
+      // Remove layers - check if map is loaded and layer exists
       Object.values(TRAIL_LAYER_IDS).forEach((layerId) => {
-        if (map.getLayer && map.getLayer(layerId)) {
-          map.removeLayer(layerId);
+        try {
+          if (map.isStyleLoaded() && map.getLayer(layerId)) {
+            map.removeLayer(layerId);
+          }
+        } catch (e) {
+          // Ignore if map is not ready or layer doesn't exist
         }
       });
 
-      // Remove source
-      if (map.getSource && map.getSource(TRAIL_SOURCE_ID)) {
-        map.removeSource(TRAIL_SOURCE_ID);
+      // Remove source - check if map is loaded
+      try {
+        if (map.isStyleLoaded() && map.getSource(TRAIL_SOURCE_ID)) {
+          map.removeSource(TRAIL_SOURCE_ID);
+        }
+      } catch (e) {
+        // Ignore if map is not ready or source doesn't exist
       }
     } catch (error) {
       console.warn('Error removing trail layers:', error);

@@ -146,6 +146,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private boolean isPublicEndpoint(String requestUri, String method) {
         // Public endpoints that don't require authentication
         return requestUri.startsWith("/api/auth/") ||
+               requestUri.startsWith("/api/search/") ||
                (requestUri.startsWith("/api/gems") && "GET".equals(method)) ||
                (requestUri.startsWith("/api/krawls") && "GET".equals(method)) ||
                requestUri.startsWith("/api/landing/") ||

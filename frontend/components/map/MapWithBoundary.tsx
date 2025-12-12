@@ -7,10 +7,10 @@
 
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Map } from './Map';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { MemoizedMap } from './Map';
 import { useBoundaryLayer } from './useBoundaryLayer';
-import { GemMarkerLayer } from './GemMarkerLayer';
+import { MemoizedGemMarkerLayer } from './GemMarkerLayer';
 import { KrawlTrailLayer } from './KrawlTrailLayer';
 import { GemPopup, GemPopupMobile, adjustPopupPosition } from './GemPopup';
 import { calculateDistance } from '@/lib/map/geoUtils';
@@ -211,37 +211,70 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
     const [selectedGem, setSelectedGem] = useState<MapGem | null>(null);
     const [popupPosition, setPopupPosition] = useState<{ x: number; y: number; placement: 'above' | 'below' } | null>(null);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+    const isMobileRef = useRef(false);
     const [isMobile, setIsMobile] = useState(false);
     const [bottomSheetHeight, setBottomSheetHeight] = useState<number>(0);
 
-    // Use boundary layer hook
-    const { isLoaded: boundaryLoaded, error: boundaryError } = useBoundaryLayer(
-      mapInstance,
-      {
+    // Memoize boundary layer options to prevent recreation on every render
+    const boundaryOptions = useMemo(
+      () => ({
         showBoundary,
         lineColor: boundaryLineColor,
         lineWidth: boundaryLineWidth,
         lineOpacity: boundaryLineOpacity,
         fillColor: boundaryFillColor,
         fillOpacity: boundaryFillOpacity,
-      }
+      }),
+      [showBoundary, boundaryLineColor, boundaryLineWidth, boundaryLineOpacity, boundaryFillColor, boundaryFillOpacity]
     );
 
-    // Device detection for responsive popup
+    // Use boundary layer hook
+    const { isLoaded: boundaryLoaded, error: boundaryError } = useBoundaryLayer(
+      mapInstance,
+      boundaryOptions
+    );
+
+    // Device detection for responsive popup - use ref to avoid unnecessary re-renders
     useEffect(() => {
-      const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+      const checkMobile = () => {
+        const mobile = window.innerWidth < 1024;
+        // Only update state if it actually changed
+        if (mobile !== isMobileRef.current) {
+          isMobileRef.current = mobile;
+          setIsMobile(mobile);
+        }
+      };
       checkMobile();
       window.addEventListener('resize', checkMobile);
       return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Track user location for distance calculation
+    // Track user location for distance calculation - throttle updates to reduce re-renders
+    const lastLocationRef = useRef<[number, number] | null>(null);
     useEffect(() => {
       if (!navigator.geolocation) return;
 
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
-          setUserLocation([position.coords.longitude, position.coords.latitude]);
+          const newLocation: [number, number] = [position.coords.longitude, position.coords.latitude];
+          // Only update if location changed significantly (more than ~10 meters)
+          if (!lastLocationRef.current) {
+            lastLocationRef.current = newLocation;
+            setUserLocation(newLocation);
+          } else {
+            const [oldLng, oldLat] = lastLocationRef.current;
+            const [newLng, newLat] = newLocation;
+            // Calculate rough distance (simplified, ~111km per degree)
+            const distance = Math.sqrt(
+              Math.pow((newLng - oldLng) * 111000, 2) + 
+              Math.pow((newLat - oldLat) * 111000, 2)
+            );
+            // Only update if moved more than 10 meters
+            if (distance > 10) {
+              lastLocationRef.current = newLocation;
+              setUserLocation(newLocation);
+            }
+          }
         },
         (error) => {
           console.warn('Geolocation unavailable:', error.message);
@@ -266,10 +299,23 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
           return;
         }
 
-        // Simply set the selected gem - popup will follow the marker
         setSelectedGem(gem);
 
         const isDesktop = window.innerWidth >= LAYOUT_CONSTANTS.MOBILE_BREAKPOINT;
+
+        // Center map on gem with appropriate padding
+        if (mapInstance) {
+          const padding = calculateGemCenteringPadding(
+            !isDesktop,
+            bottomSheetHeight
+          );
+
+          mapInstance.easeTo({
+            center: gem.coordinates,
+            padding,
+            duration: 500,
+          });
+        }
 
         if (isDesktop) {
           // Desktop: fixed popup position (sidebar location)
@@ -279,7 +325,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
         // Call user's callback
         onGemMarkerClick?.(gem);
       },
-      [onGemMarkerClick]
+      [onGemMarkerClick, mapInstance, bottomSheetHeight]
     );
 
     // Handle popup close
@@ -367,15 +413,30 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
       }
     }, [boundaryError, onBoundaryError]);
 
-    // Ensure maxBounds is always set to prevent panning outside Region 7
-    const mapPropsWithBounds = {
-      ...mapProps,
-      maxBounds: mapProps.maxBounds || CEBU_CITY_MAX_BOUNDS,
-    };
+    // Memoize maxBounds to ensure stable reference
+    const maxBoundsValue = useMemo(
+      () => mapProps.maxBounds || CEBU_CITY_MAX_BOUNDS,
+      [mapProps.maxBounds]
+    );
+
+    // Memoize mapPropsWithBounds to prevent new object references on every render
+    // Spread all mapProps to ensure all props are included, then override maxBounds
+    const mapPropsWithBounds = useMemo(
+      () => ({
+        ...mapProps,
+        maxBounds: maxBoundsValue,
+      }),
+      [
+        // Include mapProps object itself - React will handle shallow comparison
+        // This ensures any prop changes trigger an update
+        mapProps,
+        maxBoundsValue,
+      ]
+    );
 
     return (
       <>
-        <Map ref={ref} {...mapPropsWithBounds} onLoad={handleMapLoad} />
+        <MemoizedMap ref={ref} {...mapPropsWithBounds} onLoad={handleMapLoad} />
         {showKrawlTrails && (
           <KrawlTrailLayer
             map={mapInstance}
@@ -387,7 +448,7 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
           />
         )}
         {showGemMarkers && (
-          <GemMarkerLayer
+          <MemoizedGemMarkerLayer
             map={mapInstance}
             categories={gemCategories}
             onMarkerClick={handleMarkerClick}
@@ -432,3 +493,69 @@ export const MapWithBoundary = React.forwardRef<HTMLDivElement, MapWithBoundaryP
 );
 
 MapWithBoundary.displayName = 'MapWithBoundary';
+
+// Memoize MapWithBoundary to prevent unnecessary rerenders
+export const MemoizedMapWithBoundary = React.memo(MapWithBoundary, (prevProps, nextProps) => {
+  // Quick reference checks first
+  if (prevProps.showBoundary !== nextProps.showBoundary) return false;
+  if (prevProps.showGemMarkers !== nextProps.showGemMarkers) return false;
+  if (prevProps.showKrawlTrails !== nextProps.showKrawlTrails) return false;
+  if (prevProps.selectedKrawlId !== nextProps.selectedKrawlId) return false;
+  
+  // Efficient array comparison for gemCategories (avoid JSON.stringify)
+  const prevCategories = prevProps.gemCategories || [];
+  const nextCategories = nextProps.gemCategories || [];
+  if (prevCategories.length !== nextCategories.length) return false;
+  if (prevCategories.some((cat, i) => cat !== nextCategories[i])) return false;
+  
+  // Map props
+  if (prevProps.initialCenter?.[0] !== nextProps.initialCenter?.[0]) return false;
+  if (prevProps.initialCenter?.[1] !== nextProps.initialCenter?.[1]) return false;
+  if (prevProps.initialZoom !== nextProps.initialZoom) return false;
+  if (prevProps.maxBounds !== nextProps.maxBounds) return false;
+  
+  // Boundary styling props
+  if (prevProps.boundaryLineColor !== nextProps.boundaryLineColor) return false;
+  if (prevProps.boundaryLineWidth !== nextProps.boundaryLineWidth) return false;
+  if (prevProps.boundaryLineOpacity !== nextProps.boundaryLineOpacity) return false;
+  if (prevProps.boundaryFillColor !== nextProps.boundaryFillColor) return false;
+  if (prevProps.boundaryFillOpacity !== nextProps.boundaryFillOpacity) return false;
+  
+  // Krawl prop comparison
+  const prevKrawl = prevProps.krawl;
+  const nextKrawl = nextProps.krawl;
+  if (prevKrawl !== nextKrawl) {
+    // If both are null/undefined, they're equal
+    if (!prevKrawl && !nextKrawl) {
+      // Continue comparison
+    } else if (!prevKrawl || !nextKrawl) {
+      return false;
+    } else {
+      // Deep comparison for krawl object
+      if (prevKrawl.id !== nextKrawl.id) return false;
+      if (prevKrawl.name !== nextKrawl.name) return false;
+      if (prevKrawl.color !== nextKrawl.color) return false;
+      if (prevKrawl.gems.length !== nextKrawl.gems.length) return false;
+      // Compare gem IDs and coordinates
+      for (let i = 0; i < prevKrawl.gems.length; i++) {
+        const prevGem = prevKrawl.gems[i];
+        const nextGem = nextKrawl.gems[i];
+        if (prevGem.id !== nextGem.id) return false;
+        if (prevGem.coordinates[0] !== nextGem.coordinates[0]) return false;
+        if (prevGem.coordinates[1] !== nextGem.coordinates[1]) return false;
+      }
+    }
+  }
+  
+  // Callbacks - if they change, we need to re-render
+  if (prevProps.onLoad !== nextProps.onLoad) return false;
+  if (prevProps.onGemMarkerClick !== nextProps.onGemMarkerClick) return false;
+  if (prevProps.onGemMarkersLoad !== nextProps.onGemMarkersLoad) return false;
+  if (prevProps.onKrawlTrailClick !== nextProps.onKrawlTrailClick) return false;
+  if (prevProps.onKrawlTrailsLoad !== nextProps.onKrawlTrailsLoad) return false;
+  if (prevProps.onBoundaryError !== nextProps.onBoundaryError) return false;
+  
+  return true;
+});
+
+MemoizedMapWithBoundary.displayName = 'MemoizedMapWithBoundary';

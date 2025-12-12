@@ -34,6 +34,18 @@ interface SearchState {
 
   /** Error message if search fails */
   error: string | null;
+
+  /** Current view mode: list or map */
+  viewMode: "list" | "map";
+
+  /** Current page number (for offset calculation) */
+  currentPage: number;
+
+  /** Results per page */
+  pageSize: number;
+
+  /** Whether more results are available */
+  hasMore: boolean;
 }
 
 /**
@@ -70,6 +82,18 @@ interface SearchActions {
   /** Set error */
   setError: (error: string | null) => void;
 
+  /** Set view mode */
+  setViewMode: (viewMode: "list" | "map") => void;
+
+  /** Set current page */
+  setCurrentPage: (page: number) => void;
+
+  /** Set has more flag */
+  setHasMore: (hasMore: boolean) => void;
+
+  /** Reset pagination state */
+  resetPagination: () => void;
+
   /** Reset all state */
   reset: () => void;
 }
@@ -91,6 +115,10 @@ const defaultState: SearchState = {
   isSearching: false,
   isLoadingSuggestions: false,
   error: null,
+  viewMode: "list",
+  currentPage: 0,
+  pageSize: 20,
+  hasMore: false,
 };
 
 /**
@@ -126,6 +154,37 @@ const saveRecentSearches = (searches: string[]) => {
 };
 
 /**
+ * Load view mode from localStorage
+ */
+const loadViewMode = (): "list" | "map" => {
+  if (typeof window === "undefined") return "list";
+
+  try {
+    const stored = localStorage.getItem("krawl:search-view-mode");
+    if (stored === "list" || stored === "map") {
+      return stored;
+    }
+  } catch (error) {
+    console.error("Failed to load view mode:", error);
+  }
+
+  return "list";
+};
+
+/**
+ * Save view mode to localStorage
+ */
+const saveViewMode = (viewMode: "list" | "map") => {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem("krawl:search-view-mode", viewMode);
+  } catch (error) {
+    console.error("Failed to save view mode:", error);
+  }
+};
+
+/**
  * Search Store Hook
  *
  * Manages search state including query, results, autocomplete suggestions,
@@ -145,10 +204,17 @@ export const useSearchStore = create<SearchStore>()(
     (set, get) => ({
       ...defaultState,
       recentSearches: loadRecentSearches(),
+      viewMode: loadViewMode(),
 
       setQuery: (query) => set({ query }),
 
-      setResults: (results) => set({ results, error: null }),
+      setResults: (results) => {
+        set({
+          results,
+          error: null,
+          hasMore: results?.hasMore || false,
+        });
+      },
 
       setSuggestions: (suggestions) => set({ suggestions }),
 
@@ -187,11 +253,27 @@ export const useSearchStore = create<SearchStore>()(
 
       setError: (error) => set({ error, results: null }),
 
+      setViewMode: (viewMode) => {
+        set({ viewMode });
+        saveViewMode(viewMode);
+      },
+
+      setCurrentPage: (currentPage) => set({ currentPage }),
+
+      setHasMore: (hasMore) => set({ hasMore }),
+
+      resetPagination: () =>
+        set({
+          currentPage: 0,
+          hasMore: false,
+        }),
+
       reset: () =>
         set({
           ...defaultState,
           recentSearches: get().recentSearches, // Keep recent searches
           popularSearches: get().popularSearches, // Keep popular searches
+          viewMode: get().viewMode, // Keep view mode
         }),
     }),
     { name: "SearchStore" }
@@ -242,3 +324,23 @@ export const useIsLoadingSuggestions = () =>
  * Selector: Get error
  */
 export const useSearchError = () => useSearchStore((state) => state.error);
+
+/**
+ * Selector: Get view mode
+ */
+export const useSearchViewMode = () => useSearchStore((state) => state.viewMode);
+
+/**
+ * Selector: Get current page
+ */
+export const useSearchCurrentPage = () => useSearchStore((state) => state.currentPage);
+
+/**
+ * Selector: Get page size
+ */
+export const useSearchPageSize = () => useSearchStore((state) => state.pageSize);
+
+/**
+ * Selector: Get has more flag
+ */
+export const useSearchHasMore = () => useSearchStore((state) => state.hasMore);

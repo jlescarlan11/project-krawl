@@ -108,3 +108,27 @@ export const GemMarkerLayer: React.FC<GemMarkerLayerProps> = ({
 };
 
 GemMarkerLayer.displayName = "GemMarkerLayer";
+
+// Memoize GemMarkerLayer to prevent unnecessary re-renders
+export const MemoizedGemMarkerLayer = React.memo(
+  GemMarkerLayer,
+  (prevProps, nextProps) => {
+    // Only re-render if critical props change
+    if (prevProps.map !== nextProps.map) return false;
+    if (prevProps.enabled !== nextProps.enabled) return false;
+    
+    // Efficient array comparison for categories
+    const prevCategories = prevProps.categories || [];
+    const nextCategories = nextProps.categories || [];
+    if (prevCategories.length !== nextCategories.length) return false;
+    if (prevCategories.some((cat, i) => cat !== nextCategories[i])) return false;
+    
+    // Callbacks - if they change, we need to re-render
+    if (prevProps.onMarkerClick !== nextProps.onMarkerClick) return false;
+    if (prevProps.onMarkersLoad !== nextProps.onMarkersLoad) return false;
+    
+    return true;
+  }
+);
+
+MemoizedGemMarkerLayer.displayName = "MemoizedGemMarkerLayer";

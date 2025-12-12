@@ -51,19 +51,24 @@ public class SearchService {
      *
      * @param query Search query text
      * @param limit Maximum results to return (default: 20, max: 100)
+     * @param offset Number of results to skip for pagination (default: 0)
      * @param type Filter by type: "gems", "krawls", or null for both
      * @param userId User performing the search (null for anonymous)
      * @return SearchResultsResponse with matching gems and krawls
      */
     @Transactional
-    public SearchResultsResponse search(String query, Integer limit, String type, UUID userId) {
-        log.debug("Searching for query='{}', limit={}, type={}, userId={}", query, limit, type, userId);
+    public SearchResultsResponse search(String query, Integer limit, Integer offset, String type, UUID userId) {
+        log.debug("Searching for query='{}', limit={}, offset={}, type={}, userId={}",
+                  query, limit, offset, type, userId);
 
         // Validate and sanitize inputs
         if (query == null || query.trim().isEmpty()) {
             return SearchResultsResponse.builder()
                     .query(query)
                     .totalResults(0)
+                    .offset(0)
+                    .limit(0)
+                    .hasMore(false)
                     .gems(List.of())
                     .krawls(List.of())
                     .build();
@@ -71,20 +76,27 @@ public class SearchService {
 
         String sanitizedQuery = query.trim();
         int effectiveLimit = Math.min(limit != null ? limit : 20, 100);
+        int effectiveOffset = Math.max(offset != null ? offset : 0, 0);
 
-        // Perform search
+        // Perform search with offset and limit
         List<GemSearchResult> gems = new ArrayList<>();
         List<KrawlSearchResult> krawls = new ArrayList<>();
+        int totalGems = 0;
+        int totalKrawls = 0;
 
         if (type == null || "gems".equalsIgnoreCase(type)) {
-            gems = searchGems(sanitizedQuery, effectiveLimit);
+            totalGems = gemRepository.countSearchResults(sanitizedQuery);
+            gems = searchGems(sanitizedQuery, effectiveLimit, effectiveOffset);
         }
 
         if (type == null || "krawls".equalsIgnoreCase(type)) {
-            krawls = searchKrawls(sanitizedQuery, effectiveLimit);
+            totalKrawls = krawlRepository.countSearchResults(sanitizedQuery);
+            krawls = searchKrawls(sanitizedQuery, effectiveLimit, effectiveOffset);
         }
 
-        int totalResults = gems.size() + krawls.size();
+        int totalResults = totalGems + totalKrawls;
+        int currentResultCount = gems.size() + krawls.size();
+        boolean hasMore = (effectiveOffset + currentResultCount) < totalResults;
 
         // Track search query asynchronously
         trackSearchQuery(sanitizedQuery, totalResults, userId);
@@ -92,6 +104,9 @@ public class SearchService {
         return SearchResultsResponse.builder()
                 .query(sanitizedQuery)
                 .totalResults(totalResults)
+                .offset(effectiveOffset)
+                .limit(effectiveLimit)
+                .hasMore(hasMore)
                 .gems(gems)
                 .krawls(krawls)
                 .build();
@@ -121,8 +136,8 @@ public class SearchService {
 
         List<AutocompleteSuggestion> suggestions = new ArrayList<>();
 
-        // Get gem suggestions
-        List<Object[]> gemResults = gemRepository.searchGems(sanitizedQuery, halfLimit);
+        // Get gem suggestions (no offset for autocomplete)
+        List<Object[]> gemResults = gemRepository.searchGems(sanitizedQuery, halfLimit, 0);
         for (Object[] row : gemResults) {
             Gem gem = entityManager.find(Gem.class, getUUID(row, 0));
             if (gem != null) {
@@ -134,8 +149,8 @@ public class SearchService {
             }
         }
 
-        // Get krawl suggestions
-        List<Object[]> krawlResults = krawlRepository.searchKrawls(sanitizedQuery, halfLimit);
+        // Get krawl suggestions (no offset for autocomplete)
+        List<Object[]> krawlResults = krawlRepository.searchKrawls(sanitizedQuery, halfLimit, 0);
         for (Object[]row : krawlResults) {
             Krawl krawl = entityManager.find(Krawl.class, getUUID(row, 0));
             if (krawl != null) {
@@ -187,8 +202,8 @@ public class SearchService {
     /**
      * Search gems and map results to DTOs.
      */
-    private List<GemSearchResult> searchGems(String query, int limit) {
-        List<Object[]> results = gemRepository.searchGems(query, limit);
+    private List<GemSearchResult> searchGems(String query, int limit, int offset) {
+        List<Object[]> results = gemRepository.searchGems(query, limit, offset);
         List<GemSearchResult> gemResults = new ArrayList<>();
 
         for (Object[] row : results) {
@@ -208,6 +223,8 @@ public class SearchService {
                             .shortDescription(gem.getShortDescription())
                             .thumbnailUrl(gem.getThumbnailUrl())
                             .district(gem.getDistrict())
+                            .latitude(gem.getLatitude())
+                            .longitude(gem.getLongitude())
                             .relevanceScore(relevanceScore)
                             .vouchCount(vouchCount != null ? vouchCount : 0)
                             .averageRating(averageRating != null ? averageRating : 0.0)
@@ -224,8 +241,8 @@ public class SearchService {
     /**
      * Search krawls and map results to DTOs.
      */
-    private List<KrawlSearchResult> searchKrawls(String query, int limit) {
-        List<Object[]> results = krawlRepository.searchKrawls(query, limit);
+    private List<KrawlSearchResult> searchKrawls(String query, int limit, int offset) {
+        List<Object[]> results = krawlRepository.searchKrawls(query, limit, offset);
         List<KrawlSearchResult> krawlResults = new ArrayList<>();
 
         for (Object[] row : results) {
@@ -238,6 +255,17 @@ public class SearchService {
                     Integer vouchCount = krawlRepository.countVouchesByKrawlId(krawl.getId());
                     Double averageRating = krawlRepository.calculateAverageRating(krawl.getId());
 
+                    // Calculate center point from first gem in krawl
+                    Double latitude = null;
+                    Double longitude = null;
+                    if (krawl.getGems() != null && !krawl.getGems().isEmpty()) {
+                        Gem firstGem = krawl.getGems().get(0).getGem();
+                        if (firstGem != null) {
+                            latitude = firstGem.getLatitude();
+                            longitude = firstGem.getLongitude();
+                        }
+                    }
+
                     krawlResults.add(KrawlSearchResult.builder()
                             .id(krawl.getId().toString())
                             .name(krawl.getName())
@@ -246,6 +274,8 @@ public class SearchService {
                             .difficulty(krawl.getDifficulty())
                             .coverImage(krawl.getCoverImage())
                             .gemCount(krawl.getGems() != null ? krawl.getGems().size() : 0)
+                            .latitude(latitude)
+                            .longitude(longitude)
                             .relevanceScore(relevanceScore)
                             .vouchCount(vouchCount != null ? vouchCount : 0)
                             .averageRating(averageRating != null ? averageRating : 0.0)

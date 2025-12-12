@@ -19,7 +19,7 @@ export interface UseMapEventListenersOptions {
   onMoveEnd?: (event: mapboxgl.MapboxEvent) => void;
   onZoomEnd?: (event: mapboxgl.MapboxEvent) => void;
   onError: (error: MapError) => void;
-  setMapState: React.Dispatch<React.SetStateAction<MapState>>;
+  setMapState?: React.Dispatch<React.SetStateAction<MapState>>; // Optional - only needed if state tracking is required
 }
 
 /**
@@ -66,16 +66,11 @@ export function useMapEventListeners({
   useEffect(() => {
     if (!map) return;
 
-    // Track map state changes
     const handleMoveEnd = (event: mapboxgl.MapboxEvent) => {
-      const center = map.getCenter();
-      const zoom = map.getZoom();
-      setMapState((prev) => ({
-        ...prev,
-        center: [center.lng, center.lat],
-        zoom,
-      }));
+      // Only call callback, don't update React state to avoid rerenders
       onMoveEndRef.current?.(event);
+      // Don't update React state on every move - map instance already has this info
+      // Only update if absolutely necessary (e.g., for controlled components)
     };
 
     map.on('moveend', handleMoveEnd);
@@ -83,18 +78,17 @@ export function useMapEventListeners({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [map, setMapState]);
+  }, [map]);
 
   useEffect(() => {
     if (!map) return;
 
     const handleZoomEnd = (event: mapboxgl.MapboxEvent) => {
-      const zoom = map.getZoom();
-      setMapState((prev) => ({
-        ...prev,
-        zoom,
-      }));
-      onZoomEndRef.current?.(event);
+      // Only call callback, don't update React state
+      if (onZoomEndRef.current) {
+        onZoomEndRef.current(event);
+      }
+      // Don't update React state on every zoom - map instance already has this info
     };
 
     map.on('zoomend', handleZoomEnd);
@@ -102,7 +96,7 @@ export function useMapEventListeners({
     return () => {
       map.off('zoomend', handleZoomEnd);
     };
-  }, [map, setMapState]);
+  }, [map]);
 
   useEffect(() => {
     if (!map) return;

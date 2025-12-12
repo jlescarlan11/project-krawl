@@ -2,8 +2,13 @@ package com.krawl.service;
 
 import com.krawl.exception.AuthException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -133,10 +138,36 @@ public class JwtTokenService {
             return claims;
         } catch (AuthException e) {
             throw e;
+        } catch (SecurityException e) {
+            // Signature verification failed
+            log.error("JWT signature verification failed - Token may be signed with different secret", e);
+            throw new AuthException("Invalid token: signature verification failed", HttpStatus.UNAUTHORIZED);
+        } catch (MalformedJwtException e) {
+            // Malformed JWT token
+            log.error("JWT token is malformed - Invalid JWT structure", e);
+            throw new AuthException("Invalid token: malformed JWT", HttpStatus.UNAUTHORIZED);
+        } catch (ExpiredJwtException e) {
+            // Token expired (caught by parser before our manual check)
+            log.warn("JWT token expired - Expiration: {}, Current: {}", 
+                e.getClaims().getExpiration(), new Date());
+            throw new AuthException("Token expired", HttpStatus.UNAUTHORIZED);
+        } catch (UnsupportedJwtException e) {
+            // Unsupported JWT token
+            log.error("JWT token is unsupported - Token format not supported", e);
+            throw new AuthException("Invalid token: unsupported JWT format", HttpStatus.UNAUTHORIZED);
+        } catch (JwtException e) {
+            // Other JWT-related exceptions
+            log.error("JWT validation failed - JWT Exception: {}", e.getMessage(), e);
+            throw new AuthException("Invalid token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (IllegalArgumentException e) {
+            // Invalid argument (e.g., null token, empty token)
+            log.error("JWT validation failed - Invalid argument: {}", e.getMessage(), e);
+            throw new AuthException("Invalid token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
-            log.error("JWT validation failed - Exception type: {}, Message: {}", 
+            // Unexpected error
+            log.error("JWT validation failed - Unexpected error - Exception type: {}, Message: {}", 
                 e.getClass().getSimpleName(), e.getMessage(), e);
-            throw new AuthException("Invalid token", HttpStatus.UNAUTHORIZED);
+            throw new AuthException("Invalid token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
     

@@ -29,19 +29,26 @@ export function useMapPerformance({
     if (!map || !enabled) return;
 
     // Initialize performance monitoring
-    performanceMonitorRef.current = new MapPerformanceMonitor((fps) => {
+    const monitor = new MapPerformanceMonitor((fps) => {
       // Log FPS updates every second during development
       if (fps < 50) {
         console.debug(`[Map] FPS: ${fps}`);
       }
     });
-    performanceMonitorRef.current.start(map);
+    performanceMonitorRef.current = monitor;
+    monitor.start(map);
 
     return () => {
-      if (performanceMonitorRef.current) {
-        performanceMonitorRef.current.stop();
-        performanceMonitorRef.current = null;
+      // Store reference locally to avoid race conditions
+      const currentMonitor = performanceMonitorRef.current;
+      if (currentMonitor && typeof currentMonitor.stop === 'function') {
+        try {
+          currentMonitor.stop();
+        } catch (error) {
+          console.warn('[useMapPerformance] Error stopping monitor:', error);
+        }
       }
+      performanceMonitorRef.current = null;
     };
   }, [map, enabled]);
 }

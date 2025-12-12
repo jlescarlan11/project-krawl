@@ -74,6 +74,7 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
      *
      * @param query Search query text
      * @param limit Maximum number of results
+     * @param offset Number of results to skip (for pagination)
      * @return List of Object arrays: [Krawl, relevance_score]
      */
     @Query(value = """
@@ -82,9 +83,22 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
             FROM krawls k
             WHERE k.search_vector @@ plainto_tsquery('english', :query)
             ORDER BY rank DESC, k.view_count DESC
-            LIMIT :limit
+            LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
-    java.util.List<Object[]> searchKrawls(@Param("query") String query, @Param("limit") int limit);
+    java.util.List<Object[]> searchKrawls(@Param("query") String query, @Param("limit") int limit, @Param("offset") int offset);
+
+    /**
+     * Count total search results for a query (for pagination).
+     *
+     * @param query Search query text
+     * @return Total number of matching krawls
+     */
+    @Query(value = """
+            SELECT COUNT(*)
+            FROM krawls k
+            WHERE k.search_vector @@ plainto_tsquery('english', :query)
+            """, nativeQuery = true)
+    int countSearchResults(@Param("query") String query);
 }
 
 

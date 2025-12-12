@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useRef } from 'react';
+import type React from 'react';
 import mapboxgl from 'mapbox-gl';
 import { detectWebGLSupport } from '@/lib/map/webglDetection';
 import { validateContainer, isValidMapboxToken } from '@/lib/map/mapUtils';
@@ -26,7 +27,7 @@ import {
 import type { MapError } from '../types';
 
 export interface MapInitializationOptions {
-  container: HTMLDivElement;
+  container: React.RefObject<HTMLDivElement | null> | React.RefObject<HTMLDivElement> | HTMLDivElement | null;
   initialCenter: [number, number];
   initialZoom: number;
   style?: string;
@@ -86,14 +87,36 @@ export function useMapInitialization({
   const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeMap = useCallback(async () => {
-    if (!container) {
+    // Prevent multiple initializations - if map already exists, don't reinitialize
+    if (mapInstanceRef.current) {
+      // Map already initialized, check if it's still valid
+      const existingMap = mapInstanceRef.current;
+      if (existingMap.loaded() && !existingMap.getContainer()) {
+        // Map was removed, clear the ref
+        mapInstanceRef.current = null;
+      } else {
+        // Map is still valid, don't reinitialize
+        return;
+      }
+    }
+
+    // Get current container value (handles both ref and direct element)
+    const currentContainer = container && typeof container === 'object' && 'current' in container
+      ? container.current
+      : container;
+
+    if (!currentContainer) {
       // If container not available, wait a bit and try again
       setTimeout(() => {
-        if (container) {
-          initializeMap();
-        }
+        initializeMap();
       }, 100);
       return;
+    }
+
+    // Clear any existing timeout
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+      loadTimeoutRef.current = null;
     }
 
     try {
@@ -120,18 +143,10 @@ export function useMapInitialization({
       }
 
       // 3. Validate container
-      if (!validateContainer(container)) {
+      if (!validateContainer(currentContainer)) {
         // Wait a bit and try again
         setTimeout(() => {
-          if (validateContainer(container)) {
-            initializeMap();
-          } else {
-            onError({
-              code: MapErrorCode.CONTAINER_SIZE_ZERO,
-              message: ERROR_MESSAGES[MapErrorCode.CONTAINER_SIZE_ZERO].message,
-              retryable: true,
-            });
-          }
+          initializeMap();
         }, 100);
         return;
       }
@@ -141,7 +156,7 @@ export function useMapInitialization({
 
       // 5. Create map instance with smooth interaction settings
       const map = new mapboxgl.Map({
-        container,
+        container: currentContainer,
         style: style || process.env.NEXT_PUBLIC_MAPBOX_STYLE || 'mapbox://styles/mapbox/standard',
         center: initialCenter,
         zoom: initialZoom,
@@ -189,9 +204,15 @@ export function useMapInitialization({
         fadeDuration: 300,
       });
 
-      // 6. Set up load timeout
+      // 6. Store map instance immediately
+      mapInstanceRef.current = map;
+
+      // 7. Set up load timeout
       loadTimeoutRef.current = setTimeout(() => {
-        if (!isLoaded) {
+        // Check if map instance exists and hasn't loaded yet
+        // The 'load' event handler will clear this timeout, so if we reach here,
+        // the map hasn't loaded in time
+        if (mapInstanceRef.current === map && !map.loaded()) {
           onError({
             code: MapErrorCode.NETWORK_ERROR,
             message: 'Map loading timeout exceeded',
@@ -200,10 +221,11 @@ export function useMapInitialization({
         }
       }, MAP_LOAD_TIMEOUT);
 
-      // 7. Handle load event
+      // 8. Handle load event
       map.on('load', () => {
         if (loadTimeoutRef.current) {
           clearTimeout(loadTimeoutRef.current);
+          loadTimeoutRef.current = null;
         }
 
         // Enforce maxBounds after load
@@ -235,20 +257,18 @@ export function useMapInitialization({
         onLoad?.(map);
       });
 
-      // 8. Handle errors
+      // 9. Handle errors
       map.on('error', (e) => {
         const mapError = classifyMapError(e.error);
         onError(mapError);
       });
-
-      // 9. Store map instance
-      mapInstanceRef.current = map;
     } catch (err) {
       const mapError = classifyMapError(err);
       onError(mapError);
     }
   }, [
-    container,
+    // Note: container is intentionally excluded from deps to allow ref updates
+    // The function reads container.current dynamically on each call
     initialCenter,
     initialZoom,
     style,

@@ -30,6 +30,21 @@ public class SearchResultsResponse {
     private int totalResults;
 
     /**
+     * Number of results skipped (for pagination)
+     */
+    private int offset;
+
+    /**
+     * Maximum number of results returned
+     */
+    private int limit;
+
+    /**
+     * Whether more results are available
+     */
+    private boolean hasMore;
+
+    /**
      * List of matching gems
      */
     private List<GemSearchResult> gems;
@@ -77,6 +92,16 @@ public class SearchResultsResponse {
          * Gem district location
          */
         private String district;
+
+        /**
+         * Gem latitude coordinate
+         */
+        private Double latitude;
+
+        /**
+         * Gem longitude coordinate
+         */
+        private Double longitude;
 
         /**
          * Relevance score from full-text search (0.0 to 1.0)
@@ -138,6 +163,18 @@ public class SearchResultsResponse {
          * Number of gems in this krawl
          */
         private Integer gemCount;
+
+        /**
+         * Krawl center point latitude coordinate
+         * (calculated from first gem in krawl)
+         */
+        private Double latitude;
+
+        /**
+         * Krawl center point longitude coordinate
+         * (calculated from first gem in krawl)
+         */
+        private Double longitude;
 
         /**
          * Relevance score from full-text search (0.0 to 1.0)
