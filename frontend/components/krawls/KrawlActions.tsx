@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { KrawlDetail } from "@/types/krawl-detail";
-import { Download, Play, Share2, Flag } from "lucide-react";
+import { Play, Share2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 import Link from "next/link";
 import { useIsAuthenticated } from "@/hooks/useIsAuthenticated";
 import { ReportModal } from "@/components/reports/ReportModal";
+import { DownloadButton } from "@/components/offline/DownloadButton";
 
 interface KrawlActionsProps {
   krawl: KrawlDetail;
@@ -17,31 +18,6 @@ export function KrawlActions({ krawl }: KrawlActionsProps) {
   const isAuthenticated = useIsAuthenticated();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  const handleDownload = async () => {
-    if (!isAuthenticated) {
-      // TODO: Show sign-in prompt
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/krawls/${krawl.id}/download`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to download krawl");
-      }
-
-      // TODO: Show success message
-      console.log("Krawl downloaded for offline use");
-    } catch (error) {
-      console.error("Error downloading krawl:", error);
-      alert("Failed to download krawl. Please try again.");
-    }
-  };
 
   const handleShare = async () => {
     const shareData = {
@@ -84,14 +60,7 @@ export function KrawlActions({ krawl }: KrawlActionsProps) {
 
       {/* Secondary Actions */}
       {isAuthenticated && (
-        <Button
-          className="w-full"
-          variant="secondary"
-          onClick={handleDownload}
-        >
-          <Download className="w-5 h-5 mr-2" />
-          Download Offline
-        </Button>
+        <DownloadButton krawlId={krawl.id} className="w-full" />
       )}
 
       <Button className="w-full" variant="secondary" onClick={handleShare}>

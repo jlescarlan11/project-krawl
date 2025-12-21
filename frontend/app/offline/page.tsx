@@ -1,44 +1,37 @@
 "use client";
 
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ProtectedRoute } from "@/components/navigation";
+import { StorageUsage } from "@/components/offline/StorageUsage";
+import { DownloadedKrawlsList } from "@/components/offline/DownloadedKrawlsList";
+import { useStorageUsage } from "@/hooks/useStorageUsage";
 
 export default function OfflinePage() {
+  const { refresh: refreshStorage } = useStorageUsage();
+
   return (
     <ProtectedRoute>
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-10 text-slate-50">
-        <Card className="max-w-lg bg-slate-900 text-center">
-          <CardHeader>
-            <h1 className="text-3xl font-semibold text-slate-50">
-              You&rsquo;re offline
+      <PageLayout>
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary mb-2">
+              Offline Downloads
             </h1>
-            <p className="mt-2 text-slate-300">
-              Reconnect to keep exploring Cebu City&rsquo;s cultural experiences
-              on Krawl.
+            <p className="text-text-secondary">
+              Manage your downloaded Krawls for offline use
             </p>
-          </CardHeader>
-          <CardBody className="flex flex-col gap-4">
-            <p className="text-sm text-slate-200">
-              We cache the essentials so you can still browse recently viewed
-              content. Once you&rsquo;re back online, reload to sync fresh data.
-            </p>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button variant="primary" onClick={() => window.location.reload()}>
-                Try again
-              </Button>
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center rounded-lg border-2 border-primary-green px-6 py-3 text-base font-medium text-primary-green hover:bg-light-green/10"
-              >
-                Back to home
-              </Link>
-            </div>
-          </CardBody>
-        </Card>
-      </main>
+          </div>
+
+          <StorageUsage />
+
+          <div>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">
+              Downloaded Krawls
+            </h2>
+            <DownloadedKrawlsList onRefresh={refreshStorage} />
+          </div>
+        </div>
+      </PageLayout>
     </ProtectedRoute>
   );
 }
