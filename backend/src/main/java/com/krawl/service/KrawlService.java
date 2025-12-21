@@ -1,11 +1,14 @@
 package com.krawl.service;
 
+import com.krawl.dto.request.CreateCommentRequest;
 import com.krawl.dto.request.CreateKrawlRequest;
 import com.krawl.dto.request.CreateOrUpdateRatingRequest;
+import com.krawl.dto.request.UpdateCommentRequest;
 import com.krawl.dto.request.UpdateKrawlRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.Krawl;
+import com.krawl.entity.KrawlComment;
 import com.krawl.entity.KrawlGem;
 import com.krawl.entity.KrawlRating;
 import com.krawl.entity.KrawlVouch;
@@ -13,6 +16,7 @@ import com.krawl.entity.User;
 import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.GemRepository;
+import com.krawl.repository.KrawlCommentRepository;
 import com.krawl.repository.KrawlGemRepository;
 import com.krawl.repository.KrawlRatingRepository;
 import com.krawl.repository.KrawlRepository;
@@ -20,6 +24,9 @@ import com.krawl.repository.KrawlVouchRepository;
 import com.krawl.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +44,7 @@ public class KrawlService {
     private final KrawlRepository krawlRepository;
     private final KrawlVouchRepository krawlVouchRepository;
     private final KrawlRatingRepository krawlRatingRepository;
+    private final KrawlCommentRepository krawlCommentRepository;
     private final GemRepository gemRepository;
     private final KrawlGemRepository krawlGemRepository;
     private final UserRepository userRepository;
@@ -607,6 +615,151 @@ public class KrawlService {
                 .createdAt(rating.getCreatedAt())
                 .updatedAt(rating.getUpdatedAt())
                 .user(user)
+                .build();
+    }
+
+    // ==================== COMMENT METHODS ====================
+
+    /**
+     * Create a comment on a krawl
+     *
+     * @param krawlId The UUID of the krawl
+     * @param userId The UUID of the user
+     * @param request The comment creation request
+     * @return CommentResponse with created comment
+     * @throws ResourceNotFoundException if krawl or user not found
+     */
+    @Transactional
+    public CommentResponse createComment(UUID krawlId, UUID userId, CreateCommentRequest request) {
+        log.debug("Creating comment on krawlId: {} by userId: {}", krawlId, userId);
+
+        // Verify krawl exists
+        Krawl krawl = krawlRepository.findById(krawlId)
+                .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
+
+        // Get user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // Create comment (no self-comment restriction for comments, unlike ratings)
+        KrawlComment comment = KrawlComment.builder()
+                .krawl(krawl)
+                .user(user)
+                .content(request.getContent().trim())
+                .build();
+
+        KrawlComment savedComment = krawlCommentRepository.save(comment);
+        log.info("Comment created with id: {} on krawlId: {} by userId: {}",
+                savedComment.getId(), krawlId, userId);
+
+        return mapToCommentResponse(savedComment);
+    }
+
+    /**
+     * Get paginated comments for a krawl
+     *
+     * @param krawlId The UUID of the krawl
+     * @param page Page number (0-indexed)
+     * @param size Page size (max 100)
+     * @return CommentPageResponse with paginated comments
+     * @throws ResourceNotFoundException if krawl not found
+     */
+    @Transactional(readOnly = true)
+    public CommentPageResponse getComments(UUID krawlId, int page, int size) {
+        log.debug("Fetching comments for krawlId: {}, page: {}, size: {}", krawlId, page, size);
+
+        // Verify krawl exists
+        if (!krawlRepository.existsById(krawlId)) {
+            throw new ResourceNotFoundException("Krawl", "id", krawlId);
+        }
+
+        // Validate page parameters
+        if (page < 0) page = 0;
+        if (size < 1 || size > 100) size = 20; // Max 100, default 20
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<KrawlComment> commentPage = krawlCommentRepository.findByKrawlIdOrderByCreatedAtDesc(krawlId, pageable);
+
+        List<CommentResponse> comments = commentPage.getContent().stream()
+                .map(this::mapToCommentResponse)
+                .collect(Collectors.toList());
+
+        return CommentPageResponse.builder()
+                .comments(comments)
+                .currentPage(page)
+                .totalPages(commentPage.getTotalPages())
+                .totalComments(commentPage.getTotalElements())
+                .hasNext(commentPage.hasNext())
+                .build();
+    }
+
+    /**
+     * Update a comment (owner only)
+     *
+     * @param commentId The UUID of the comment
+     * @param userId The UUID of the user
+     * @param request The comment update request
+     * @return CommentResponse with updated comment
+     * @throws ForbiddenException if user is not the comment owner
+     */
+    @Transactional
+    public CommentResponse updateComment(UUID commentId, UUID userId, UpdateCommentRequest request) {
+        log.debug("Updating commentId: {} by userId: {}", commentId, userId);
+
+        // Find comment and verify ownership
+        KrawlComment comment = krawlCommentRepository.findByIdAndUserId(commentId, userId)
+                .orElseThrow(() -> new ForbiddenException("You can only edit your own comments"));
+
+        // Update content
+        comment.setContent(request.getContent().trim());
+        KrawlComment updatedComment = krawlCommentRepository.save(comment);
+
+        log.info("Comment updated: {} by userId: {}", commentId, userId);
+
+        return mapToCommentResponse(updatedComment);
+    }
+
+    /**
+     * Delete a comment (owner only)
+     *
+     * @param commentId The UUID of the comment
+     * @param userId The UUID of the user
+     * @throws ForbiddenException if user is not the comment owner
+     */
+    @Transactional
+    public void deleteComment(UUID commentId, UUID userId) {
+        log.debug("Deleting commentId: {} by userId: {}", commentId, userId);
+
+        // Find comment and verify ownership
+        KrawlComment comment = krawlCommentRepository.findByIdAndUserId(commentId, userId)
+                .orElseThrow(() -> new ForbiddenException("You can only delete your own comments"));
+
+        krawlCommentRepository.delete(comment);
+        log.info("Comment deleted: {} by userId: {}", commentId, userId);
+    }
+
+    /**
+     * Helper method to map KrawlComment entity to CommentResponse DTO
+     *
+     * @param comment The KrawlComment entity
+     * @return CommentResponse DTO
+     */
+    private CommentResponse mapToCommentResponse(KrawlComment comment) {
+        GemCreatorResponse userResponse = GemCreatorResponse.builder()
+                .id(comment.getUser().getId().toString())
+                .name(comment.getUser().getDisplayName())
+                .avatar(comment.getUser().getAvatarUrl())
+                .build();
+
+        boolean isEdited = !comment.getCreatedAt().equals(comment.getUpdatedAt());
+
+        return CommentResponse.builder()
+                .id(comment.getId().toString())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
+                .user(userResponse)
+                .isEdited(isEdited)
                 .build();
     }
 }
