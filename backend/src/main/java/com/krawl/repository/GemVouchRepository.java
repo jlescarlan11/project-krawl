@@ -24,5 +24,17 @@ public interface GemVouchRepository extends JpaRepository<GemVouch, UUID> {
     Optional<GemVouch> findByGemIdAndUserId(UUID gemId, UUID userId);
 
     boolean existsByGemIdAndUserId(UUID gemId, UUID userId);
+
+    /**
+     * Count vouches given by a user
+     */
+    @Query("SELECT COUNT(v) FROM GemVouch v WHERE v.user.id = :userId")
+    long countByUserId(@Param("userId") UUID userId);
+
+    /**
+     * Find vouches by user, ordered by creation date
+     */
+    @Query("SELECT v FROM GemVouch v WHERE v.user.id = :userId ORDER BY v.createdAt DESC")
+    org.springframework.data.domain.Page<GemVouch> findByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId, org.springframework.data.domain.Pageable pageable);
 }
 

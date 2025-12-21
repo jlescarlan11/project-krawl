@@ -3,9 +3,12 @@ package com.krawl.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +35,21 @@ public class User {
     
     @Column(name = "avatar_url")
     private String avatarUrl;
+    
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+    
+    @Column(name = "notification_preferences", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> notificationPreferences;
+    
+    @Column(name = "privacy_settings", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> privacySettings;
+    
+    @Column(name = "app_preferences", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> appPreferences;
     
     @Column(name = "google_id", unique = true)
     private String googleId;

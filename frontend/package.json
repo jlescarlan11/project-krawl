@@ -33,6 +33,7 @@
     "next-auth": "^5.0.0-beta.30",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.69.0",
     "tailwind-merge": "^3.4.0",
     "yet-another-react-lightbox": "^3.25.0",
     "zustand": "^5.0.8"
