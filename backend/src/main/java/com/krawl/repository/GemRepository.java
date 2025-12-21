@@ -141,4 +141,14 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
               AND g.status = 'VERIFIED'
             """, nativeQuery = true)
     int countSearchResults(@Param("query") String query);
+
+    /**
+     * Count gems created by a user
+     */
+    long countByCreatedById(UUID userId);
+
+    /**
+     * Find gems created by a user, ordered by creation date
+     */
+    org.springframework.data.domain.Page<Gem> findByCreatedByIdOrderByCreatedAtDesc(UUID userId, org.springframework.data.domain.Pageable pageable);
 }

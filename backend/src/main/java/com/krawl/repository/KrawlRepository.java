@@ -99,6 +99,16 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
             WHERE k.search_vector @@ plainto_tsquery('english', :query)
             """, nativeQuery = true)
     int countSearchResults(@Param("query") String query);
+
+    /**
+     * Count krawls created by a user
+     */
+    long countByCreatedById(UUID userId);
+
+    /**
+     * Find krawls created by a user, ordered by creation date
+     */
+    org.springframework.data.domain.Page<Krawl> findByCreatedByIdOrderByCreatedAtDesc(UUID userId, org.springframework.data.domain.Pageable pageable);
 }
 
 
