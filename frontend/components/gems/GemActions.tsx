@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GemDetail } from "@/types/gem-detail";
 import { ThumbsUp, Share2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReportModal } from "@/components/reports/ReportModal";
 
 interface GemActionsProps {
   gem: GemDetail;
@@ -13,6 +14,7 @@ export function GemActions({ gem }: GemActionsProps) {
   const [isVouched, setIsVouched] = useState(gem.vouchesData?.isVouchedByCurrentUser || false);
   const [vouchCount, setVouchCount] = useState(gem.vouchCount || 0);
   const [isVouching, setIsVouching] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleVouch = async () => {
     setIsVouching(true);
@@ -76,15 +78,7 @@ export function GemActions({ gem }: GemActionsProps) {
   };
 
   const handleReport = () => {
-    // TODO: Implement report modal
-    const reason = prompt(
-      "Why are you reporting this gem?\n\nReasons:\n1. Inappropriate content\n2. Closed/Doesn't exist\n3. Wrong information\n4. Spam\n5. Other"
-    );
-
-    if (reason) {
-      alert("Thank you for your report. We'll review this gem.");
-      // TODO: Send report to API
-    }
+    setIsReportModalOpen(true);
   };
 
   return (
@@ -128,6 +122,15 @@ export function GemActions({ gem }: GemActionsProps) {
           Report
         </Button>
       </div>
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        contentType="GEM"
+        contentId={gem.id}
+        contentName={gem.name}
+      />
     </div>
   );
 }

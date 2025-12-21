@@ -27,3 +27,4 @@ SET search_vector =
 WHERE search_vector IS NULL;
 
 
+

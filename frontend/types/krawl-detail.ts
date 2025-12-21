@@ -45,6 +45,17 @@ export interface Comment {
 }
 
 /**
+ * Krawl comment with flattened user properties (for reviews/display)
+ */
+export interface KrawlComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  userName: string;
+  userAvatar?: string;
+}
+
+/**
  * Paginated comment response
  */
 export interface CommentPageResponse {
