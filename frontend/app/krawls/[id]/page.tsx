@@ -15,7 +15,7 @@ import { auth } from "@/app/api/auth/[...nextauth]/route";
 /**
  * Fetch krawl detail from API
  */
-async function fetchKrawlById(id: string): Promise<KrawlDetail | null> {
+export async function fetchKrawlById(id: string): Promise<KrawlDetail | null> {
   try {
     // Construct absolute URL for server-side fetch
     const protocol = process.env.NODE_ENV === "production" ? "https" : "http";

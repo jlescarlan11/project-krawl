@@ -58,7 +58,7 @@ export async function GET(
           return new Date(date).toISOString();
         };
         
-        // Map gems from backend format
+        // Map gems from backend format (including creatorNote and lokalSecret)
         const gems = krawlData.gems?.map((g: any) => {
           const longitude = g.coordinates?.longitude ?? g.coordinates?.[0] ?? 0;
           const latitude = g.coordinates?.latitude ?? g.coordinates?.[1] ?? 0;
@@ -71,6 +71,10 @@ export async function GET(
             coordinates: [longitude, latitude],
             thumbnailUrl: g.thumbnailUrl,
             rating: g.rating,
+            creatorNote: g.creatorNote || '',
+            lokalSecret: g.lokalSecret || '',
+            order: g.order ?? 0,
+            status: 'verified' as const, // Default status for Krawl gems
           };
         }) || [];
 

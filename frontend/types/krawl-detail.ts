@@ -1,6 +1,16 @@
 import { MapGem } from "@/components/map/gem-types";
 
 /**
+ * Krawl Gem with creator note and lokal secret
+ * Extends MapGem with Krawl-specific context
+ */
+export interface KrawlGem extends MapGem {
+  creatorNote: string; // Practical logistics information
+  lokalSecret: string; // Insider tip
+  order: number; // Order in the Krawl sequence
+}
+
+/**
  * Extended Krawl interface with full detail data
  */
 export interface KrawlDetail {
@@ -11,7 +21,7 @@ export interface KrawlDetail {
   category?: string;
   difficulty?: string;
   coverImage?: string;
-  gems: MapGem[]; // Ordered sequence of Gems in the Krawl
+  gems: KrawlGem[]; // Ordered sequence of Gems in the Krawl with context
   rating?: number;
   estimatedDurationMinutes?: number;
   estimatedDistanceKm?: number;
