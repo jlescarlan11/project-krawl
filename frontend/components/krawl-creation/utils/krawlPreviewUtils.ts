@@ -34,7 +34,12 @@ export function createPreviewKrawl(
     category: basicInfo.category,
     difficulty: basicInfo.difficulty as any,
     coverImage: basicInfo.coverImage,
-    gems: sortedGems.map((sg) => sg.gem),
+    gems: sortedGems.map((sg) => ({
+      ...sg.gem,
+      creatorNote: sg.creatorNote,
+      lokalSecret: sg.lokalSecret,
+      order: sg.order,
+    })),
     estimatedDurationMinutes: routeMetrics
       ? Math.round(routeMetrics.duration / 60)
       : undefined,

@@ -5,6 +5,52 @@
  */
 
 /**
+ * Krawl Mode API types and functions
+ */
+export interface KrawlSessionResponse {
+  sessionId: string;
+  krawlId: string;
+  userId: string;
+  startedAt: string;
+  endedAt?: string;
+  status: "ACTIVE" | "COMPLETED" | "ABANDONED";
+  totalDistanceMeters: number;
+  completedGemsCount: number;
+  totalGemsCount: number;
+}
+
+export interface KrawlProgressResponse {
+  sessionId: string;
+  completedGemsCount: number;
+  totalGemsCount: number;
+  progressPercentage: number;
+  completedGemIds: string[];
+  nextGemId?: string;
+}
+
+export interface StartKrawlModeRequest {
+  // Currently empty - session is created based on krawl ID and authenticated user
+}
+
+export interface UpdateProgressRequest {
+  totalDistanceMeters?: number;
+}
+
+export interface CompleteGemRequest {
+  gemId: string;
+  distanceToGemMeters?: number;
+  arrivalMethod?: "AUTOMATIC" | "MANUAL";
+}
+
+export interface LocationUpdateRequest {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  heading?: number;
+  speed?: number;
+}
+
+/**
  * Request payload for creating a new krawl
  */
 export interface CreateKrawlRequest {
@@ -266,9 +312,250 @@ export async function createKrawl(
   }
 }
 
+/**
+ * Start a Krawl Mode session
+ *
+ * @param krawlId - Krawl ID to start session for
+ * @returns Session response with session information
+ * @throws Error if API call fails
+ */
+export async function startKrawlModeSession(
+  krawlId: string
+): Promise<KrawlSessionResponse> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/start`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
 
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to start session: ${response.statusText}`
+      );
+    }
 
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to start Krawl Mode session");
+  }
+}
 
+/**
+ * Stop a Krawl Mode session
+ *
+ * @param krawlId - Krawl ID to stop session for
+ * @returns Session response with updated session information
+ * @throws Error if API call fails
+ */
+export async function stopKrawlModeSession(
+  krawlId: string
+): Promise<KrawlSessionResponse> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/stop`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to stop session: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to stop Krawl Mode session");
+  }
+}
+
+/**
+ * Get current Krawl Mode session
+ *
+ * @param krawlId - Krawl ID to get session for
+ * @returns Session response with session information
+ * @throws Error if API call fails
+ */
+export async function getKrawlModeSession(
+  krawlId: string
+): Promise<KrawlSessionResponse> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/session`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to get session: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to get Krawl Mode session");
+  }
+}
+
+/**
+ * Update progress for a Krawl Mode session
+ *
+ * @param krawlId - Krawl ID
+ * @param request - Progress update request
+ * @returns Session response with updated information
+ * @throws Error if API call fails
+ */
+export async function updateKrawlModeProgress(
+  krawlId: string,
+  request: UpdateProgressRequest
+): Promise<KrawlSessionResponse> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/progress`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to update progress: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update Krawl Mode progress");
+  }
+}
+
+/**
+ * Mark a gem as completed in a Krawl Mode session
+ *
+ * @param krawlId - Krawl ID
+ * @param request - Complete gem request
+ * @returns Progress response with updated progress
+ * @throws Error if API call fails
+ */
+export async function completeKrawlModeGem(
+  krawlId: string,
+  request: CompleteGemRequest
+): Promise<KrawlProgressResponse> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/complete-gem`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to complete gem: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to complete gem in Krawl Mode");
+  }
+}
+
+/**
+ * Get progress for a Krawl Mode session
+ *
+ * @param krawlId - Krawl ID
+ * @returns Progress response with progress information
+ * @throws Error if API call fails
+ */
+export async function getKrawlModeProgress(
+  krawlId: string
+): Promise<KrawlProgressResponse> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/progress`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to get progress: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to get Krawl Mode progress");
+  }
+}
+
+/**
+ * Update location for a Krawl Mode session (optional, for analytics)
+ *
+ * @param krawlId - Krawl ID
+ * @param request - Location update request
+ * @throws Error if API call fails
+ */
+export async function updateKrawlModeLocation(
+  krawlId: string,
+  request: LocationUpdateRequest
+): Promise<void> {
+  try {
+    const response = await fetch(`/api/krawls/${krawlId}/location`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to update location: ${response.statusText}`
+      );
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to update location in Krawl Mode");
+  }
+}
 
 
 
