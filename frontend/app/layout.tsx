@@ -10,6 +10,7 @@ import { SentryErrorBoundary } from "@/components/system/SentryErrorBoundary";
 import { SentryUserContextSync } from "@/components/system/SentryUserContextSync";
 import { SessionRefreshProvider } from "@/components/system/SessionRefreshProvider";
 import { CookieWarningBanner } from "@/components/system/CookieWarningBanner";
+import { UploadStatus } from "@/components/offline/UploadStatus";
 import {
   NavigationWrapper,
   NavigationFooter,
@@ -102,6 +103,7 @@ export default function RootLayout({
               </div>
               <ServiceWorkerUpdateToast />
               <CookieWarningBanner />
+              <UploadStatus className="fixed bottom-20 right-4 z-50" />
             </ToastProvider>
           </SentryErrorBoundary>
           </SessionRefreshProvider>
