@@ -33,15 +33,45 @@ export interface GemPhoto {
   order: number;
 }
 
-export interface GemComment {
+/**
+ * Comment on a gem
+ */
+export interface Comment {
   id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
   content: string;
   createdAt: string;
-  vouchCount: number;
-  isVouchedByCurrentUser: boolean;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  isEdited: boolean;
+}
+
+/**
+ * Paginated comment response
+ */
+export interface CommentPageResponse {
+  comments: Comment[];
+  currentPage: number;
+  totalPages: number;
+  totalComments: number;
+  hasNext: boolean;
+}
+
+/**
+ * Request to create a comment
+ */
+export interface CreateCommentRequest {
+  content: string;
+}
+
+/**
+ * Request to update a comment
+ */
+export interface UpdateCommentRequest {
+  content: string;
 }
 
 export interface GemVouch {

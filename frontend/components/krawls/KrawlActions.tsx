@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { KrawlDetail } from "@/types/krawl-detail";
 import { Download, Play, Share2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 import Link from "next/link";
 import { useIsAuthenticated } from "@/hooks/useIsAuthenticated";
+import { ReportModal } from "@/components/reports/ReportModal";
 
 interface KrawlActionsProps {
   krawl: KrawlDetail;
@@ -13,6 +15,7 @@ interface KrawlActionsProps {
 
 export function KrawlActions({ krawl }: KrawlActionsProps) {
   const isAuthenticated = useIsAuthenticated();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const handleDownload = async () => {
     if (!isAuthenticated) {
@@ -64,15 +67,7 @@ export function KrawlActions({ krawl }: KrawlActionsProps) {
   };
 
   const handleReport = () => {
-    // TODO: Implement report modal
-    const reason = prompt(
-      "Why are you reporting this krawl?\n\nReasons:\n1. Inappropriate content\n2. Wrong information\n3. Spam\n4. Other"
-    );
-
-    if (reason) {
-      // TODO: Send report to API
-      alert("Thank you for your report. We'll review this krawl.");
-    }
+    setIsReportModalOpen(true);
   };
 
   return (
@@ -112,6 +107,15 @@ export function KrawlActions({ krawl }: KrawlActionsProps) {
         <Flag className="w-5 h-5 mr-2" />
         Report
       </Button>
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        contentType="KRAWL"
+        contentId={krawl.id}
+        contentName={krawl.name}
+      />
     </div>
   );
 }

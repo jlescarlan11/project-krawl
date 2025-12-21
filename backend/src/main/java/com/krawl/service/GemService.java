@@ -1,17 +1,21 @@
 package com.krawl.service;
 
 import com.krawl.constants.GemCategoryConstants;
+import com.krawl.dto.request.CreateCommentRequest;
 import com.krawl.dto.request.CreateGemRequest;
 import com.krawl.dto.request.CreateOrUpdateRatingRequest;
+import com.krawl.dto.request.UpdateCommentRequest;
 import com.krawl.dto.request.UpdateGemRequest;
 import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
+import com.krawl.entity.GemComment;
 import com.krawl.entity.GemPhoto;
 import com.krawl.entity.GemRating;
 import com.krawl.entity.GemVouch;
 import com.krawl.entity.User;
 import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
+import com.krawl.repository.GemCommentRepository;
 import com.krawl.repository.GemPhotoRepository;
 import com.krawl.repository.GemRatingRepository;
 import com.krawl.repository.GemRepository;
@@ -19,6 +23,9 @@ import com.krawl.repository.GemVouchRepository;
 import com.krawl.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +43,7 @@ public class GemService {
     private final GemRepository gemRepository;
     private final GemVouchRepository vouchRepository;
     private final GemRatingRepository gemRatingRepository;
+    private final GemCommentRepository gemCommentRepository;
     private final GemPhotoRepository gemPhotoRepository;
     private final UserRepository userRepository;
     private final BoundaryValidationService boundaryValidationService;
@@ -683,6 +691,151 @@ public class GemService {
                 .createdAt(rating.getCreatedAt())
                 .updatedAt(rating.getUpdatedAt())
                 .user(user)
+                .build();
+    }
+
+    // ==================== COMMENT METHODS ====================
+
+    /**
+     * Create a comment on a gem
+     *
+     * @param gemId The UUID of the gem
+     * @param userId The UUID of the user
+     * @param request The comment creation request
+     * @return CommentResponse with created comment
+     * @throws ResourceNotFoundException if gem or user not found
+     */
+    @Transactional
+    public CommentResponse createComment(UUID gemId, UUID userId, CreateCommentRequest request) {
+        log.debug("Creating comment on gemId: {} by userId: {}", gemId, userId);
+
+        // Verify gem exists
+        Gem gem = gemRepository.findById(gemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
+
+        // Get user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        // Create comment (no self-comment restriction for comments, unlike ratings)
+        GemComment comment = GemComment.builder()
+                .gem(gem)
+                .user(user)
+                .content(request.getContent().trim())
+                .build();
+
+        GemComment savedComment = gemCommentRepository.save(comment);
+        log.info("Comment created with id: {} on gemId: {} by userId: {}",
+                savedComment.getId(), gemId, userId);
+
+        return mapToCommentResponse(savedComment);
+    }
+
+    /**
+     * Get paginated comments for a gem
+     *
+     * @param gemId The UUID of the gem
+     * @param page Page number (0-indexed)
+     * @param size Page size (max 100)
+     * @return CommentPageResponse with paginated comments
+     * @throws ResourceNotFoundException if gem not found
+     */
+    @Transactional(readOnly = true)
+    public CommentPageResponse getComments(UUID gemId, int page, int size) {
+        log.debug("Fetching comments for gemId: {}, page: {}, size: {}", gemId, page, size);
+
+        // Verify gem exists
+        if (!gemRepository.existsById(gemId)) {
+            throw new ResourceNotFoundException("Gem", "id", gemId);
+        }
+
+        // Validate page parameters
+        if (page < 0) page = 0;
+        if (size < 1 || size > 100) size = 20; // Max 100, default 20
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<GemComment> commentPage = gemCommentRepository.findByGemIdOrderByCreatedAtDesc(gemId, pageable);
+
+        List<CommentResponse> comments = commentPage.getContent().stream()
+                .map(this::mapToCommentResponse)
+                .collect(Collectors.toList());
+
+        return CommentPageResponse.builder()
+                .comments(comments)
+                .currentPage(page)
+                .totalPages(commentPage.getTotalPages())
+                .totalComments(commentPage.getTotalElements())
+                .hasNext(commentPage.hasNext())
+                .build();
+    }
+
+    /**
+     * Update a comment (owner only)
+     *
+     * @param commentId The UUID of the comment
+     * @param userId The UUID of the user
+     * @param request The comment update request
+     * @return CommentResponse with updated comment
+     * @throws ForbiddenException if user is not the comment owner
+     */
+    @Transactional
+    public CommentResponse updateComment(UUID commentId, UUID userId, UpdateCommentRequest request) {
+        log.debug("Updating commentId: {} by userId: {}", commentId, userId);
+
+        // Find comment and verify ownership
+        GemComment comment = gemCommentRepository.findByIdAndUserId(commentId, userId)
+                .orElseThrow(() -> new ForbiddenException("You can only edit your own comments"));
+
+        // Update content
+        comment.setContent(request.getContent().trim());
+        GemComment updatedComment = gemCommentRepository.save(comment);
+
+        log.info("Comment updated: {} by userId: {}", commentId, userId);
+
+        return mapToCommentResponse(updatedComment);
+    }
+
+    /**
+     * Delete a comment (owner only)
+     *
+     * @param commentId The UUID of the comment
+     * @param userId The UUID of the user
+     * @throws ForbiddenException if user is not the comment owner
+     */
+    @Transactional
+    public void deleteComment(UUID commentId, UUID userId) {
+        log.debug("Deleting commentId: {} by userId: {}", commentId, userId);
+
+        // Find comment and verify ownership
+        GemComment comment = gemCommentRepository.findByIdAndUserId(commentId, userId)
+                .orElseThrow(() -> new ForbiddenException("You can only delete your own comments"));
+
+        gemCommentRepository.delete(comment);
+        log.info("Comment deleted: {} by userId: {}", commentId, userId);
+    }
+
+    /**
+     * Helper method to map GemComment entity to CommentResponse DTO
+     *
+     * @param comment The GemComment entity
+     * @return CommentResponse DTO
+     */
+    private CommentResponse mapToCommentResponse(GemComment comment) {
+        GemCreatorResponse userResponse = GemCreatorResponse.builder()
+                .id(comment.getUser().getId().toString())
+                .name(comment.getUser().getDisplayName())
+                .avatar(comment.getUser().getAvatarUrl())
+                .build();
+
+        boolean isEdited = !comment.getCreatedAt().equals(comment.getUpdatedAt());
+
+        return CommentResponse.builder()
+                .id(comment.getId().toString())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
+                .user(userResponse)
+                .isEdited(isEdited)
                 .build();
     }
 }
