@@ -18,9 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -34,7 +31,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Users", description = "API endpoints for user profiles and settings")
-public class UserController {
+public class UserController extends BaseController {
 
     private final UserService userService;
 
@@ -76,7 +73,7 @@ public class UserController {
             @PathVariable String id) {
         log.debug("GET /api/users/{}", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UserProfileResponse profile = userService.getUserProfile(userId);
         return ResponseEntity.ok(profile);
     }
@@ -99,7 +96,7 @@ public class UserController {
             @PathVariable String id) {
         log.debug("GET /api/users/{}/statistics", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UserStatisticsResponse statistics = userService.getUserStatistics(userId);
         return ResponseEntity.ok(statistics);
     }
@@ -126,7 +123,7 @@ public class UserController {
             @RequestParam(defaultValue = "20") int size) {
         log.debug("GET /api/users/{}/gems?page={}&size={}", id, page, size);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         Pageable pageable = PageRequest.of(page, size);
         UserContentResponse<GemDetailResponse> response = userService.getUserGems(userId, pageable);
         return ResponseEntity.ok(response);
@@ -154,7 +151,7 @@ public class UserController {
             @RequestParam(defaultValue = "20") int size) {
         log.debug("GET /api/users/{}/krawls?page={}&size={}", id, page, size);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         Pageable pageable = PageRequest.of(page, size);
         UserContentResponse<KrawlDetailResponse> response = userService.getUserKrawls(userId, pageable);
         return ResponseEntity.ok(response);
@@ -182,7 +179,7 @@ public class UserController {
             @RequestParam(defaultValue = "20") int size) {
         log.debug("GET /api/users/{}/vouched-gems?page={}&size={}", id, page, size);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         Pageable pageable = PageRequest.of(page, size);
         UserContentResponse<GemDetailResponse> response = userService.getUserVouchedGems(userId, pageable);
         return ResponseEntity.ok(response);
@@ -210,7 +207,7 @@ public class UserController {
             @RequestParam(defaultValue = "20") int size) {
         log.debug("GET /api/users/{}/completed-krawls?page={}&size={}", id, page, size);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         Pageable pageable = PageRequest.of(page, size);
         UserContentResponse<KrawlDetailResponse> response = userService.getUserCompletedKrawls(userId, pageable);
         return ResponseEntity.ok(response);
@@ -237,7 +234,7 @@ public class UserController {
             @Valid @RequestBody UpdateProfileRequest request) {
         log.debug("PUT /api/users/{}/profile", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UUID currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
@@ -268,7 +265,7 @@ public class UserController {
             @Valid @RequestBody NotificationPreferencesRequest request) {
         log.debug("PUT /api/users/{}/notifications", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UUID currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
@@ -299,7 +296,7 @@ public class UserController {
             @Valid @RequestBody PrivacySettingsRequest request) {
         log.debug("PUT /api/users/{}/privacy", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UUID currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
@@ -330,7 +327,7 @@ public class UserController {
             @Valid @RequestBody AppPreferencesRequest request) {
         log.debug("PUT /api/users/{}/preferences", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UUID currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
@@ -359,7 +356,7 @@ public class UserController {
             @PathVariable String id) {
         log.debug("DELETE /api/users/{}", id);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UUID currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
@@ -391,7 +388,7 @@ public class UserController {
             @PathVariable String provider) {
         log.debug("DELETE /api/users/{}/connections/{}", id, provider);
 
-        UUID userId = parseUUID(id);
+        UUID userId = parseUUID(id, "User");
         UUID currentUserId = getCurrentUserId();
         if (currentUserId == null) {
             throw new AuthException("Authentication required", HttpStatus.UNAUTHORIZED);
@@ -401,32 +398,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // Helper methods
-
-    private UUID parseUUID(String id) {
-        try {
-            return UUID.fromString(id);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid UUID format: {}", id);
-            throw new IllegalArgumentException("Invalid user ID format. Must be a valid UUID.");
-        }
-    }
-
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.error("Error extracting user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }
 

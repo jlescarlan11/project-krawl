@@ -27,7 +27,7 @@ import java.util.UUID;
 @RequestMapping("/api/landing")
 @RequiredArgsConstructor
 @Slf4j
-public class LandingController {
+public class LandingController extends BaseController {
     
     private final LandingService landingService;
     

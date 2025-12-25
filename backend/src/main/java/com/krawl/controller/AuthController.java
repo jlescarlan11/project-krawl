@@ -18,8 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -127,7 +126,6 @@ public class AuthController {
      * @throws AuthException if refresh token is invalid, expired, or blacklisted
      */
     @PostMapping("/refresh")
-    @Transactional(isolation = Isolation.SERIALIZABLE) // Prevent race condition in token refresh
     public ResponseEntity<RefreshTokenResponse> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request) {
         

@@ -4,6 +4,7 @@ import com.krawl.dto.request.CreateCommentRequest;
 import com.krawl.dto.request.UpdateCommentRequest;
 import com.krawl.dto.response.CommentPageResponse;
 import com.krawl.dto.response.CommentResponse;
+import com.krawl.exception.AuthException;
 import com.krawl.service.GemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +31,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Gem Comments", description = "API endpoints for managing comments on Gems")
-public class GemCommentController {
+public class GemCommentController extends BaseController {
 
     private final GemService gemService;
 
@@ -63,7 +64,7 @@ public class GemCommentController {
         UUID userId = getCurrentUserId();
 
         if (userId == null) {
-            throw new IllegalStateException("Authentication required to comment");
+            throw new AuthException("Authentication required to comment", HttpStatus.UNAUTHORIZED);
         }
 
         CommentResponse response = gemService.createComment(gemUuid, userId, request);
@@ -120,19 +121,23 @@ public class GemCommentController {
             @ApiResponse(responseCode = "404", description = "Comment not found")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @PutMapping("/comments/{commentId}")
+    @PutMapping("/{gemId}/comments/{commentId}")
     public ResponseEntity<CommentResponse> updateComment(
+            @Parameter(description = "UUID of the Gem", required = true)
+            @PathVariable String gemId,
             @Parameter(description = "UUID of the comment", required = true)
             @PathVariable String commentId,
             @Valid @RequestBody UpdateCommentRequest request) {
 
-        log.debug("PUT /api/gems/comments/{}", commentId);
+        log.debug("PUT /api/gems/{}/comments/{}", gemId, commentId);
 
+        // Validate gemId format (even though not used in service call)
+        parseUUID(gemId, "Gem");
         UUID commentUuid = parseUUID(commentId, "Comment");
         UUID userId = getCurrentUserId();
 
         if (userId == null) {
-            throw new IllegalStateException("Authentication required to update comment");
+            throw new AuthException("Authentication required to update comment", HttpStatus.UNAUTHORIZED);
         }
 
         CommentResponse response = gemService.updateComment(commentUuid, userId, request);
@@ -154,18 +159,22 @@ public class GemCommentController {
             @ApiResponse(responseCode = "404", description = "Comment not found")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/comments/{commentId}")
+    @DeleteMapping("/{gemId}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
+            @Parameter(description = "UUID of the Gem", required = true)
+            @PathVariable String gemId,
             @Parameter(description = "UUID of the comment", required = true)
             @PathVariable String commentId) {
 
-        log.debug("DELETE /api/gems/comments/{}", commentId);
+        log.debug("DELETE /api/gems/{}/comments/{}", gemId, commentId);
 
+        // Validate gemId format (even though not used in service call)
+        parseUUID(gemId, "Gem");
         UUID commentUuid = parseUUID(commentId, "Comment");
         UUID userId = getCurrentUserId();
 
         if (userId == null) {
-            throw new IllegalStateException("Authentication required to delete comment");
+            throw new AuthException("Authentication required to delete comment", HttpStatus.UNAUTHORIZED);
         }
 
         gemService.deleteComment(commentUuid, userId);
@@ -173,29 +182,5 @@ public class GemCommentController {
     }
 
     // Helper methods
-    private UUID parseUUID(String id, String resourceName) {
-        try {
-            return UUID.fromString(id);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid UUID format: {}", id);
-            throw new IllegalArgumentException("Invalid " + resourceName + " ID format. Must be a valid UUID.");
-        }
-    }
-
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }
