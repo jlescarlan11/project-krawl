@@ -21,10 +21,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -292,6 +292,7 @@ public class SearchService {
     /**
      * Track a search query for analytics and popular search calculation.
      */
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
     private void trackSearchQuery(String query, int resultCount, UUID userId) {
         try {
             User user = userId != null ? entityManager.getReference(User.class, userId) : null;
@@ -302,7 +303,8 @@ public class SearchService {
                     .user(user)
                     .build();
 
-            searchQueryRepository.save(searchQuery);
+            SearchQuery savedQuery = searchQueryRepository.save(searchQuery);
+            Objects.requireNonNull(savedQuery, "Search query save failed");
             log.debug("Tracked search query: '{}'", query);
         } catch (Exception e) {
             // Don't fail the search if tracking fails

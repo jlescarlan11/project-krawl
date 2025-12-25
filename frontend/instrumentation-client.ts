@@ -1,6 +1,9 @@
 // This file configures the initialization of Sentry on the client.
 // The added config here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
+// 
+// Note: This file is automatically picked up by Next.js 15+ and works with Turbopack.
+// The old sentry.client.config.ts pattern is deprecated.
 
 import * as Sentry from "@sentry/nextjs";
 import { beforeSendError, shouldSendError } from "@/lib/sentry/error-filtering";
@@ -105,4 +108,6 @@ export const onRouterTransitionStart = dsn
   : () => {
       // No-op when Sentry is not initialized
     };
+
+
 

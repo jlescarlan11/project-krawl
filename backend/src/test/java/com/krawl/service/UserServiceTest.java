@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for UserService.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class UserServiceTest {
     
     @Mock

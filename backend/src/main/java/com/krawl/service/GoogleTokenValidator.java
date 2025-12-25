@@ -96,21 +96,22 @@ public class GoogleTokenValidator {
                     .queryParam("access_token", token)
                     .build())
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError(), response -> {
-                    log.error("Google tokeninfo API returned 4xx error: {}", response.statusCode());
-                    return response.bodyToMono(String.class)
-                        .flatMap(body -> {
-                            log.error("Google tokeninfo API error response body: {}", body);
-                            return Mono.<Throwable>error(new AuthException(
-                                "Invalid or expired Google token", HttpStatus.UNAUTHORIZED));
-                        })
-                        .switchIfEmpty(Mono.<Throwable>error(new AuthException(
-                            "Invalid or expired Google token", HttpStatus.UNAUTHORIZED)));
-                })
-                .onStatus(status -> status.is5xxServerError(), response -> {
-                    log.error("Google tokeninfo API returned 5xx error: {}", response.statusCode());
-                    return Mono.error(new AuthException(
-                        "Google API temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE));
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> {
+                    if (response.statusCode().is4xxClientError()) {
+                        log.error("Google tokeninfo API returned 4xx error: {}", response.statusCode());
+                        return response.bodyToMono(String.class)
+                            .flatMap(body -> {
+                                log.error("Google tokeninfo API error response body: {}", body);
+                                return Mono.<Throwable>error(new AuthException(
+                                    "Invalid or expired Google token", HttpStatus.UNAUTHORIZED));
+                            })
+                            .switchIfEmpty(Mono.<Throwable>error(new AuthException(
+                                "Invalid or expired Google token", HttpStatus.UNAUTHORIZED)));
+                    } else {
+                        log.error("Google tokeninfo API returned 5xx error: {}", response.statusCode());
+                        return Mono.error(new AuthException(
+                            "Google API temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE));
+                    }
                 })
                 .bodyToMono(TokenInfoResponse.class)
                 .timeout(Duration.ofMillis(timeout))
@@ -151,21 +152,22 @@ public class GoogleTokenValidator {
                     .queryParam("access_token", token)
                     .build())
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError(), response -> {
-                    log.error("Google userinfo API returned 4xx error: {}", response.statusCode());
-                    return response.bodyToMono(String.class)
-                        .flatMap(body -> {
-                            log.error("Google userinfo API error response body: {}", body);
-                            return Mono.<Throwable>error(new AuthException(
-                                "Invalid or expired Google token", HttpStatus.UNAUTHORIZED));
-                        })
-                        .switchIfEmpty(Mono.<Throwable>error(new AuthException(
-                            "Invalid or expired Google token", HttpStatus.UNAUTHORIZED)));
-                })
-                .onStatus(status -> status.is5xxServerError(), response -> {
-                    log.error("Google userinfo API returned 5xx error: {}", response.statusCode());
-                    return Mono.error(new AuthException(
-                        "Google API temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE));
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> {
+                    if (response.statusCode().is4xxClientError()) {
+                        log.error("Google userinfo API returned 4xx error: {}", response.statusCode());
+                        return response.bodyToMono(String.class)
+                            .flatMap(body -> {
+                                log.error("Google userinfo API error response body: {}", body);
+                                return Mono.<Throwable>error(new AuthException(
+                                    "Invalid or expired Google token", HttpStatus.UNAUTHORIZED));
+                            })
+                            .switchIfEmpty(Mono.<Throwable>error(new AuthException(
+                                "Invalid or expired Google token", HttpStatus.UNAUTHORIZED)));
+                    } else {
+                        log.error("Google userinfo API returned 5xx error: {}", response.statusCode());
+                        return Mono.error(new AuthException(
+                            "Google API temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE));
+                    }
                 })
                 .bodyToMono(UserInfoResponse.class)
                 .timeout(Duration.ofMillis(timeout))

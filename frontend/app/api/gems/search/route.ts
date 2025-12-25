@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { MapGem, GemStatus } from "@/components/map/gem-types";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 
 /**
  * GET /api/gems/search

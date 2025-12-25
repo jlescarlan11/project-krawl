@@ -53,3 +53,6 @@ public class KrawlLocationHistory {
     private LocalDateTime createdAt;
 }
 
+
+
+

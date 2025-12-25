@@ -22,13 +22,29 @@ export async function GET(request: NextRequest) {
 
     console.log(`[GET /api/search/popular] Forwarding to backend: ${BACKEND_ENDPOINT}`);
 
-    const backendResponse = await fetch(BACKEND_ENDPOINT, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store", // Always fetch fresh data
-    });
+    let backendResponse: Response;
+    try {
+      backendResponse = await fetch(BACKEND_ENDPOINT, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store", // Always fetch fresh data
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      });
+    } catch (error: any) {
+      // Handle ECONNREFUSED, ECONNRESET, and other network errors
+      if (error?.code === "ECONNREFUSED" || error?.code === "ECONNRESET" || error?.name === "AbortError") {
+        console.warn(`[GET /api/search/popular] Backend unavailable: ${error.message || error}`);
+        return NextResponse.json(
+          {
+            queries: [],
+          },
+          { status: 200 } // Return 200 to prevent UI errors
+        );
+      }
+      throw error; // Re-throw unexpected errors
+    }
 
     if (!backendResponse.ok) {
       console.error(
@@ -63,6 +79,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

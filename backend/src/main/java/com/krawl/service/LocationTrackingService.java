@@ -35,6 +35,7 @@ public class LocationTrackingService {
         log.debug("Storing location update for session: {}", sessionId);
 
         // Validate session exists and is active
+        @SuppressWarnings("null") // orElseThrow() guarantees non-null
         KrawlSession session = krawlSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Session", "id", sessionId));
 
@@ -67,7 +68,9 @@ public class LocationTrackingService {
                 .recordedAt(LocalDateTime.now())
                 .build();
 
-        locationHistory = locationHistoryRepository.save(locationHistory);
+        @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+        KrawlLocationHistory savedLocationHistory = locationHistoryRepository.save(locationHistory);
+        locationHistory = savedLocationHistory;
         log.debug("Stored location update: {}", locationHistory.getId());
 
         return locationHistory;
@@ -99,4 +102,5 @@ public class LocationTrackingService {
         return R * c;
     }
 }
+
 

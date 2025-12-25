@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for JwtTokenService.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class JwtTokenServiceTest {
     
     @InjectMocks

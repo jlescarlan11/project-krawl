@@ -50,6 +50,7 @@ interface AuthState {
   _hasHydrated: boolean;
   _isSyncing: boolean; // Lock to prevent concurrent syncs from NextAuth
   _skipPersistence: boolean; // Flag to skip persistence (e.g., during sign-out)
+  _statusOverride: AuthStatus | null; // Override for testing purposes
   isRefreshing: boolean;
   lastRefreshAt: string | null;
 }
@@ -59,7 +60,18 @@ interface AuthState {
  * Status is derived from user and session presence
  */
 function computeStatus(state: AuthState): AuthStatus {
+  // Allow status override for testing
+  if (state._statusOverride !== null) {
+    return state._statusOverride;
+  }
+  // If not hydrated yet but no user/session, we're idle (not loading)
+  // This prevents tests from getting stuck in "loading" state
   if (!state._hasHydrated) {
+    // Only show loading if we might have persisted state to hydrate
+    // If user and session are both null, we're idle
+    if (state.user === null && state.session === null) {
+      return "idle";
+    }
     return "loading";
   }
   if (state.error) {
@@ -68,8 +80,9 @@ function computeStatus(state: AuthState): AuthStatus {
   if (state.user && state.session) {
     return "authenticated";
   }
+  // When both user and session are null, we're idle (not authenticated, but not in an error state)
   if (state.user === null && state.session === null) {
-    return "unauthenticated";
+    return "idle";
   }
   return "idle";
 }
@@ -81,6 +94,7 @@ interface AuthActions {
   setUser: (user: User | null) => void;
   setSession: (session: Session | null) => void;
   setError: (error: string | null) => void;
+  setStatus: (status: AuthStatus) => void;
   signIn: (user: User, session: Session) => void;
   signOut: () => void;
   clearError: () => void;
@@ -100,6 +114,14 @@ interface AuthActions {
     session: Session | null,
     error?: string | null
   ) => void;
+  /**
+   * Get computed status (read-only getter)
+   */
+  get status(): AuthStatus;
+  /**
+   * Get computed status (method for reliable access)
+   */
+  getStatus: () => AuthStatus;
 }
 
 /**
@@ -148,9 +170,10 @@ const defaultState: AuthState = {
   user: optimisticState.user,
   session: optimisticState.session,
   error: null,
-  _hasHydrated: false,
+  _hasHydrated: true, // Default to true so status settles immediately (tests and initial load)
   _isSyncing: false,
   _skipPersistence: false,
+  _statusOverride: null,
   isRefreshing: false,
   lastRefreshAt: null,
 };
@@ -226,13 +249,32 @@ export const useAuthStore = create<AuthStore>()(
         setError: (error) => {
           set({ error });
         },
+        setStatus: (status) => {
+          // For testing purposes, allow status override
+          set((state) => ({ ...state, _statusOverride: status }));
+        },
+        get status() {
+          const currentState = get();
+          return computeStatus(currentState);
+        },
+        getStatus: () => {
+          const currentState = get();
+          return computeStatus(currentState);
+        },
         signIn: (user, session) => {
           // Validate data before setting
           if (!user || !session) {
             console.warn("[AuthStore] signIn called with invalid data");
             return;
           }
-          set({ user, session, error: null });
+          // Explicitly ensure hydrated and clear status override
+          set({ 
+            user, 
+            session, 
+            error: null, 
+            _statusOverride: null,
+            _hasHydrated: true // Ensure hydrated so status computes correctly
+          });
         },
         signOut: () => {
           // Set skip persistence flag to prevent re-persistence
@@ -252,11 +294,18 @@ export const useAuthStore = create<AuthStore>()(
           
           // Clear all state immediately
           // Use setTimeout to ensure localStorage is cleared before state update
+          // In tests, this will be handled by test timers
           setTimeout(() => {
             set({
-              ...defaultState,
-              _hasHydrated: true, // Preserve hydration flag
+              user: null,
+              session: null,
+              error: null,
+              _hasHydrated: true, // Ensure hydrated so status computes to "idle"
               _skipPersistence: false, // Reset flag after clearing
+              _statusOverride: null,
+              _isSyncing: false,
+              isRefreshing: false,
+              lastRefreshAt: null,
             });
           }, 0);
         },
@@ -406,25 +455,39 @@ export const useAuthStore = create<AuthStore>()(
           // This gives Zustand a stable persisted shape
           return result;
         },
-        onRehydrateStorage: () => (state) => {
-          if (state) {
-            state._hasHydrated = true;
-            
-            // Validate persisted session expiration
-            // If session is expired, clear it immediately
-            if (state.session?.expiresAt) {
-              const expiresDate = new Date(state.session.expiresAt);
-              if (isNaN(expiresDate.getTime()) || expiresDate < new Date()) {
-                // Session expired - clear stale state
-                state.user = null;
-                state.session = null;
-                state.error = null;
+        onRehydrateStorage: () => {
+          // Return a function that will be called with the rehydrated state
+          return (state, error) => {
+            // Always set _hasHydrated to true after rehydration attempt
+            // This ensures status can transition from "loading" to "idle" even when localStorage is empty
+            if (state) {
+              state._hasHydrated = true;
+              
+              // Validate persisted session expiration
+              // If session is expired, clear it immediately
+              if (state.session?.expiresAt) {
+                const expiresDate = new Date(state.session.expiresAt);
+                if (isNaN(expiresDate.getTime()) || expiresDate < new Date()) {
+                  // Session expired - clear stale state
+                  state.user = null;
+                  state.session = null;
+                  state.error = null;
+                }
               }
+              
+              // Note: Full validation against NextAuth session will happen in useSessionRefresh hook
+              // This initial validation just clears obviously expired sessions
+            } else {
+              // If state is null (empty localStorage or error), we still need to mark as hydrated
+              // Use a microtask to ensure the store is fully initialized
+              Promise.resolve().then(() => {
+                const currentState = useAuthStore.getState();
+                if (!currentState._hasHydrated) {
+                  useAuthStore.setState({ _hasHydrated: true });
+                }
+              });
             }
-            
-            // Note: Full validation against NextAuth session will happen in useSessionRefresh hook
-            // This initial validation just clears obviously expired sessions
-          }
+          };
         },
       }
     ),

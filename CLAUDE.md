@@ -54,6 +54,7 @@ npm run test:coverage    # Generate test coverage report
 ```bash
 # Development
 ./mvnw spring-boot:run   # Start backend server (http://localhost:8080)
+# On Windows: mvnw.cmd spring-boot:run
 
 # Building
 ./mvnw clean install     # Clean and build the project
@@ -68,6 +69,21 @@ npm run test:coverage    # Generate test coverage report
 # Flyway migrations run automatically on startup
 ./mvnw flyway:info       # Show migration status
 ./mvnw flyway:validate   # Validate migrations
+```
+
+### E2E Testing (from `e2e/` directory)
+
+```bash
+# Run E2E tests with Playwright
+npm test                 # Run all E2E tests (auto-starts frontend & backend)
+npm run test:ui          # Run tests with Playwright UI
+npm run test:debug       # Run tests in debug mode
+npm run test:headed      # Run tests with browser visible
+npm run test:chromium    # Run tests only in Chromium
+npm run test:firefox     # Run tests only in Firefox
+npm run test:webkit      # Run tests only in WebKit (Safari)
+npm run test:mobile      # Run tests on mobile emulators (iPhone 13, Pixel 5)
+npm run report           # Show test report from last run
 ```
 
 ## Architecture
@@ -189,6 +205,23 @@ frontend/
    - JWT token automatically sent in httpOnly cookies
    - Backend API base URL: `process.env.NEXT_PUBLIC_API_URL` (default: http://localhost:8080)
 
+6. **Offline-First Architecture (PWA):**
+   - Service Worker registered at app startup (`public/sw.js`)
+   - IndexedDB for offline data storage (14 utility files in `lib/offline/`)
+   - Offline data schema: `lib/offline/schemas.ts` with versioned migrations
+   - Downloadable krawls with map tiles for offline exploration
+   - Background sync queue for changes made while offline
+   - Auto-upload service syncs data when connectivity restored
+   - Offline map fallback with cached Mapbox tiles
+
+7. **Krawl Mode (Interactive Location Tracking):**
+   - GPS-based location tracking during active krawl sessions
+   - Geofencing to detect gem arrivals (30m radius)
+   - Real-time progress updates stored in `krawl_progress` table
+   - Location history recorded in `krawl_location_history` for route playback
+   - Battery-aware tracking with configurable update intervals
+   - Completion statistics and achievements
+
 ## Database Schema
 
 The database uses PostgreSQL with PostGIS extension for geospatial features.
@@ -203,8 +236,13 @@ The database uses PostgreSQL with PostGIS extension for geospatial features.
 - `krawl_gems` - Junction table for krawl stops with ordering
 - `krawl_drafts` - Draft krawls before approval
 - `krawl_ratings` - User ratings for krawls
+- `krawl_sessions` - Active krawl mode sessions
+- `krawl_progress` - User progress through krawls
+- `krawl_location_history` - GPS tracking during krawl mode
 - `gem_comments` - Comments on gems
 - `krawl_comments` - Comments on krawls
+- `reports` - User-submitted content reports for moderation
+- `saved_krawls` - User-saved krawls for later
 - `revoked_tokens` - JWT token revocation for sign-out
 
 **Important Constraints:**
@@ -212,6 +250,50 @@ The database uses PostgreSQL with PostGIS extension for geospatial features.
 - Krawls must have 2-12 stops
 - Photos stored in Cloudinary with `cloudinary_public_id`
 - Geospatial queries use PostGIS `geography` type
+
+## Key Architectural Patterns
+
+### Next.js API Routes as Backend Proxy
+- All frontend API calls go through Next.js API routes (`app/api/*/route.ts`)
+- API routes forward requests to Spring Boot backend with JWT cookies
+- This pattern solves CORS issues and centralizes auth token handling
+- Never call Spring Boot backend directly from client-side code
+
+### IndexedDB Offline Storage Schema
+The offline system uses a structured IndexedDB schema with versioned migrations:
+- **downloadedKrawls** - Full krawl data for offline access
+- **syncQueue** - Pending changes to sync when online
+- **drafts** - Locally created gems/krawls before upload
+- **mapTiles** - Cached Mapbox tiles for offline maps
+- **userSettings** - Offline-accessible user preferences
+
+Migrations managed in `lib/offline/migrations.ts` - follow pattern when adding new stores.
+
+### Multi-Tab Session Synchronization
+- Session state synced across browser tabs via `BroadcastChannel`
+- Implemented in `lib/session-utils.ts`
+- Prevents auth state desync when user signs out in one tab
+- Critical for PWA installability and multi-window usage
+
+### Guest Mode System
+- Unauthenticated users can browse and interact with limited features
+- Guest-created content saved in localStorage until upgrade
+- Upon sign-in, guest data migrated to authenticated user account
+- See `lib/guest-mode.ts` and `hooks/useGuestMode.ts`
+
+### Krawl Creation Multi-Step Form
+- 3-step wizard: Basic Info → Gem Selection → Review
+- State managed via Zustand store (`stores/krawl-creation-store.ts`)
+- Drag-and-drop gem reordering with @dnd-kit
+- Draft auto-save every 30 seconds
+- Validates 2-12 gems minimum/maximum
+
+### Gem Creation Multi-Step Form
+- 5-step wizard: Basic Info → Location → Media → Additional Details → Preview
+- State managed via Zustand store (`stores/gem-creation-store.ts`)
+- Photos uploaded to Cloudinary with progress tracking
+- Duplicate detection using coordinate proximity (100m radius)
+- Draft auto-save with resume capability
 
 ## Common Development Tasks
 
@@ -299,6 +381,13 @@ BREVO_API_KEY=<your-brevo-api-key>
 - Repository tests: Test database queries with test database
 - Service tests: Mock repositories, test business logic
 
+**E2E Testing:**
+- Playwright with 6 browser configurations (Chrome, Firefox, Safari, Edge, iPhone 13, Pixel 5)
+- Playwright auto-starts both frontend (port 3000) and backend (port 8080)
+- Tests located in `e2e/tests/`
+- Accessibility testing with @axe-core/playwright
+- Global setup in `e2e/global-setup.ts` for fixtures and test data
+
 ## Common Pitfalls
 
 1. **Authentication:**
@@ -325,6 +414,19 @@ BREVO_API_KEY=<your-brevo-api-key>
    - Images uploaded to Cloudinary, store `cloudinary_public_id` in database
    - Validate file types and sizes on both frontend and backend
    - Handle upload failures gracefully with user feedback
+
+6. **Offline/PWA:**
+   - Service Worker updates require cache busting - increment version in `sw.js`
+   - IndexedDB operations are asynchronous - always await or handle promises
+   - Map tiles can consume significant storage - monitor quota usage
+   - Background sync only works in HTTPS (localhost exception)
+   - Test offline functionality with DevTools Network throttling
+
+7. **Geospatial:**
+   - Always validate coordinates are within Cebu City bounds before saving
+   - PostGIS distance queries use meters (not degrees)
+   - Geofencing radius for krawl mode: 30 meters
+   - Use `ST_DWithin` for proximity queries (more efficient than `ST_Distance`)
 
 ## Project Documentation
 
@@ -353,6 +455,7 @@ Key documentation files:
 - Use `cn()` from `lib/utils.ts` for className merging
 - Prefer server components unless interactivity needed
 - Use `'use client'` directive only when necessary
+- **Package patches:** If you need to patch a node_module, use `patch-package` (configured via postinstall hook). Patches stored in `frontend/patches/`
 
 **General:**
 - Write self-documenting code with clear variable names

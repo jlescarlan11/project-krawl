@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for TokenBlacklistService.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class TokenBlacklistServiceTest {
     
     @Mock
@@ -34,7 +35,6 @@ class TokenBlacklistServiceTest {
     private RevokedToken testRevokedToken;
     
     @BeforeEach
-    @SuppressWarnings("null") // Lombok @Builder always returns non-null when all required fields provided
     void setUp() {
         testToken = "test.jwt.token.here";
         testExpiresAt = Instant.now().plusSeconds(3600); // 1 hour from now

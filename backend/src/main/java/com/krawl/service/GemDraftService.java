@@ -7,6 +7,7 @@ import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.GemDraftRepository;
 import com.krawl.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,8 @@ public class GemDraftService {
      * @return Saved draft response
      */
     @Transactional
-    public GemDraftResponse saveDraft(UUID userId, Map<String, Object> data) {
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+    public GemDraftResponse saveDraft(@NonNull UUID userId, Map<String, Object> data) {
         log.debug("Saving draft for user: {}", userId);
 
         User user = userRepository.findById(userId)
@@ -76,10 +78,10 @@ public class GemDraftService {
                 .expiresAt(expiresAt)
                 .build();
 
-        draft = draftRepository.save(draft);
-        log.info("Draft saved: {} for user: {}", draft.getId(), userId);
+        GemDraft savedDraft = draftRepository.save(draft);
+        log.info("Draft saved: {} for user: {}", savedDraft.getId(), userId);
 
-        return mapToResponse(draft);
+        return mapToResponse(savedDraft);
     }
 
     /**
@@ -115,6 +117,7 @@ public class GemDraftService {
      * @throws ForbiddenException if user doesn't own the draft
      */
     @Transactional
+    @SuppressWarnings("null") // orElseThrow() guarantees non-null, delete() expects non-null
     public void deleteDraft(UUID draftId, UUID userId) {
         log.debug("Deleting draft: {} for user: {}", draftId, userId);
 
@@ -139,7 +142,7 @@ public class GemDraftService {
     /**
      * Map GemDraft entity to response DTO.
      */
-    private GemDraftResponse mapToResponse(GemDraft draft) {
+    private GemDraftResponse mapToResponse(@NonNull GemDraft draft) {
         return GemDraftResponse.builder()
                 .id(draft.getId())
                 .data(draft.getData())

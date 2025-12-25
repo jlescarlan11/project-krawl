@@ -30,6 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      * @throws UsernameNotFoundException if user not found or invalid ID format
      */
     @Override
+    @SuppressWarnings("null") // UUID.fromString() never returns null, and findById().orElseThrow() guarantees non-null
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // For JWT-based auth, username is the user ID (UUID)
         try {

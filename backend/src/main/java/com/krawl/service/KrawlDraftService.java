@@ -7,6 +7,7 @@ import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.KrawlDraftRepository;
 import com.krawl.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,8 @@ public class KrawlDraftService {
      * @return Saved draft response
      */
     @Transactional
-    public KrawlDraftResponse saveDraft(UUID userId, Map<String, Object> data) {
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+    public KrawlDraftResponse saveDraft(@NonNull UUID userId, Map<String, Object> data) {
         log.debug("Saving krawl draft for user: {}", userId);
 
         User user = userRepository.findById(userId)
@@ -115,6 +117,7 @@ public class KrawlDraftService {
      * @throws ForbiddenException if user doesn't own the draft
      */
     @Transactional
+    @SuppressWarnings("null") // orElseThrow() guarantees non-null, delete() expects non-null
     public void deleteDraft(UUID draftId, UUID userId) {
         log.debug("Deleting krawl draft: {} for user: {}", draftId, userId);
 
@@ -139,7 +142,7 @@ public class KrawlDraftService {
     /**
      * Map KrawlDraft entity to response DTO.
      */
-    private KrawlDraftResponse mapToResponse(KrawlDraft draft) {
+    private KrawlDraftResponse mapToResponse(@NonNull KrawlDraft draft) {
         return KrawlDraftResponse.builder()
                 .id(draft.getId())
                 .data(draft.getData())

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -35,6 +36,7 @@ public class ReportService {
      * @throws ResourceNotFoundException if the content (Gem/Krawl) doesn't exist
      */
     @Transactional
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
     public ReportResponse createReport(CreateReportRequest request, UUID userId) {
         log.debug("Creating report for contentType: {}, contentId: {}, userId: {}",
                 request.getContentType(), request.getContentId(), userId);
@@ -73,7 +75,8 @@ public class ReportService {
                 .status(Report.ReportStatus.PENDING)
                 .build();
 
-        report = reportRepository.save(report);
+        Report savedReport = reportRepository.save(report);
+        report = Objects.requireNonNull(savedReport, "Report save failed");
         log.info("Report created successfully with id: {}", report.getId());
 
         return toReportResponse(report);
@@ -87,6 +90,7 @@ public class ReportService {
      * @throws ResourceNotFoundException if the content doesn't exist
      */
     private void validateContentExists(Report.ContentType contentType, UUID contentId) {
+        Objects.requireNonNull(contentId, "Content ID cannot be null");
         boolean exists = false;
         String contentName = "";
 

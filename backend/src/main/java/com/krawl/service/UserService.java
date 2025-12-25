@@ -5,16 +5,17 @@ import com.krawl.dto.response.*;
 import com.krawl.entity.Gem;
 import com.krawl.entity.GemVouch;
 import com.krawl.entity.Krawl;
+import com.krawl.entity.KrawlSession;
 import com.krawl.entity.User;
 import com.krawl.exception.AuthException;
 import com.krawl.exception.ForbiddenException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.*;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class UserService {
     private final GemRepository gemRepository;
     private final KrawlRepository krawlRepository;
     private final GemVouchRepository gemVouchRepository;
-    private final KrawlVouchRepository krawlVouchRepository;
+    private final KrawlSessionRepository krawlSessionRepository;
     private final GemService gemService;
     private final KrawlService krawlService;
     private final EmailService emailService;
@@ -143,7 +144,10 @@ public class UserService {
             .lastLoginAt(LocalDateTime.now())
             .build();
         
-        return userRepository.save(newUser);
+        // JPA save() is guaranteed to return non-null per specification
+        @SuppressWarnings("null")
+        User savedUser = userRepository.save(newUser);
+        return savedUser;
     }
     
     /**
@@ -200,10 +204,10 @@ public class UserService {
      * Get user profile with statistics
      */
     @Transactional(readOnly = true)
-    public UserProfileResponse getUserProfile(UUID userId) {
+    public UserProfileResponse getUserProfile(@NonNull UUID userId) {
         log.debug("Fetching user profile for userId: {}", userId);
 
-        User user = userRepository.findById(userId)
+        @NonNull User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
         UserStatisticsResponse statistics = getUserStatistics(userId);
@@ -225,14 +229,13 @@ public class UserService {
      * Get user statistics
      */
     @Transactional(readOnly = true)
-    public UserStatisticsResponse getUserStatistics(UUID userId) {
+    public UserStatisticsResponse getUserStatistics(@NonNull UUID userId) {
         log.debug("Calculating statistics for userId: {}", userId);
 
         long gemsCreated = gemRepository.countByCreatedById(userId);
         long krawlsCreated = krawlRepository.countByCreatedById(userId);
         long vouchesGiven = gemVouchRepository.countByUserId(userId);
-        // TODO: Implement Krawl completion tracking when Krawl Mode is implemented
-        long krawlsCompleted = 0L;
+        long krawlsCompleted = krawlSessionRepository.countCompletedKrawlsByUserId(userId);
 
         return UserStatisticsResponse.builder()
                 .gemsCreated(gemsCreated)
@@ -316,23 +319,52 @@ public class UserService {
 
     /**
      * Get user's completed Krawls (paginated)
-     * TODO: Implement when Krawl Mode completion tracking is available
      */
     @Transactional(readOnly = true)
-    public UserContentResponse<KrawlDetailResponse> getUserCompletedKrawls(UUID userId, Pageable pageable) {
+    public UserContentResponse<KrawlDetailResponse> getUserCompletedKrawls(@NonNull UUID userId, Pageable pageable) {
         log.debug("Fetching completed Krawls for userId: {}, page: {}, size: {}", userId, pageable.getPageNumber(), pageable.getPageSize());
 
-        // TODO: Implement when Krawl Mode completion tracking is available
-        // For now, return empty list
+        // Get completed sessions for the user, then extract unique krawls
+        List<KrawlSession> completedSessions = krawlSessionRepository.findByUserId(userId).stream()
+                .filter(session -> session.getStatus() == KrawlSession.SessionStatus.COMPLETED)
+                .distinct()
+                .sorted((s1, s2) -> {
+                    if (s1.getEndedAt() == null && s2.getEndedAt() == null) return 0;
+                    if (s1.getEndedAt() == null) return 1;
+                    if (s2.getEndedAt() == null) return -1;
+                    return s2.getEndedAt().compareTo(s1.getEndedAt());
+                })
+                .collect(Collectors.toList());
+
+        // Extract unique krawls from completed sessions
+        List<UUID> completedKrawlIds = completedSessions.stream()
+                .map(session -> session.getKrawl().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Paginate the krawl IDs
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), completedKrawlIds.size());
+        List<UUID> paginatedKrawlIds = start < completedKrawlIds.size() 
+                ? completedKrawlIds.subList(start, end)
+                : List.of();
+
+        // Fetch krawl details
+        List<KrawlDetailResponse> krawlResponses = paginatedKrawlIds.stream()
+                .map(krawlId -> krawlService.getKrawlDetail(krawlId, null))
+                .collect(Collectors.toList());
+
+        int totalPages = (int) Math.ceil((double) completedKrawlIds.size() / pageable.getPageSize());
+
         return UserContentResponse.<KrawlDetailResponse>builder()
-                .content(List.of())
+                .content(krawlResponses)
                 .page(pageable.getPageNumber())
                 .size(pageable.getPageSize())
-                .totalElements(0L)
-                .totalPages(0)
-                .hasNext(false)
-                .hasPrevious(false)
-            .build();
+                .totalElements((long) completedKrawlIds.size())
+                .totalPages(totalPages)
+                .hasNext(end < completedKrawlIds.size())
+                .hasPrevious(pageable.getPageNumber() > 0)
+                .build();
     }
 
     /**
@@ -360,7 +392,10 @@ public class UserService {
             user.setAvatarUrl(request.getAvatarUrl());
         }
 
-        user = userRepository.save(user);
+        // JPA save() is guaranteed to return non-null per specification
+        @SuppressWarnings("null")
+        User savedUser = userRepository.save(user);
+        user = savedUser;
         UserStatisticsResponse statistics = getUserStatistics(userId);
 
         return UserProfileResponse.builder()
@@ -489,6 +524,32 @@ public class UserService {
     }
 
     /**
+     * Checks if user has other authentication methods besides the one being disconnected.
+     * 
+     * @param user The user to check
+     * @param providerToDisconnect The provider being disconnected (e.g., "google")
+     * @return true if user has at least one other auth method, false otherwise
+     */
+    private boolean hasOtherAuthMethods(User user, String providerToDisconnect) {
+        // Check for password authentication (future-proofing for when password auth is implemented)
+        // When password field is added to User entity, uncomment: if (user.getPassword() != null) return true;
+        
+        // Check for other OAuth providers (excluding the one being disconnected)
+        if (!"google".equalsIgnoreCase(providerToDisconnect)) {
+            if (user.getGoogleId() != null && !user.getGoogleId().isEmpty()) {
+                return true;
+            }
+        }
+        
+        // Future: Check for Facebook, GitHub, etc. when implemented
+        // if (!"facebook".equalsIgnoreCase(providerToDisconnect) && user.getFacebookId() != null) return true;
+        // if (!"github".equalsIgnoreCase(providerToDisconnect) && user.getGithubId() != null) return true;
+        
+        // No other auth methods found
+        return false;
+    }
+
+    /**
      * Disconnect OAuth provider
      */
     @Transactional
@@ -508,7 +569,14 @@ public class UserService {
             if (user.getGoogleId() == null) {
                 throw new IllegalArgumentException("Google account is not connected");
             }
-            // TODO: Check if user has password or other auth methods before allowing disconnect
+            
+            // Check if user has password or other auth methods before allowing disconnect
+            if (!hasOtherAuthMethods(user, provider)) {
+                throw new AuthException(
+                    "Cannot disconnect Google account. You must have at least one authentication method to access your account.",
+                    HttpStatus.BAD_REQUEST);
+            }
+            
             user.setGoogleId(null);
             userRepository.save(user);
         } else {

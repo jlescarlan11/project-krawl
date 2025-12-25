@@ -19,6 +19,7 @@ describe("Session Refresh Integration", () => {
   const mockAuthStore = {
     signIn: mockSignIn,
     signOut: mockSignOut,
+    syncFromNextAuth: vi.fn(),
   };
 
   beforeEach(() => {
@@ -33,9 +34,11 @@ describe("Session Refresh Integration", () => {
         jwt: "mock-jwt-token",
       },
       update: mockUpdate,
+      status: "authenticated",
     });
 
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+    // Mock useAuthStore - it's a Zustand store with getState() method
+    (useAuthStore.getState as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       mockAuthStore
     );
 
@@ -62,12 +65,11 @@ describe("Session Refresh Integration", () => {
 
       renderHook(() => useSessionRefresh());
 
-      // Advance time to trigger check
+      // Advance time to trigger check (but don't run all timers to avoid infinite loop)
       vi.advanceTimersByTime(100);
+      await vi.runOnlyPendingTimersAsync();
 
-      await waitFor(() => {
-        expect(mockUpdate).toHaveBeenCalled();
-      });
+      expect(mockUpdate).toHaveBeenCalled();
     });
 
     it("should sync refreshed session to Zustand store", async () => {
@@ -85,19 +87,19 @@ describe("Session Refresh Integration", () => {
       (useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         data: refreshedSession,
         update: mockUpdate,
+        status: "authenticated",
       });
 
       renderHook(() => useSessionRefresh());
 
-      // Advance time to trigger sync
+      // Advance time to trigger sync (but don't run all timers to avoid infinite loop)
       vi.advanceTimersByTime(100);
+      await vi.runOnlyPendingTimersAsync();
 
-      await waitFor(() => {
-        expect(syncSessionToZustand).toHaveBeenCalledWith(
-          refreshedSession,
-          mockAuthStore
-        );
-      });
+      expect(syncSessionToZustand).toHaveBeenCalledWith(
+        refreshedSession,
+        mockAuthStore
+      );
     });
 
     it("should handle refresh errors gracefully", async () => {
@@ -111,16 +113,15 @@ describe("Session Refresh Integration", () => {
 
       renderHook(() => useSessionRefresh());
 
-      // Advance time to trigger check
+      // Advance time to trigger check (but don't run all timers to avoid infinite loop)
       vi.advanceTimersByTime(100);
+      await vi.runOnlyPendingTimersAsync();
 
-      await waitFor(() => {
-        expect(mockUpdate).toHaveBeenCalled();
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          expect.stringContaining("Failed to refresh session"),
-          expect.any(Error)
-        );
-      });
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to refresh session"),
+        expect.any(Error)
+      );
 
       consoleErrorSpy.mockRestore();
     });
@@ -139,15 +140,14 @@ describe("Session Refresh Integration", () => {
 
       renderHook(() => useSessionRefresh());
 
-      // Trigger multiple checks rapidly
+      // Trigger multiple checks rapidly (but don't run all timers to avoid infinite loop)
       vi.advanceTimersByTime(100);
       vi.advanceTimersByTime(100);
       vi.advanceTimersByTime(100);
+      await vi.runOnlyPendingTimersAsync();
 
       // Should only be called once
-      await waitFor(() => {
-        expect(mockUpdate).toHaveBeenCalledTimes(1);
-      });
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
 
       // Resolve the promise
       resolveUpdate!();
@@ -165,29 +165,32 @@ describe("Session Refresh Integration", () => {
       (useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         data: session,
         update: mockUpdate,
+        status: "authenticated",
       });
 
       renderHook(() => useSessionRefresh());
 
-      await waitFor(() => {
-        expect(syncSessionToZustand).toHaveBeenCalledWith(
-          session,
-          mockAuthStore
-        );
-      });
+      await vi.runOnlyPendingTimersAsync();
+
+      expect(syncSessionToZustand).toHaveBeenCalledWith(
+        session,
+        mockAuthStore
+      );
     });
 
     it("should sign out when session is null", async () => {
       (useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         data: null,
         update: mockUpdate,
+        status: "unauthenticated",
       });
 
       renderHook(() => useSessionRefresh());
 
-      await waitFor(() => {
-        expect(mockSignOut).toHaveBeenCalled();
-      });
+      await vi.runOnlyPendingTimersAsync();
+
+      // The hook calls syncSessionToZustand(null) to clear state, not signOut directly
+      expect(syncSessionToZustand).toHaveBeenCalledWith(null, mockAuthStore);
     });
 
     it("should only sync when session data changes", async () => {
@@ -200,9 +203,13 @@ describe("Session Refresh Integration", () => {
       (useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
         data: session,
         update: mockUpdate,
+        status: "authenticated",
       });
 
       const { rerender } = renderHook(() => useSessionRefresh());
+
+      // Wait for initial sync (but don't run all timers to avoid infinite loop)
+      await vi.runOnlyPendingTimersAsync();
 
       // Clear previous calls
       vi.clearAllMocks();
@@ -210,12 +217,13 @@ describe("Session Refresh Integration", () => {
       // Rerender with same session
       rerender();
 
+      // Wait a bit (but don't run all timers to avoid infinite loop)
+      await vi.runOnlyPendingTimersAsync();
+
       // Should not sync again (optimization)
-      await waitFor(() => {
-        // syncSessionToZustand should not be called again with same data
-        // This tests the optimization in useSessionRefresh
-        expect(syncSessionToZustand).not.toHaveBeenCalled();
-      });
+      // syncSessionToZustand should not be called again with same data
+      // This tests the optimization in useSessionRefresh
+      expect(syncSessionToZustand).not.toHaveBeenCalled();
     });
   });
 
@@ -227,13 +235,12 @@ describe("Session Refresh Integration", () => {
 
       renderHook(() => useSessionRefresh());
 
-      // Advance time by default interval (5 minutes)
+      // Advance time by default interval (5 minutes) (but don't run all timers to avoid infinite loop)
       vi.advanceTimersByTime(5 * 60 * 1000);
+      await vi.runOnlyPendingTimersAsync();
 
-      await waitFor(() => {
-        // Should check session expiration
-        expect(isSessionExpiringSoon).toHaveBeenCalled();
-      });
+      // Should check session expiration
+      expect(isSessionExpiringSoon).toHaveBeenCalled();
     });
 
     it("should cleanup interval on unmount", () => {

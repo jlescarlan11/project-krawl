@@ -6,20 +6,45 @@ describe("AuthStore", () => {
   beforeEach(() => {
     // Reset store to default state
     useAuthStore.setState({
-      status: "idle",
       user: null,
       session: null,
       error: null,
-      _hasHydrated: false,
+      _hasHydrated: true,
+      _statusOverride: null, // Don't override - let status be computed
+      _isSyncing: false,
+      _skipPersistence: false,
+      isRefreshing: false,
+      lastRefreshAt: null,
     });
     // Clear localStorage
     localStorage.clear();
   });
 
   describe("initialization", () => {
-    it("should initialize with default state", () => {
+    it("should initialize with default state", async () => {
+      // Clear localStorage first
+      localStorage.clear();
+      
+      // Wait for persist middleware to finish rehydration
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      // Ensure store is hydrated before checking status
+      useAuthStore.setState({ 
+        _hasHydrated: true, 
+        _statusOverride: null,
+        user: null,
+        session: null,
+        error: null
+      });
+      
+      // Wait a bit more to ensure state is set
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      // Force a state read to ensure the getter is called
       const state = useAuthStore.getState();
-      expect(state.status).toBe("idle");
+      // Check status using getStatus() method for reliable access
+      const status = state.getStatus();
+      expect(status).toBe("idle");
       expect(state.user).toBeNull();
       expect(state.session).toBeNull();
       expect(state.error).toBeNull();
@@ -28,8 +53,17 @@ describe("AuthStore", () => {
 
   describe("actions", () => {
     it("should set status", () => {
+      // Ensure store is hydrated before setting status
+      useAuthStore.setState({ 
+        _hasHydrated: true, 
+        _statusOverride: null,
+      });
       useAuthStore.getState().setStatus("loading");
-      expect(useAuthStore.getState().status).toBe("loading");
+      // Verify _statusOverride was set
+      const state = useAuthStore.getState();
+      expect(state._statusOverride).toBe("loading");
+      // Use getStatus() method for reliable access
+      expect(state.getStatus()).toBe("loading");
     });
 
     it("should set user", () => {
@@ -57,7 +91,19 @@ describe("AuthStore", () => {
       expect(useAuthStore.getState().error).toBe(error);
     });
 
-    it("should sign in user and set authenticated status", () => {
+    it("should sign in user and set authenticated status", async () => {
+      // Ensure store is hydrated before checking status
+      useAuthStore.setState({ 
+        _hasHydrated: true, 
+        _statusOverride: null,
+        user: null,
+        session: null,
+        error: null
+      });
+      
+      // Wait for state to be set
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
       const user: User = {
         id: "1",
         email: "test@example.com",
@@ -70,14 +116,37 @@ describe("AuthStore", () => {
 
       useAuthStore.getState().signIn(user, session);
 
+      // Wait for signIn to complete and persist middleware to finish
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       const state = useAuthStore.getState();
       expect(state.user).toEqual(user);
       expect(state.session).toEqual(session);
-      expect(state.status).toBe("authenticated");
+      expect(state._hasHydrated).toBe(true);
+      expect(state._statusOverride).toBeNull();
+      // Verify both user and session are present for authenticated status
+      expect(state.user).toBeTruthy();
+      expect(state.session).toBeTruthy();
+      // Check status using getStatus() method for reliable access
+      const status = state.getStatus();
+      // Status should be authenticated when both user and session are present
+      expect(status).toBe("authenticated");
       expect(state.error).toBeNull();
     });
 
-    it("should clear state on sign out", () => {
+    it("should clear state on sign out", async () => {
+      // Ensure store is hydrated
+      useAuthStore.setState({ 
+        _hasHydrated: true, 
+        _statusOverride: null,
+        user: null,
+        session: null,
+        error: null
+      });
+      
+      // Wait for state to be set
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
       // Setup authenticated state
       const user: User = {
         id: "1",
@@ -90,13 +159,23 @@ describe("AuthStore", () => {
       };
       useAuthStore.getState().signIn(user, session);
 
+      // Wait for signIn to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+
       // Sign out
       useAuthStore.getState().signOut();
+
+      // Wait for signOut to complete (it uses setTimeout)
+      await new Promise(resolve => setTimeout(resolve, 20));
 
       const state = useAuthStore.getState();
       expect(state.user).toBeNull();
       expect(state.session).toBeNull();
-      expect(state.status).toBe("idle");
+      // Ensure _hasHydrated is still true after signOut
+      expect(state._hasHydrated).toBe(true);
+      // Check status using getStatus() method for reliable access
+      const status = state.getStatus();
+      expect(status).toBe("idle");
       expect(state.error).toBeNull();
     });
 
@@ -109,8 +188,16 @@ describe("AuthStore", () => {
 
   describe("selectors", () => {
     it("should return correct status", () => {
+      // Ensure store is hydrated before setting status
+      useAuthStore.setState({ 
+        _hasHydrated: true, 
+        _statusOverride: null,
+      });
       useAuthStore.getState().setStatus("loading");
-      const status = useAuthStore.getState().status;
+      const state = useAuthStore.getState();
+      expect(state._statusOverride).toBe("loading");
+      // Use getStatus() method for reliable access
+      const status = state.getStatus();
       expect(status).toBe("loading");
     });
 
@@ -127,7 +214,7 @@ describe("AuthStore", () => {
   });
 
   describe("persistence", () => {
-    it("should persist state to localStorage", () => {
+    it("should persist state to localStorage", async () => {
       const user: User = {
         id: "1",
         email: "test@example.com",
@@ -140,17 +227,17 @@ describe("AuthStore", () => {
 
       useAuthStore.getState().signIn(user, session);
 
-      // Wait for persistence
-      setTimeout(() => {
-        const persisted = localStorage.getItem("krawl:auth:v1");
-        expect(persisted).toBeTruthy();
+      // Wait for persistence - Zustand persist middleware writes asynchronously
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const persisted = localStorage.getItem("krawl:auth:v1");
+      expect(persisted).toBeTruthy();
 
-        if (persisted) {
-          const parsed = JSON.parse(persisted);
-          expect(parsed.state.user).toEqual(user);
-          expect(parsed.state.session).toEqual(session);
-        }
-      }, 100);
+      if (persisted) {
+        const parsed = JSON.parse(persisted);
+        expect(parsed.state.user).toEqual(user);
+        expect(parsed.state.session).toEqual(session);
+      }
     });
   });
 });

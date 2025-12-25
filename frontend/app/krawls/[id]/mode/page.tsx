@@ -1,5 +1,5 @@
 import { KrawlModeClient } from "./KrawlModeClient";
-import { fetchKrawlById } from "@/app/krawls/[id]/page";
+import { fetchKrawlById } from "@/lib/api/krawls";
 
 export default async function KrawlModePage({
   params,

@@ -19,4 +19,10 @@ public interface KrawlGemRepository extends JpaRepository<KrawlGem, UUID> {
     @Modifying
     @Query("DELETE FROM KrawlGem kg WHERE kg.krawl.id = :krawlId")
     void deleteByKrawlId(@Param("krawlId") UUID krawlId);
+
+    /**
+     * Count how many Krawls include a specific Gem
+     */
+    @Query("SELECT COUNT(DISTINCT kg.krawl.id) FROM KrawlGem kg WHERE kg.gem.id = :gemId")
+    long countKrawlsByGemId(@Param("gemId") UUID gemId);
 }

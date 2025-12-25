@@ -15,8 +15,16 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/stores/auth-store", () => ({
+vi.mock("@/hooks/useIsAuthenticated", () => ({
   useIsAuthenticated: () => mockIsAuthenticated,
+}));
+
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({
+    data: mockIsAuthenticated ? { user: { id: "1" } } : null,
+    status: mockIsAuthenticated ? "authenticated" : "unauthenticated",
+  }),
+  SessionProvider: ({ children }: any) => children,
 }));
 
 describe("HeroCTAs", () => {

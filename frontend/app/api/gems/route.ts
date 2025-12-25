@@ -10,7 +10,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { MapGem, GemStatus } from "@/components/map/gem-types";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
+import { CEBU_CITY_BOUNDS } from "@/lib/map/constants";
 
 /**
  * Request body for creating a new gem
@@ -303,11 +304,13 @@ export async function POST(request: NextRequest) {
 
     // Validate coordinates (Cebu City bounds)
     const { longitude, latitude } = body.coordinates;
+    const [[minLng, minLat], [maxLng, maxLat]] = CEBU_CITY_BOUNDS;
+
     if (
-      latitude < 10.25 ||
-      latitude > 10.4 ||
-      longitude < 123.8 ||
-      longitude > 123.95
+      latitude < minLat ||
+      latitude > maxLat ||
+      longitude < minLng ||
+      longitude > maxLng
     ) {
       return NextResponse.json(
         {

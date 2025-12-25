@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -109,6 +110,26 @@ public interface KrawlRepository extends JpaRepository<Krawl, UUID> {
      * Find krawls created by a user, ordered by creation date
      */
     org.springframework.data.domain.Page<Krawl> findByCreatedByIdOrderByCreatedAtDesc(UUID userId, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Find featured/popular Krawls ordered by average rating DESC
+     * Returns array of [krawl_id (UUID), avg_rating (Double)]
+     * 
+     * @param limit Maximum number of results
+     * @return List of Object arrays: [UUID krawlId, Double avgRating]
+     */
+    @Query(value = """
+            SELECT k.id as krawl_id, COALESCE(avg_rating.avg_rating, 0.0) as avg_rating
+            FROM krawls k
+            LEFT JOIN (
+                SELECT krawl_id, AVG(rating) as avg_rating
+                FROM krawl_ratings
+                GROUP BY krawl_id
+            ) avg_rating ON k.id = avg_rating.krawl_id
+            ORDER BY avg_rating DESC NULLS LAST, k.view_count DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Object[]> findFeaturedKrawls(@Param("limit") int limit);
 }
 
 

@@ -372,7 +372,9 @@ export function MapSearchControl({
             className={cn(
               "absolute right-3 top-1/2 -translate-y-1/2",
               "text-text-secondary hover:text-text-primary",
-              "transition-colors"
+              "transition-colors",
+              "min-w-[40px] min-h-[40px] p-2",
+              "flex items-center justify-center"
             )}
             aria-label="Clear search"
           >

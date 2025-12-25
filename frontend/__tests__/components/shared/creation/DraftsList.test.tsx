@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { DraftsList } from '@/components/shared/creation/DraftsList';
 import type { Draft } from '@/lib/types/draft';
 
@@ -349,7 +350,7 @@ describe('DraftsList Component', () => {
     });
 
     it('should show confirmation dialog before deleting', async () => {
-      
+      const user = userEvent.setup();
 
       render(
         <DraftsList
@@ -369,11 +370,13 @@ describe('DraftsList Component', () => {
       });
 
       const deleteButtons = screen.getAllByText('Delete');
-      fireEvent.click(deleteButtons[0]);
+      await user.click(deleteButtons[0]);
 
-      expect(global.confirm).toHaveBeenCalledWith(
-        'Are you sure you want to delete this draft? This action cannot be undone.'
-      );
+      await waitFor(() => {
+        expect(global.confirm).toHaveBeenCalledWith(
+          'Are you sure you want to delete this draft? This action cannot be undone.'
+        );
+      });
     });
 
     it('should call deleteDraft and reload list when confirmed', async () => {
@@ -632,7 +635,7 @@ describe('DraftsList Component', () => {
     });
 
     it('should reload drafts when refresh button is clicked', async () => {
-      
+      const user = userEvent.setup();
 
       render(
         <DraftsList
@@ -655,10 +658,12 @@ describe('DraftsList Component', () => {
       expect(mockListDrafts).toHaveBeenCalledTimes(1);
 
       const refreshButton = screen.getByText('Refresh');
-      fireEvent.click(refreshButton);
+      await user.click(refreshButton);
 
       // Should be called again after clicking refresh
-      expect(mockListDrafts).toHaveBeenCalledTimes(2);
+      await waitFor(() => {
+        expect(mockListDrafts).toHaveBeenCalledTimes(2);
+      });
     });
   });
 });

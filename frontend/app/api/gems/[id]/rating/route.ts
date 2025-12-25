@@ -6,7 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
+import { backendPost } from "@/lib/api/backend-client";
 
 /**
  * POST /api/gems/[id]/rating
@@ -65,19 +66,13 @@ export async function POST(
     }
 
     // Forward request to backend API
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    const BACKEND_ENDPOINT = `${API_URL}/api/gems/${id}/rating`;
+    console.log(`[POST /api/gems/${id}/rating] Forwarding to backend`);
 
-    console.log(`[POST /api/gems/${id}/rating] Forwarding to backend: ${BACKEND_ENDPOINT}`);
-
-    const backendResponse = await fetch(BACKEND_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.jwt}`,
-      },
-      body: JSON.stringify({ rating, comment }),
-    });
+    const backendResponse = await backendPost(
+      `/api/gems/${id}/rating`,
+      { rating, comment },
+      session.jwt
+    );
 
     console.log(`[POST /api/gems/${id}/rating] Backend response status: ${backendResponse.status}`);
 

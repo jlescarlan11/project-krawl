@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { KrawlDetail } from "@/types/krawl-detail";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 import { getAvatarUrl } from "@/lib/cloudinary/urls";
 
 /**

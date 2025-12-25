@@ -81,3 +81,6 @@ COMMENT ON TABLE krawl_location_history IS 'Optional storage for location update
 COMMENT ON COLUMN krawl_sessions.status IS 'Session status: ACTIVE, COMPLETED, or ABANDONED';
 COMMENT ON COLUMN krawl_progress.arrival_method IS 'How the user arrived: AUTOMATIC (geofencing) or MANUAL (user marked)';
 
+
+
+

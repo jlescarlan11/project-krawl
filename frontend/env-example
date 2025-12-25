@@ -55,6 +55,11 @@ NEXTAUTH_SECRET=your-nextauth-secret-key-change-this-in-production
 # NextAuth.js URL (base URL of your application)
 NEXTAUTH_URL=http://localhost:3000
 
+# NextAuth.js Trust Host (alternative to trustHost in config)
+# Set to 'true' to trust all hosts (development only)
+# In production, use AUTH_URL or configure trustHost in nextauth.ts
+# AUTH_TRUST_HOST=true
+
 # ============================================
 # Mapbox Configuration
 # ============================================

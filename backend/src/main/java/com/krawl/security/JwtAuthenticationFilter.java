@@ -149,6 +149,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                requestUri.startsWith("/api/search/") ||
                (requestUri.startsWith("/api/gems") && "GET".equals(method)) ||
                (requestUri.startsWith("/api/krawls") && "GET".equals(method)) ||
+               (requestUri.startsWith("/api/users") && "GET".equals(method)) ||
+               requestUri.equals("/api/v1/gems/check-duplicate") ||
                requestUri.startsWith("/api/landing/") ||
                requestUri.equals("/actuator/health");
     }

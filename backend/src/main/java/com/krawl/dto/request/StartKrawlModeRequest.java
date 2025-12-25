@@ -10,3 +10,6 @@ public class StartKrawlModeRequest {
     // Future: could add initial location, device info, etc.
 }
 
+
+
+

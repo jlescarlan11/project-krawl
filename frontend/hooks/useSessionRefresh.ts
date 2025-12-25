@@ -83,8 +83,8 @@ export function useSessionRefresh(
       nextAuthStatus,
       hasSession: !!session,
       sessionUserId: session?.user?.id || null,
-      storeUserId: authStore.user?.id || null,
-      hasStoreSession: !!authStore.session,
+      storeUserId: authStore?.user?.id || null,
+      hasStoreSession: !!authStore?.session,
       lastSyncedHash: lastSyncedSessionRef.current ? 'present' : null,
       timeSinceLastSync,
       isSyncing: isSyncingRef.current,
@@ -97,8 +97,8 @@ export function useSessionRefresh(
       // Clear Zustand state immediately when NextAuth confirms unauthenticated
       // Check if we need to clear (avoid unnecessary syncs that cause flickering)
       const needsClear = lastSyncedSessionRef.current !== null || 
-                        authStore.user !== null || 
-                        authStore.session !== null;
+                        authStore?.user !== null || 
+                        authStore?.session !== null;
       
       console.log(`[useSessionRefresh] Unauthenticated status, needsClear=${needsClear} at ${timestamp}`);
       

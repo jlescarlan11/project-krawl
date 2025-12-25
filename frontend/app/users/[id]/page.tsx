@@ -8,7 +8,7 @@ import { UserVouchedGemsList } from "@/components/users/UserVouchedGemsList";
 import { UserCompletedKrawlsList } from "@/components/users/UserCompletedKrawlsList";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { getUserProfile } from "@/lib/api/users";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 import { UserProfileTabs } from "@/components/users/UserProfileTabs";
 
 /**

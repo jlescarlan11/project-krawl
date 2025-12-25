@@ -3,7 +3,7 @@ import { MapGem, GemStatus } from "@/components/map/gem-types";
 import { Star, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 
 interface RelatedGemsProps {
   currentGem: GemDetail;
