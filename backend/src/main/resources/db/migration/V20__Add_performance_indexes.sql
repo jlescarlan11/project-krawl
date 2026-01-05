@@ -16,7 +16,7 @@ ON revoked_tokens(token);
 
 -- Gem Ratings: gem_id + user_id composite
 CREATE INDEX IF NOT EXISTS idx_gem_ratings_gem_user
-ON gem_ratings(gem_id, user_id);
+ON ratings(gem_id, user_id);
 
 -- Krawl Ratings: krawl_id + user_id composite
 CREATE INDEX IF NOT EXISTS idx_krawl_ratings_krawl_user
@@ -24,7 +24,7 @@ ON krawl_ratings(krawl_id, user_id);
 
 -- Gem Vouches: gem_id + user_id composite
 CREATE INDEX IF NOT EXISTS idx_gem_vouches_gem_user
-ON gem_vouches(gem_id, user_id);
+ON vouches(gem_id, user_id);
 
 -- Krawl Vouches: krawl_id + user_id composite
 CREATE INDEX IF NOT EXISTS idx_krawl_vouches_krawl_user

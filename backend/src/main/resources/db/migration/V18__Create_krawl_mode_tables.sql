@@ -84,3 +84,6 @@ COMMENT ON COLUMN krawl_progress.arrival_method IS 'How the user arrived: AUTOMA
 
 
 
+
+
+

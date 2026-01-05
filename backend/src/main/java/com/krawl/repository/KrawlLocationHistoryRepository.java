@@ -28,3 +28,6 @@ public interface KrawlLocationHistoryRepository extends JpaRepository<KrawlLocat
 
 
 
+
+
+

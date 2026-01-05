@@ -47,3 +47,6 @@ public interface KrawlProgressRepository extends JpaRepository<KrawlProgress, UU
 
 
 
+
+
+

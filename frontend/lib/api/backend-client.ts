@@ -15,13 +15,14 @@ export const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localh
  * Build headers for backend requests
  * Automatically includes Authorization header if JWT token is provided
  */
-export function buildBackendHeaders(jwt?: string, additionalHeaders?: HeadersInit): HeadersInit {
-  const headers: HeadersInit = {
-    ...additionalHeaders,
-  };
+export function buildBackendHeaders(
+  jwt?: string,
+  additionalHeaders?: HeadersInit
+): Headers {
+  const headers = new Headers(additionalHeaders);
 
   if (jwt) {
-    headers['Authorization'] = `Bearer ${jwt}`;
+    headers.set('Authorization', `Bearer ${jwt}`);
   }
 
   return headers;
