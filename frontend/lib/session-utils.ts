@@ -21,7 +21,7 @@ export function isSessionExpired(expires: string | Date): boolean {
     return true;
   }
   
-  return expiresDate < new Date();
+  return expiresDate <= new Date();
 }
 
 /**

@@ -93,3 +93,9 @@ export function useBatteryStatus(): UseBatteryStatusResult {
   };
 }
 
+
+
+
+
+
+

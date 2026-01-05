@@ -33,3 +33,9 @@ COMMENT ON COLUMN reports.reason IS 'Reason for the report';
 COMMENT ON COLUMN reports.description IS 'Optional additional details (max 500 characters)';
 COMMENT ON COLUMN reports.status IS 'Current status of the report (default: PENDING)';
 
+
+
+
+
+
+

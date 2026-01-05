@@ -54,14 +54,20 @@ export function ProtectedActionGate({
   const isGuest = isMounted ? isGuestFromStore : false;
 
   const requestSignIn = (options?: GuestSignInOptions) => {
-    showSignInPrompt(context, { ...promptOptions, ...options });
+    const mergedOptions = promptOptions || options 
+      ? { ...promptOptions, ...options }
+      : undefined;
+    showSignInPrompt(context, mergedOptions);
   };
 
   const handleProtectedAction =
     (action: () => void, options?: GuestSignInOptions) =>
     () => {
       if (isGuest) {
-        requestSignIn(options);
+        const mergedOptions = promptOptions || options 
+          ? { ...promptOptions, ...options }
+          : undefined;
+        showSignInPrompt(context, mergedOptions);
         return;
       }
       action();

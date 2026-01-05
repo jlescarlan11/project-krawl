@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service for interacting with Mapbox Directions API.
@@ -29,7 +29,6 @@ public class MapboxService {
     @Value("${mapbox.access-token:}")
     private String mapboxAccessToken;
     
-    private static final String MAPBOX_DIRECTIONS_API_URL = "https://api.mapbox.com/directions/v5/mapbox/walking";
     private static final int TIMEOUT_MS = 10000; // 10 seconds
     
     private WebClient webClient;
@@ -71,6 +70,7 @@ public class MapboxService {
 
             String url = String.format("/directions/v5/mapbox/walking/%s?geometries=geojson&overview=full&access_token=%s",
                     coordinates, mapboxAccessToken);
+            Objects.requireNonNull(url, "URL cannot be null");
 
             log.debug("Calling Mapbox Directions API for {} waypoints", waypoints.size());
 

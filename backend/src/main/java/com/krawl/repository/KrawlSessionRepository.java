@@ -39,5 +39,12 @@ public interface KrawlSessionRepository extends JpaRepository<KrawlSession, UUID
      */
     @Query("SELECT s FROM KrawlSession s WHERE s.user.id = :userId AND s.status = 'ACTIVE' ORDER BY s.startedAt DESC")
     List<KrawlSession> findActiveSessionsByUserId(@Param("userId") UUID userId);
+
+    /**
+     * Count completed sessions for a user (distinct krawls)
+     */
+    @Query("SELECT COUNT(DISTINCT s.krawl.id) FROM KrawlSession s WHERE s.user.id = :userId AND s.status = 'COMPLETED'")
+    long countCompletedKrawlsByUserId(@Param("userId") UUID userId);
 }
+
 

@@ -9,7 +9,7 @@ import { GemComments } from "@/components/gems/GemComments";
 import { RelatedGems } from "@/components/gems/RelatedGems";
 import { RelatedKrawls } from "@/components/krawls/RelatedKrawls";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 
 /**
  * Fetch gem detail from API

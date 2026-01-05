@@ -7,9 +7,6 @@ import com.krawl.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,7 +23,7 @@ import java.util.UUID;
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
 @Slf4j
-public class SearchController {
+public class SearchController extends BaseController {
 
     private final SearchService searchService;
 
@@ -136,21 +133,5 @@ public class SearchController {
         return ResponseEntity.ok(popularSearches);
     }
 
-    /**
-     * Get current user ID from security context.
-     *
-     * @return User ID if authenticated, null otherwise
-     */
-    private UUID getCurrentUserId() {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UserDetails) {
-                String username = ((UserDetails) auth.getPrincipal()).getUsername();
-                return UUID.fromString(username);
-            }
-        } catch (Exception e) {
-            log.debug("Could not extract user ID from security context: {}", e.getMessage());
-        }
-        return null;
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }

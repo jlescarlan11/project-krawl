@@ -2,13 +2,10 @@ package com.krawl.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krawl.dto.request.AuthRequest;
-import com.krawl.dto.response.AuthResponse;
 import com.krawl.dto.response.GoogleUserInfo;
 import com.krawl.entity.User;
 import com.krawl.repository.UserRepository;
 import com.krawl.service.GoogleTokenValidator;
-import com.krawl.service.JwtTokenService;
-import com.krawl.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +15,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class AuthControllerIntegrationTest {
     
     @Autowired
@@ -52,10 +48,11 @@ class AuthControllerIntegrationTest {
     
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
+        // No need to delete - @Transactional will rollback all changes after each test
     }
     
     @Test
+    @SuppressWarnings("null") // MediaType and MockMvc methods are guaranteed non-null
     void testAuthenticate_ValidToken_CreatesUserAndReturnsJWT() throws Exception {
         // Given
         String googleToken = "valid-google-oauth-token";
@@ -87,6 +84,7 @@ class AuthControllerIntegrationTest {
     }
     
     @Test
+    @SuppressWarnings("null") // MediaType and MockMvc methods are guaranteed non-null
     void testAuthenticate_InvalidTokenFormat_ReturnsBadRequest() throws Exception {
         // Given
         AuthRequest request = new AuthRequest();
@@ -100,6 +98,7 @@ class AuthControllerIntegrationTest {
     }
     
     @Test
+    @SuppressWarnings("null") // MediaType and MockMvc methods are guaranteed non-null
     void testAuthenticate_MissingToken_ReturnsBadRequest() throws Exception {
         // Given
         AuthRequest request = new AuthRequest();
@@ -113,6 +112,7 @@ class AuthControllerIntegrationTest {
     }
     
     @Test
+    @SuppressWarnings("null") // MediaType and MockMvc methods are guaranteed non-null
     void testAuthenticate_InvalidGoogleToken_ReturnsUnauthorized() throws Exception {
         // Given
         String googleToken = "invalid-google-oauth-token";

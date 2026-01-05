@@ -71,7 +71,7 @@ export function BottomNav() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center justify-center gap-1",
-                "flex-1 h-full rounded-lg p-1",
+                "flex-1 h-full rounded-lg p-2 min-w-[44px] min-h-[44px]",
                 "transition-colors",
                 isActive
                   ? "text-primary-green"
@@ -91,7 +91,7 @@ export function BottomNav() {
           href={ROUTES.SEARCH}
           className={cn(
             "flex flex-col items-center justify-center gap-1",
-            "flex-1 h-full rounded-lg p-1",
+            "flex-1 h-full rounded-lg p-2 min-w-[44px] min-h-[44px]",
             "transition-colors",
             isSearchActive
               ? "text-primary-green"
@@ -111,11 +111,12 @@ export function BottomNav() {
                 <button
                   type="button"
                   onClick={() => requestSignIn()}
+                  aria-label="Sign in to view profile"
                   aria-describedby={promptId}
                   title={promptMessage}
                   className={cn(
                     "flex flex-col items-center justify-center gap-1",
-                    "flex-1 h-full rounded-lg p-1",
+                    "flex-1 h-full rounded-lg p-2 min-w-[44px] min-h-[44px]",
                     "transition-colors",
                     "text-text-secondary hover:text-primary-green"
                   )}
@@ -130,7 +131,7 @@ export function BottomNav() {
                 href={profileHref}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1",
-                  "flex-1 h-full rounded-lg p-1",
+                  "flex-1 h-full rounded-lg p-2 min-w-[44px] min-h-[44px]",
                   "transition-colors",
                   isProfileActive
                     ? "text-primary-green"

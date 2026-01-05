@@ -41,3 +41,9 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     boolean existsByUserIdAndContentTypeAndContentId(UUID userId, Report.ContentType contentType, UUID contentId);
 }
 
+
+
+
+
+
+

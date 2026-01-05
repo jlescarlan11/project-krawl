@@ -24,9 +24,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +39,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Gem Creation", description = "API endpoints for creating and managing Gems")
-public class GemCreationController {
+public class GemCreationController extends BaseController {
 
     private final DuplicateDetectionService duplicateDetectionService;
     private final GemService gemService;
@@ -411,26 +408,6 @@ public class GemCreationController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Extract current user ID from security context if authenticated
-     *
-     * @return UUID of current user, or null if not authenticated
-     */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }
 

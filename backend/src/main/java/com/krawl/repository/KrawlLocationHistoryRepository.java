@@ -25,3 +25,9 @@ public interface KrawlLocationHistoryRepository extends JpaRepository<KrawlLocat
     void deleteOldEntries(@Param("cutoffDate") java.time.LocalDateTime cutoffDate);
 }
 
+
+
+
+
+
+

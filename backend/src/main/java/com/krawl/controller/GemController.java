@@ -12,9 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Gems", description = "API endpoints for managing and retrieving Gem information")
-public class GemController {
+public class GemController extends BaseController {
 
     private final GemService gemService;
 
@@ -150,25 +147,5 @@ public class GemController {
         return ResponseEntity.ok(gems);
     }
 
-    /**
-     * Extract current user ID from security context if authenticated
-     *
-     * @return UUID of current user, or null if not authenticated
-     */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }

@@ -13,9 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -29,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Vouches", description = "API endpoints for managing vouches on Gems")
-public class VouchController {
+public class VouchController extends BaseController {
 
     private final GemService gemService;
 
@@ -87,13 +84,7 @@ public class VouchController {
         log.debug("POST /api/gems/{}/vouch", gemId);
 
         // Validate UUID format
-        UUID gemUuid;
-        try {
-            gemUuid = UUID.fromString(gemId);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid UUID format: {}", gemId);
-            throw new IllegalArgumentException("Invalid Gem ID format. Must be a valid UUID.");
-        }
+        UUID gemUuid = parseUUID(gemId, "Gem");
 
         // Get current user ID (required for vouching)
         UUID userId = getCurrentUserId();
@@ -117,26 +108,6 @@ public class VouchController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Extract current user ID from security context
-     *
-     * @return UUID of current user, or null if not authenticated
-     */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }
 

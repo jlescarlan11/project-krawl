@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +22,7 @@ import static org.mockito.Mockito.*;
  * or WireMock to properly mock the Google API responses.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class GoogleTokenValidatorTest {
     
     @Mock
@@ -31,12 +31,12 @@ class GoogleTokenValidatorTest {
     @Mock
     private WebClient webClient;
     
-    @SuppressWarnings("rawtypes")
     @Mock
+    @SuppressWarnings("rawtypes")
     private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
     
-    @SuppressWarnings("rawtypes")
     @Mock
+    @SuppressWarnings("rawtypes")
     private WebClient.RequestHeadersSpec requestHeadersSpec;
     
     @Mock
@@ -62,14 +62,13 @@ class GoogleTokenValidatorTest {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     void testValidateToken_NetworkError_ThrowsException() {
         // Given
         String token = "valid-google-token";
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        // Use explicit type casting to resolve ambiguity
         when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        @SuppressWarnings("unchecked")
         Mono<Object> errorMono = Mono.error(new RuntimeException("Network error"));
         lenient().when(responseSpec.bodyToMono(any(Class.class))).thenReturn(errorMono);
         

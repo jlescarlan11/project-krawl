@@ -22,9 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -38,7 +35,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Krawl Mode", description = "API endpoints for Krawl Mode functionality")
-public class KrawlModeController {
+public class KrawlModeController extends BaseController {
 
     private final KrawlModeService krawlModeService;
     private final LocationTrackingService locationTrackingService;
@@ -402,26 +399,12 @@ public class KrawlModeController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Extract current user ID from security context if authenticated
-     *
-     * @return UUID of current user, or null if not authenticated
-     */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }
+
+
+
+
+
+
 

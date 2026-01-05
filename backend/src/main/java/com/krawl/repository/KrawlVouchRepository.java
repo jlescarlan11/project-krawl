@@ -24,6 +24,12 @@ public interface KrawlVouchRepository extends JpaRepository<KrawlVouch, UUID> {
     Optional<KrawlVouch> findByKrawlIdAndUserId(UUID krawlId, UUID userId);
 
     boolean existsByKrawlIdAndUserId(UUID krawlId, UUID userId);
+
+    /**
+     * Count vouches given by a user
+     */
+    @Query("SELECT COUNT(v) FROM KrawlVouch v WHERE v.user.id = :userId")
+    long countByUserId(@Param("userId") UUID userId);
 }
 
 

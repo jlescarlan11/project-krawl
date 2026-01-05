@@ -15,7 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -55,9 +57,14 @@ public class SecurityConfig {
                 .requestMatchers("/api/search/**").permitAll() // Public search endpoints
                 .requestMatchers(HttpMethod.GET, "/api/gems/**").permitAll() // Public gem GET endpoints only
                 .requestMatchers(HttpMethod.GET, "/api/krawls/**").permitAll() // Public krawl GET endpoints only
+                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll() // Public user profile GET endpoints
+                .requestMatchers("/api/v1/gems/check-duplicate").permitAll() // Public duplicate check endpoint
                 .requestMatchers("/api/landing/**").permitAll() // Public landing endpoints (statistics, featured krawls, etc.)
                 .requestMatchers("/actuator/health").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(authenticationEntryPoint())
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .userDetailsService(userDetailsService);
@@ -100,6 +107,20 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
+    }
+    
+    /**
+     * Configures authentication entry point to return 401 for unauthenticated requests.
+     * 
+     * @return AuthenticationEntryPoint that returns 401 status
+     */
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"UNAUTHORIZED\",\"message\":\"Authentication required\"}");
+        };
     }
 }
 

@@ -69,19 +69,29 @@ describe("cookie-utils", () => {
 
   describe("getCookieWarningMessage", () => {
     it("should return warning message when cookies are blocked", () => {
-      // Mock cookies as blocked
-      vi.spyOn(document, "cookie", "get").mockReturnValue("");
-      vi.spyOn(document, "cookie", "set").mockImplementation(() => {
-        throw new Error("Cookies disabled");
+      // Mock cookies as blocked by making cookie setter fail
+      const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie") ||
+        Object.getOwnPropertyDescriptor(HTMLDocument.prototype, "cookie");
+      
+      Object.defineProperty(document, "cookie", {
+        get: () => "",
+        set: () => {
+          throw new Error("Cookies disabled");
+        },
+        configurable: true,
       });
 
-      const message = getCookieWarningMessage();
-      if (areCookiesBlocked()) {
+      try {
+        const message = getCookieWarningMessage();
+        // Function should handle the error gracefully and return warning
         expect(message).toBe(
           "Cookies are disabled in your browser. Please enable cookies to use this application."
         );
-      } else {
-        expect(message).toBeNull();
+      } finally {
+        // Restore original descriptor
+        if (originalCookieDescriptor) {
+          Object.defineProperty(document, "cookie", originalCookieDescriptor);
+        }
       }
     });
 

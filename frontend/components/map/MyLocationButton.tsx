@@ -134,6 +134,7 @@ export function MyLocationButton({
         disabled={isLoading || !map}
         className={cn(
           "w-10 h-10 rounded-lg",
+          "min-w-[40px] min-h-[40px]",
           "bg-bg-white",
           "border border-[var(--color-border-subtle)]",
           "shadow-sm hover:shadow-md",

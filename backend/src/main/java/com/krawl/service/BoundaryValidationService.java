@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service for validating coordinates against Cebu City boundaries.
- * 
- * Cebu City bounds:
+ *
+ * Cebu City bounds (from OpenStreetMap):
  * - Southwest: [123.7533688, 10.2463015]
  * - Northeast: [123.9302169, 10.4957531]
+ *
+ * IMPORTANT: These values must match frontend's lib/map/constants.ts (CEBU_CITY_BOUNDS)
+ * to ensure consistent validation across frontend and backend.
  */
 @Service
 @Slf4j

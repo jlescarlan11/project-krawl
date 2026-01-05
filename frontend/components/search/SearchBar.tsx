@@ -261,7 +261,7 @@ export function SearchBar({
           ) : query.length > 0 ? (
             <button
               onClick={handleClear}
-              className="text-text-secondary hover:text-text-primary transition-colors p-1 rounded-md hover:bg-bg-light"
+              className="text-text-secondary hover:text-text-primary transition-colors p-2 rounded-md hover:bg-bg-light min-w-[40px] min-h-[40px] flex items-center justify-center"
               aria-label="Clear search"
             >
               <X className="w-5 h-5" />

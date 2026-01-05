@@ -88,19 +88,19 @@ describe("UIStore", () => {
   });
 
   describe("persistence", () => {
-    it("should persist theme to localStorage", () => {
+    it("should persist theme to localStorage", async () => {
       useUIStore.getState().setTheme("dark");
 
       // Wait for persistence
-      setTimeout(() => {
-        const persisted = localStorage.getItem("krawl:ui:v1");
-        expect(persisted).toBeTruthy();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const persisted = localStorage.getItem("krawl:ui:v1");
+      expect(persisted).toBeTruthy();
 
-        if (persisted) {
-          const parsed = JSON.parse(persisted);
-          expect(parsed.state.theme).toBe("dark");
-        }
-      }, 100);
+      if (persisted) {
+        const parsed = JSON.parse(persisted);
+        expect(parsed.state.theme).toBe("dark");
+      }
     });
   });
 });

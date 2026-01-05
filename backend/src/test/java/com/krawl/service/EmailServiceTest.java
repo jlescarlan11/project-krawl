@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * error handling behavior.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class EmailServiceTest {
     
     @InjectMocks
@@ -89,7 +90,7 @@ class EmailServiceTest {
         
         // Then - Service should be disabled
         Boolean isEnabled = (Boolean) ReflectionTestUtils.getField(emailService, "isEnabled");
-        assertFalse(isEnabled);
+        assertFalse(Boolean.TRUE.equals(isEnabled));
     }
     
     @Test
@@ -102,7 +103,7 @@ class EmailServiceTest {
         
         // Then - Service should be disabled
         Boolean isEnabled = (Boolean) ReflectionTestUtils.getField(emailService, "isEnabled");
-        assertFalse(isEnabled);
+        assertFalse(Boolean.TRUE.equals(isEnabled));
     }
 }
 

@@ -40,8 +40,22 @@ export function LocationStep({
   const { location, setLocation } = useGemCreationStore();
   const mapPickerRef = useRef<GemLocationPickerRef>(null);
 
+  // Use refs to track latest values for callbacks
+  const currentAddressRef = useRef<string | null>(location?.address || null);
+  const currentCoordinatesRef = useRef<[number, number]>(
+    location?.coordinates || CEBU_CITY_CENTER
+  );
+
+  // Initialize validation result if loading from store with valid location
   const [validationResult, setValidationResult] =
-    useState<BoundaryValidationResult | null>(null);
+    useState<BoundaryValidationResult | null>(
+      location?.isValid
+        ? {
+            isValid: true,
+            message: "Coordinates are within Cebu City boundaries.",
+          }
+        : null
+    );
   const [currentCoordinates, setCurrentCoordinates] = useState<
     [number, number]
   >(location?.coordinates || CEBU_CITY_CENTER);
@@ -51,6 +65,28 @@ export function LocationStep({
   const [locationError, setLocationError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
 
+  // Update refs when state changes
+  useEffect(() => {
+    currentAddressRef.current = currentAddress;
+  }, [currentAddress]);
+
+  useEffect(() => {
+    currentCoordinatesRef.current = currentCoordinates;
+  }, [currentCoordinates]);
+
+  // Initialize from store on mount
+  useEffect(() => {
+    if (location?.isValid && location.address && location.coordinates && !validationResult) {
+      // If we have a valid location from store, mark as touched
+      setTouched(true);
+      // Ensure validation result is set
+      setValidationResult({
+        isValid: true,
+        message: "Coordinates are within Cebu City boundaries.",
+      });
+    }
+  }, [location, validationResult]);
+
   // Mark as touched when user interacts with map or search
   useEffect(() => {
     if (currentCoordinates && currentAddress) {
@@ -58,18 +94,32 @@ export function LocationStep({
     }
   }, [currentCoordinates, currentAddress]);
 
+  // Update store when both validation and address are available
+  // This handles the case where validation runs before address is set (from reverse geocoding)
+  useEffect(() => {
+    if (validationResult?.isValid && currentAddress && currentCoordinates) {
+      setLocation({
+        coordinates: currentCoordinates,
+        address: currentAddress,
+        isValid: true,
+      });
+    }
+  }, [validationResult, currentAddress, currentCoordinates, setLocation]);
+
   /**
    * Handle location change from map
    */
   const handleLocationChange = useCallback(
     async (coords: [number, number]) => {
       setCurrentCoordinates(coords);
+      currentCoordinatesRef.current = coords;
 
       // Perform reverse geocoding to get address
       try {
         const feature = await reverseGeocode(coords);
         if (feature) {
           setCurrentAddress(feature.place_name);
+          currentAddressRef.current = feature.place_name;
         }
       } catch (error) {
         console.error("Reverse geocoding failed:", error);
@@ -85,16 +135,18 @@ export function LocationStep({
     (result: BoundaryValidationResult) => {
       setValidationResult(result);
 
-      // Update store if valid
-      if (result.isValid && currentAddress) {
+      // Update store if valid, using refs to get latest values
+      // This ensures we have the most up-to-date address even if validation
+      // is called before the state has updated
+      if (result.isValid && currentAddressRef.current) {
         setLocation({
-          coordinates: currentCoordinates,
-          address: currentAddress,
+          coordinates: currentCoordinatesRef.current,
+          address: currentAddressRef.current,
           isValid: true,
         });
       }
     },
-    [currentCoordinates, currentAddress, setLocation]
+    [setLocation]
   );
 
   /**

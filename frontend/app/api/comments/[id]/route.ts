@@ -6,7 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
+import { BACKEND_API_URL, backendPut, backendDelete } from "@/lib/api/backend-client";
 
 /**
  * PUT /api/comments/[id]
@@ -56,17 +57,11 @@ export async function PUT(
       );
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    const BACKEND_ENDPOINT = `${API_URL}/api/gems/comments/${id}`;
-
-    const backendResponse = await fetch(BACKEND_ENDPOINT, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.jwt}`,
-      },
-      body: JSON.stringify({ content: content.trim() }),
-    });
+    const backendResponse = await backendPut(
+      `/api/gems/comments/${id}`,
+      { content: content.trim() },
+      session.jwt
+    );
 
     if (!backendResponse.ok) {
       const errorData = await backendResponse.json().catch(() => ({}));
@@ -116,15 +111,10 @@ export async function DELETE(
       );
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    const BACKEND_ENDPOINT = `${API_URL}/api/gems/comments/${id}`;
-
-    const backendResponse = await fetch(BACKEND_ENDPOINT, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${session.jwt}`,
-      },
-    });
+    const backendResponse = await backendDelete(
+      `/api/gems/comments/${id}`,
+      session.jwt
+    );
 
     if (!backendResponse.ok) {
       const errorData = await backendResponse.json().catch(() => ({}));

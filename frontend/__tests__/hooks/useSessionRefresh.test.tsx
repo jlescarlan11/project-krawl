@@ -15,8 +15,11 @@ vi.mock("@/lib/session-utils");
 describe("useSessionRefresh", () => {
   const mockUpdate = vi.fn();
   const mockSignOut = vi.fn();
+  const mockSignIn = vi.fn();
   const mockAuthStore = {
     signOut: mockSignOut,
+    signIn: mockSignIn,
+    syncFromNextAuth: vi.fn(),
   };
 
   beforeEach(() => {
@@ -31,10 +34,11 @@ describe("useSessionRefresh", () => {
         jwt: "test-jwt",
       },
       update: mockUpdate,
+      status: "authenticated",
     });
 
-    // Mock useAuthStore
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+    // Mock useAuthStore - it's a Zustand store with getState() method
+    (useAuthStore.getState as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       mockAuthStore
     );
 
@@ -59,15 +63,20 @@ describe("useSessionRefresh", () => {
     expect(syncSessionToZustand).toHaveBeenCalled();
   });
 
-  it("should sign out when session is null", () => {
+  it("should sign out when session is null", async () => {
     (useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       data: null,
       update: mockUpdate,
+      status: "unauthenticated",
     });
 
     renderHook(() => useSessionRefresh());
 
-    expect(mockSignOut).toHaveBeenCalled();
+    // Wait for effect to run (but don't run all timers to avoid infinite loop)
+    await vi.runOnlyPendingTimersAsync();
+
+    // The hook calls syncSessionToZustand(null) to clear state, not signOut directly
+    expect(syncSessionToZustand).toHaveBeenCalledWith(null, mockAuthStore);
   });
 
   it("should not refresh if session is not expiring soon", async () => {
@@ -77,12 +86,12 @@ describe("useSessionRefresh", () => {
 
     renderHook(() => useSessionRefresh());
 
-    // Advance time to trigger interval check
+    // Advance time to trigger interval check (but don't run all timers to avoid infinite loop)
     vi.advanceTimersByTime(5 * 60 * 1000); // 5 minutes
+    await vi.runOnlyPendingTimersAsync();
 
-    await waitFor(() => {
-      expect(mockUpdate).not.toHaveBeenCalled();
-    });
+    // Should not call update since session is not expiring soon
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 
   it("should refresh session when expiring soon", async () => {
@@ -95,12 +104,11 @@ describe("useSessionRefresh", () => {
 
     renderHook(() => useSessionRefresh());
 
-    // Advance time to trigger check
+    // Advance time to trigger check (but don't run all timers to avoid infinite loop)
     vi.advanceTimersByTime(100);
+    await vi.runOnlyPendingTimersAsync();
 
-    await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalled();
-    });
+    expect(mockUpdate).toHaveBeenCalled();
   });
 
   it("should handle refresh errors gracefully", async () => {
@@ -112,16 +120,15 @@ describe("useSessionRefresh", () => {
 
     renderHook(() => useSessionRefresh());
 
-    // Advance time to trigger check
+    // Advance time to trigger check (but don't run all timers to avoid infinite loop)
     vi.advanceTimersByTime(100);
+    await vi.runOnlyPendingTimersAsync();
 
-    await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to refresh session"),
-        expect.any(Error)
-      );
-    });
+    expect(mockUpdate).toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Failed to refresh session"),
+      expect.any(Error)
+    );
 
     consoleErrorSpy.mockRestore();
   });
@@ -139,15 +146,14 @@ describe("useSessionRefresh", () => {
 
     renderHook(() => useSessionRefresh());
 
-    // Trigger multiple checks rapidly
+    // Trigger multiple checks rapidly (but don't run all timers to avoid infinite loop)
     vi.advanceTimersByTime(100);
     vi.advanceTimersByTime(100);
     vi.advanceTimersByTime(100);
+    await vi.runOnlyPendingTimersAsync();
 
     // Should only be called once
-    await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalledTimes(1);
-    });
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
 
     // Resolve the promise
     resolveUpdate!();

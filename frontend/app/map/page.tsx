@@ -157,10 +157,12 @@ function MapPageContent() {
                     <button
                       key={filter.id}
                       onClick={() => handleCategoryChange(filter.id)}
+                      aria-label={`Filter by ${filter.label}`}
+                      aria-pressed={isSelected}
                       className={cn(
                         "flex items-center gap-2 px-5 py-3 rounded-xl",
                         "border-2 transition-all duration-200 whitespace-nowrap",
-                        "text-sm font-semibold",
+                        "text-sm font-semibold min-h-[40px]",
                         isSelected
                           ? "bg-primary-green text-white border-primary-green shadow-xl scale-105"
                           : "bg-white text-gray-700 border-gray-200 hover:border-primary-green hover:bg-primary-green/5 shadow-lg hover:shadow-xl hover:scale-102"
@@ -184,10 +186,12 @@ function MapPageContent() {
                   <button
                     key={filter.id}
                     onClick={() => handleCategoryChange(filter.id)}
+                    aria-label={`Filter by ${filter.label}`}
+                    aria-pressed={isSelected}
                     className={cn(
                       "flex items-center gap-2 px-5 py-3 rounded-xl",
                       "border-2 transition-all duration-200 whitespace-nowrap",
-                      "text-sm font-semibold",
+                      "text-sm font-semibold min-h-[40px] min-w-[40px]",
                       isSelected
                         ? "bg-primary-green text-white border-primary-green shadow-xl"
                         : "bg-white text-gray-700 border-gray-200 hover:border-primary-green hover:bg-primary-green/5 shadow-lg"

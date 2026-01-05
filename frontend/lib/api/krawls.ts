@@ -4,6 +4,8 @@
  * API functions for krawl-related operations
  */
 
+import type { KrawlDetail } from "@/types/krawl-detail";
+
 /**
  * Krawl Mode API types and functions
  */
@@ -48,6 +50,40 @@ export interface LocationUpdateRequest {
   accuracy?: number;
   heading?: number;
   speed?: number;
+}
+
+/**
+ * Fetch krawl detail from API
+ * 
+ * This function constructs an absolute URL for server-side fetch,
+ * which is required for Next.js server components.
+ * 
+ * @param id - Krawl ID
+ * @returns Promise<KrawlDetail | null>
+ */
+export async function fetchKrawlById(id: string): Promise<KrawlDetail | null> {
+  try {
+    // Construct absolute URL for server-side fetch
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const host =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.VERCEL_URL ||
+      "localhost:3000";
+    const baseUrl = host.startsWith("http") ? host : `${protocol}://${host}`;
+
+    const response = await fetch(`${baseUrl}/api/krawls/${id}`, {
+      cache: "no-store", // Always fetch fresh data
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching krawl:", error);
+    return null;
+  }
 }
 
 /**

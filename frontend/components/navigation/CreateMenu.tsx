@@ -221,7 +221,7 @@ export function CreateMenu({ variant = "header", className }: CreateMenuProps) {
     ),
     mobile: cn(
       "flex flex-col items-center justify-center",
-      "w-14 h-14 rounded-full",
+      "w-14 h-14 min-w-[40px] min-h-[40px] rounded-full",
       "bg-primary-green text-white",
       "shadow-elevation-2 hover:shadow-elevation-3",
       "transition-all",
@@ -265,7 +265,7 @@ export function CreateMenu({ variant = "header", className }: CreateMenuProps) {
                   aria-disabled="true"
                   className={cn(
                     "flex flex-col items-center justify-center",
-                    "w-14 h-14 rounded-full",
+                    "w-14 h-14 min-w-[40px] min-h-[40px] rounded-full",
                     "bg-primary-green text-white",
                     "shadow-elevation-2",
                     "transition-all",
@@ -291,6 +291,7 @@ export function CreateMenu({ variant = "header", className }: CreateMenuProps) {
                   onMouseEnter={() => setGuestTooltipHovered(true)}
                   onMouseLeave={() => setGuestTooltipHovered(false)}
                   aria-describedby={promptId}
+                  aria-label="Sign in to create"
                 >
                   <Plus className="w-5 h-5 shrink-0" />
                 </button>

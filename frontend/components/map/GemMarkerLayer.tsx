@@ -102,6 +102,18 @@ export const GemMarkerLayer: React.FC<GemMarkerLayerProps> = ({
     onMarkersLoad: handleMarkersLoad,
   });
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('🎯 [GemMarkerLayer] State:', {
+      mapExists: !!map,
+      enabled,
+      gemsCount: gems.length,
+      isLoading,
+      error: error?.message,
+      categories
+    });
+  }, [map, enabled, gems.length, isLoading, error, categories]);
+
   // This component doesn't render anything visible
   // It just manages the markers on the map
   return null;

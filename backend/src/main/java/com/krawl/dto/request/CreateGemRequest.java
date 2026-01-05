@@ -12,20 +12,32 @@ import java.util.List;
 @Schema(description = "Request to create a new Gem")
 public class CreateGemRequest {
 
-    @Schema(description = "Name of the Gem (3-255 characters)", example = "Basilica del Santo Niño", required = true)
+    @Schema(
+        description = "Name of the Gem (3-255 characters)", 
+        example = "Basilica del Santo Niño", 
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String name;
 
-    @Schema(description = "Category of the Gem", example = "religious-site", required = true,
-            allowableValues = {
-                "food-drink", "historical-site", "art-music", "nature", "culture",
-                "shopping", "religious-site", "viewpoint", "monument", "park"
-            })
+    @Schema(
+        description = "Category of the Gem", 
+        example = "religious-site", 
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        allowableValues = {
+            "food-drink", "historical-site", "art-music", "nature", "culture",
+            "shopping", "religious-site", "viewpoint", "monument", "park"
+        }
+    )
     @NotBlank(message = "Category is required")
     private String category;
 
-    @Schema(description = "District of the Gem", example = "Downtown", required = true)
+    @Schema(
+        description = "District of the Gem", 
+        example = "Downtown", 
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotBlank(message = "District is required")
     @Size(max = 100, message = "District must not exceed 100 characters")
     private String district;
@@ -40,7 +52,10 @@ public class CreateGemRequest {
     @Schema(description = "Cultural significance", example = "One of the oldest churches in the Philippines")
     private String culturalSignificance;
 
-    @Schema(description = "Coordinates of the Gem location", required = true)
+    @Schema(
+        description = "Coordinates of the Gem location", 
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Coordinates are required")
     @Valid
     private Coordinates coordinates;
@@ -61,16 +76,26 @@ public class CreateGemRequest {
     @Size(max = 50, message = "Phone must not exceed 50 characters")
     private String phone;
 
-    @Schema(description = "List of photo URLs (Cloudinary URLs)", example = "[\"https://res.cloudinary.com/...\"]")
+    @Schema(
+        description = "List of photo URLs (Cloudinary URLs)", 
+        example = "[\"https://res.cloudinary.com/...\"]",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Photos are required")
     @Size(min = 1, max = 10, message = "At least 1 photo is required, maximum 10 photos")
     private List<String> photos = new ArrayList<>();
 
-    @Schema(description = "List of Cloudinary public IDs corresponding to photos (optional, for backward compatibility)", 
-            example = "[\"krawl-gems/abc123\", \"krawl-gems/def456\"]")
+    @Schema(
+        description = "List of Cloudinary public IDs corresponding to photos (optional, for backward compatibility)", 
+        example = "[\"krawl-gems/abc123\", \"krawl-gems/def456\"]"
+    )
     private List<String> photoPublicIds;
 
-    @Schema(description = "Index of the thumbnail photo in the photos array", example = "0")
+    @Schema(
+        description = "Index of the thumbnail photo in the photos array", 
+        example = "0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Thumbnail index is required")
     @Min(value = 0, message = "Thumbnail index must be non-negative")
     private Integer thumbnailIndex;
@@ -81,17 +106,24 @@ public class CreateGemRequest {
     @Data
     @Schema(description = "Geographic coordinates")
     public static class Coordinates {
-        @Schema(description = "Latitude (-90 to 90)", example = "10.3157", required = true)
+        @Schema(
+            description = "Latitude (-90 to 90)", 
+            example = "10.3157", 
+            requiredMode = Schema.RequiredMode.REQUIRED
+        )
         @NotNull(message = "Latitude is required")
         @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
         @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
         private Double latitude;
 
-        @Schema(description = "Longitude (-180 to 180)", example = "123.8854", required = true)
+        @Schema(
+            description = "Longitude (-180 to 180)", 
+            example = "123.8854", 
+            requiredMode = Schema.RequiredMode.REQUIRED
+        )
         @NotNull(message = "Longitude is required")
         @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
         @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
         private Double longitude;
     }
 }
-

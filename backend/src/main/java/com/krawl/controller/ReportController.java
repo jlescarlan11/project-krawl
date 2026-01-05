@@ -14,9 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Reports", description = "API endpoints for reporting content (Gems and Krawls)")
-public class ReportController {
+public class ReportController extends BaseController {
 
     private final ReportService reportService;
 
@@ -60,27 +57,6 @@ public class ReportController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Get current user ID from authentication context
-     * Returns null if user is not authenticated (allows guest reports)
-     *
-     * @return User ID or null if not authenticated
-     */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }
 

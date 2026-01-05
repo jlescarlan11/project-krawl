@@ -1,7 +1,7 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 
 import type { PopularGem } from "@/components/landing/types";
 

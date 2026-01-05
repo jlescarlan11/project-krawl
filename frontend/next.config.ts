@@ -14,9 +14,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  turbopack: {
-    root: path.resolve(__dirname),
-  },
+  // Fix workspace root warning by explicitly setting the output file tracing root
+  // This tells Next.js to use the frontend directory as the root for file tracing
+  // Important for monorepo setups where the app is in a subdirectory
+  outputFileTracingRoot: path.join(__dirname),
 };
 
 // Wrap with Sentry configuration

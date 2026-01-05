@@ -22,6 +22,7 @@ import com.krawl.repository.KrawlRatingRepository;
 import com.krawl.repository.KrawlRepository;
 import com.krawl.repository.KrawlVouchRepository;
 import com.krawl.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,21 +55,14 @@ public class KrawlService {
 
     /**
      * Get detailed information about a specific krawl
-     *
-     * @param krawlId The UUID of the krawl
-     * @param currentUserId The UUID of the current user (null if not authenticated)
-     * @return KrawlDetailResponse with all krawl information
-     * @throws ResourceNotFoundException if krawl not found
      */
     @Transactional(readOnly = true)
-    public KrawlDetailResponse getKrawlDetail(UUID krawlId, UUID currentUserId) {
+    public KrawlDetailResponse getKrawlDetail(@NonNull UUID krawlId, UUID currentUserId) {
         log.debug("Fetching krawl detail for krawlId: {}", krawlId);
 
-        // Fetch krawl with all related data
         Krawl krawl = krawlRepository.findByIdWithDetails(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
 
-        // Calculate rating statistics
         Double averageRating = krawlRepository.calculateAverageRating(krawlId);
         Long totalRatings = krawlRepository.countRatingsByKrawlId(krawlId);
         RatingBreakdownResponse ratingBreakdown = buildRatingBreakdown(krawlId);
@@ -78,7 +73,6 @@ public class KrawlService {
                 .breakdown(ratingBreakdown)
                 .build();
 
-        // Calculate vouch statistics
         Integer vouchCount = krawlRepository.countVouchesByKrawlId(krawlId);
         Boolean isVouchedByCurrentUser = currentUserId != null
                 ? krawlRepository.hasUserVouchedForKrawl(krawlId, currentUserId)
@@ -95,20 +89,17 @@ public class KrawlService {
                 .isVouchedByCurrentUser(isVouchedByCurrentUser)
                 .build();
 
-        // Map gems (ordered by sequence)
         List<KrawlGemResponse> gemResponses = krawl.getGems().stream()
                 .sorted((kg1, kg2) -> Integer.compare(kg1.getOrder(), kg2.getOrder()))
                 .map(this::mapToGemResponse)
                 .collect(Collectors.toList());
 
-        // Build creator info
         KrawlCreatorResponse creator = KrawlCreatorResponse.builder()
                 .id(krawl.getCreatedBy().getId().toString())
                 .name(krawl.getCreatedBy().getDisplayName())
                 .avatar(krawl.getCreatedBy().getAvatarUrl())
                 .build();
 
-        // Build the response
         return KrawlDetailResponse.builder()
                 .id(krawl.getId().toString())
                 .name(krawl.getName())
@@ -134,11 +125,9 @@ public class KrawlService {
 
     /**
      * Increment view count for a krawl
-     *
-     * @param krawlId The UUID of the krawl
      */
     @Transactional
-    public void incrementViewCount(UUID krawlId) {
+    public void incrementViewCount(@NonNull UUID krawlId) {
         log.debug("Incrementing view count for krawlId: {}", krawlId);
         Krawl krawl = krawlRepository.findById(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
@@ -146,31 +135,11 @@ public class KrawlService {
         krawlRepository.save(krawl);
     }
 
-    /**
-     * Build rating breakdown (count per star rating)
-     */
-    private RatingBreakdownResponse buildRatingBreakdown(UUID krawlId) {
+    private RatingBreakdownResponse buildRatingBreakdown(@NonNull UUID krawlId) {
         List<Object[]> breakdownData = krawlRepository.getRatingBreakdown(krawlId);
-        RatingBreakdownResponse breakdown = new RatingBreakdownResponse();
-
-        // Initialize all star ratings with 0
-        for (int i = 1; i <= 5; i++) {
-            breakdown.setBreakdown(i, 0L);
-        }
-
-        // Fill in actual counts
-        for (Object[] row : breakdownData) {
-            Integer stars = (Integer) row[0];
-            Long count = (Long) row[1];
-            breakdown.setBreakdown(stars, count);
-        }
-
-        return breakdown;
+        return com.krawl.util.RatingBreakdownHelper.buildRatingBreakdown(breakdownData);
     }
 
-    /**
-     * Map KrawlGem entity to response DTO
-     */
     private KrawlGemResponse mapToGemResponse(KrawlGem krawlGem) {
         Gem gem = krawlGem.getGem();
         GemCoordinatesResponse coordinates = GemCoordinatesResponse.builder()
@@ -178,7 +147,6 @@ public class KrawlService {
                 .latitude(gem.getLatitude())
                 .build();
 
-        // Calculate gem rating from gem's ratings
         Double gemRating = gemRepository.calculateAverageRating(gem.getId());
 
         return KrawlGemResponse.builder()
@@ -195,9 +163,6 @@ public class KrawlService {
                 .build();
     }
 
-    /**
-     * Map KrawlVouch entity to response DTO
-     */
     private KrawlVouchResponse mapToVouchResponse(KrawlVouch vouch) {
         KrawlCreatorResponse user = KrawlCreatorResponse.builder()
                 .id(vouch.getUser().getId().toString())
@@ -215,47 +180,37 @@ public class KrawlService {
 
     /**
      * Create a new Krawl.
-     *
-     * @param request Create Krawl request
-     * @param userId User ID creating the Krawl
-     * @return Created Krawl ID
-     * @throws IllegalArgumentException if validation fails
      */
     @Transactional
-    public UUID createKrawl(CreateKrawlRequest request, UUID userId) {
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+    public UUID createKrawl(CreateKrawlRequest request, @NonNull UUID userId) {
         log.debug("Creating Krawl: {} for user: {}", request.getName(), userId);
 
-        // Validate minimum 2 Gems
         if (request.getGems() == null || request.getGems().size() < 2) {
             throw new IllegalArgumentException("At least 2 Gems are required");
         }
 
-        // Validate and fetch all Gems
         List<Gem> gems = new ArrayList<>();
         List<CreateKrawlRequest.GemInKrawlRequest> gemRequests = request.getGems();
         
         for (CreateKrawlRequest.GemInKrawlRequest gemRequest : gemRequests) {
             UUID gemId;
             try {
-                gemId = UUID.fromString(gemRequest.getGemId());
-            } catch (IllegalArgumentException e) {
+                gemId = Objects.requireNonNull(UUID.fromString(gemRequest.getGemId()));
+            } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid Gem ID format: " + gemRequest.getGemId());
             }
             
             Gem gem = gemRepository.findById(gemId)
                     .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
             
-            // Validate Gem is within Cebu City
             boundaryValidationService.validateBoundary(gem.getLatitude(), gem.getLongitude());
-            
             gems.add(gem);
         }
 
-        // Get user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        // Calculate route
         List<double[]> waypoints = gems.stream()
                 .map(gem -> new double[]{gem.getLongitude(), gem.getLatitude()})
                 .collect(Collectors.toList());
@@ -265,11 +220,9 @@ public class KrawlService {
             routeResult = mapboxService.calculateRoute(waypoints);
         } catch (Exception e) {
             log.error("Failed to calculate route", e);
-            // Create fallback route
-            routeResult = mapboxService.calculateRoute(waypoints); // Will use fallback
+            routeResult = mapboxService.calculateRoute(waypoints); 
         }
 
-        // Create Krawl entity
         Krawl krawl = Krawl.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -286,105 +239,74 @@ public class KrawlService {
                 .gems(new ArrayList<>())
                 .build();
 
-        krawl = krawlRepository.save(krawl);
+        Krawl savedKrawl = krawlRepository.save(krawl);
+        Objects.requireNonNull(savedKrawl, "Krawl save failed");
 
-        // Create KrawlGem junction records
         for (int i = 0; i < gems.size(); i++) {
             CreateKrawlRequest.GemInKrawlRequest gemRequest = gemRequests.get(i);
             KrawlGem krawlGem = KrawlGem.builder()
-                    .krawl(krawl)
+                    .krawl(savedKrawl)
                     .gem(gems.get(i))
                     .order(gemRequest.getSequenceOrder())
                     .creatorNote(gemRequest.getCreatorNote())
                     .lokalSecret(gemRequest.getLokalSecret())
                     .build();
-            krawl.getGems().add(krawlGem);
+            savedKrawl.getGems().add(krawlGem);
         }
 
-        krawl = krawlRepository.save(krawl);
-        log.info("Krawl created: {} for user: {}", krawl.getId(), userId);
+        savedKrawl = Objects.requireNonNull(krawlRepository.save(savedKrawl));
+        log.info("Krawl created: {} for user: {}", savedKrawl.getId(), userId);
 
-        return krawl.getId();
+        return savedKrawl.getId();
     }
 
     /**
      * Update an existing Krawl.
-     *
-     * @param krawlId Krawl ID
-     * @param request Update Krawl request
-     * @param userId User ID updating the Krawl
-     * @return Updated Krawl ID
-     * @throws ResourceNotFoundException if krawl not found
-     * @throws ForbiddenException if user doesn't own the krawl
      */
     @Transactional
-    public UUID updateKrawl(UUID krawlId, UpdateKrawlRequest request, UUID userId) {
+    public UUID updateKrawl(@NonNull UUID krawlId, UpdateKrawlRequest request, @NonNull UUID userId) {
         log.debug("Updating Krawl: {} for user: {}", krawlId, userId);
 
         Krawl krawl = krawlRepository.findById(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
 
-        // Check ownership
         if (!krawl.getCreatedBy().getId().equals(userId)) {
             throw new ForbiddenException("You can only update Krawls that you created");
         }
 
-        // Update fields if provided
-        if (request.getName() != null) {
-            krawl.setName(request.getName());
-        }
-        if (request.getDescription() != null) {
-            krawl.setDescription(request.getDescription());
-        }
-        if (request.getFullDescription() != null) {
-            krawl.setFullDescription(request.getFullDescription());
-        }
-        if (request.getCategory() != null) {
-            krawl.setCategory(request.getCategory());
-        }
-        if (request.getDifficulty() != null) {
-            krawl.setDifficulty(request.getDifficulty());
-        }
-        if (request.getCoverImage() != null) {
-            krawl.setCoverImage(request.getCoverImage());
-        }
-        if (request.getCoverImagePublicId() != null) {
-            krawl.setCloudinaryPublicId(request.getCoverImagePublicId());
-        }
-        if (request.getTags() != null) {
-            krawl.setTags(new ArrayList<>(request.getTags()));
-        }
+        if (request.getName() != null) krawl.setName(request.getName());
+        if (request.getDescription() != null) krawl.setDescription(request.getDescription());
+        if (request.getFullDescription() != null) krawl.setFullDescription(request.getFullDescription());
+        if (request.getCategory() != null) krawl.setCategory(request.getCategory());
+        if (request.getDifficulty() != null) krawl.setDifficulty(request.getDifficulty());
+        if (request.getCoverImage() != null) krawl.setCoverImage(request.getCoverImage());
+        if (request.getCoverImagePublicId() != null) krawl.setCloudinaryPublicId(request.getCoverImagePublicId());
+        if (request.getTags() != null) krawl.setTags(new ArrayList<>(request.getTags()));
 
-        // Update gems if provided
         if (request.getGems() != null) {
             if (request.getGems().size() < 2) {
                 throw new IllegalArgumentException("At least 2 Gems are required");
             }
 
-            // Delete existing KrawlGems
             krawlGemRepository.deleteByKrawlId(krawlId);
             krawl.getGems().clear();
 
-            // Validate and fetch all Gems
             List<Gem> gems = new ArrayList<>();
             for (UpdateKrawlRequest.GemInKrawlRequest gemRequest : request.getGems()) {
                 UUID gemId;
                 try {
-                    gemId = UUID.fromString(gemRequest.getGemId());
-                } catch (IllegalArgumentException e) {
+                    gemId = Objects.requireNonNull(UUID.fromString(gemRequest.getGemId()));
+                } catch (Exception e) {
                     throw new IllegalArgumentException("Invalid Gem ID format: " + gemRequest.getGemId());
                 }
                 
                 Gem gem = gemRepository.findById(gemId)
                         .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
                 
-                // Validate Gem is within Cebu City
                 boundaryValidationService.validateBoundary(gem.getLatitude(), gem.getLongitude());
-                
                 gems.add(gem);
             }
 
-            // Calculate route
             List<double[]> waypoints = gems.stream()
                     .map(gem -> new double[]{gem.getLongitude(), gem.getLatitude()})
                     .collect(Collectors.toList());
@@ -394,14 +316,13 @@ public class KrawlService {
                 routeResult = mapboxService.calculateRoute(waypoints);
             } catch (Exception e) {
                 log.error("Failed to calculate route", e);
-                routeResult = mapboxService.calculateRoute(waypoints); // Will use fallback
+                routeResult = mapboxService.calculateRoute(waypoints);
             }
 
             krawl.setEstimatedDurationMinutes(routeResult.getDurationMinutes());
             krawl.setEstimatedDistanceKm(routeResult.getDistanceKm());
             krawl.setRoutePolyline(routeResult.getPolyline());
 
-            // Create new KrawlGem junction records
             for (int i = 0; i < gems.size(); i++) {
                 UpdateKrawlRequest.GemInKrawlRequest gemRequest = request.getGems().get(i);
                 KrawlGem krawlGem = KrawlGem.builder()
@@ -415,124 +336,87 @@ public class KrawlService {
             }
         }
 
-        krawl = krawlRepository.save(krawl);
-        log.info("Krawl updated: {} for user: {}", krawlId, userId);
+        Krawl updatedKrawl = Objects.requireNonNull(krawlRepository.save(krawl));
+        log.info("Krawl updated: {} for user: {}", updatedKrawl.getId(), userId);
 
-        return krawl.getId();
+        return updatedKrawl.getId();
     }
 
     /**
      * Toggle vouch for a krawl
-     * If user has vouched, removes the vouch.
-     * If user hasn't vouched, creates a new vouch.
-     * Prevents users from vouching for their own krawls.
-     *
-     * @param krawlId The UUID of the krawl
-     * @param userId The UUID of the user
-     * @return Updated vouch count
-     * @throws ResourceNotFoundException if krawl or user not found
-     * @throws ForbiddenException if user tries to vouch for their own krawl
      */
     @Transactional
-    public Integer toggleVouch(UUID krawlId, UUID userId) {
+    public Integer toggleVouch(@NonNull UUID krawlId, @NonNull UUID userId) {
         log.debug("Toggling vouch for krawlId: {} by userId: {}", krawlId, userId);
 
-        // Verify krawl exists
         Krawl krawl = krawlRepository.findById(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
 
-        // Verify user exists
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        // 🚫 PREVENT SELF-VOUCHING
         if (krawl.getCreatedBy().getId().equals(userId)) {
             log.warn("User {} attempted to vouch for their own krawl {}", userId, krawlId);
             throw new ForbiddenException("You cannot vouch for your own krawl");
         }
 
-        // Check if user already vouched
         Optional<KrawlVouch> existingVouch = krawlVouchRepository.findByKrawlIdAndUserId(krawlId, userId);
 
         if (existingVouch.isPresent()) {
-            // Remove vouch
             log.debug("Removing existing vouch for krawlId: {} by userId: {}", krawlId, userId);
-            krawlVouchRepository.delete(existingVouch.get());
+            krawlVouchRepository.delete(Objects.requireNonNull(existingVouch.get()));
         } else {
-            // Create new vouch
             log.debug("Creating new vouch for krawlId: {} by userId: {}", krawlId, userId);
             KrawlVouch newVouch = KrawlVouch.builder()
                     .krawl(krawl)
                     .user(user)
                     .build();
-            krawlVouchRepository.save(newVouch);
+            krawlVouchRepository.save(Objects.requireNonNull(newVouch));
         }
 
-        // Return updated vouch count
         Integer vouchCount = krawlRepository.countVouchesByKrawlId(krawlId);
         log.debug("New vouch count for krawlId {}: {}", krawlId, vouchCount);
         return vouchCount;
     }
 
-    /**
-     * Check if a user has vouched for a krawl
-     *
-     * @param krawlId The UUID of the krawl
-     * @param userId The UUID of the user
-     * @return true if user has vouched, false otherwise
-     */
-    public boolean hasUserVouchedForKrawl(UUID krawlId, UUID userId) {
+    public boolean hasUserVouchedForKrawl(@NonNull UUID krawlId, @NonNull UUID userId) {
         return Boolean.TRUE.equals(krawlRepository.hasUserVouchedForKrawl(krawlId, userId));
     }
 
     /**
      * Create or update a rating for a krawl.
-     * If user has already rated, updates the existing rating.
-     * If user hasn't rated, creates a new rating.
-     *
-     * @param krawlId The UUID of the krawl
-     * @param userId The UUID of the user
-     * @param request The rating request containing rating value and optional comment
-     * @return CreateOrUpdateRatingResponse with updated statistics
-     * @throws ResourceNotFoundException if krawl or user not found
-     * @throws ForbiddenException if user attempts to rate their own krawl
      */
     @Transactional
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
     public CreateOrUpdateRatingResponse createOrUpdateRating(
-            UUID krawlId,
-            UUID userId,
+            @NonNull UUID krawlId,
+            @NonNull UUID userId,
             CreateOrUpdateRatingRequest request) {
         log.debug("Creating/updating rating for krawlId: {} by userId: {}", krawlId, userId);
 
-        // 1. Verify krawl exists
         Krawl krawl = krawlRepository.findById(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
 
-        // 2. 🚫 PREVENT SELF-RATING (same pattern as self-vouch prevention)
         if (krawl.getCreatedBy().getId().equals(userId)) {
             log.warn("User {} attempted to rate their own krawl {}", userId, krawlId);
             throw new ForbiddenException("You cannot rate your own krawl");
         }
 
-        // 3. Get user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        // 4. Check if rating already exists (UPSERT logic)
         Optional<KrawlRating> existingRating = krawlRatingRepository.findByKrawlIdAndUserId(krawlId, userId);
 
         KrawlRating rating;
         boolean isNewRating;
 
         if (existingRating.isPresent()) {
-            // UPDATE existing rating
             rating = existingRating.get();
             rating.setRating(request.getRating());
             rating.setComment(request.getComment());
             isNewRating = false;
             log.debug("Updating existing rating for krawlId: {} by userId: {}", krawlId, userId);
         } else {
-            // CREATE new rating
             rating = KrawlRating.builder()
                     .krawl(krawl)
                     .user(user)
@@ -543,16 +427,15 @@ public class KrawlService {
             log.debug("Creating new rating for krawlId: {} by userId: {}", krawlId, userId);
         }
 
-        rating = krawlRatingRepository.save(rating);
+        KrawlRating savedRating = krawlRatingRepository.save(rating);
+        rating = Objects.requireNonNull(savedRating, "Rating save failed");
 
-        // 5. Calculate new statistics
         Double newAverageRating = krawlRepository.calculateAverageRating(krawlId);
         Long totalRatings = krawlRepository.countRatingsByKrawlId(krawlId);
 
         log.info("Rating {} for krawlId: {} by userId: {}. New average: {}, Total: {}",
                 isNewRating ? "created" : "updated", krawlId, userId, newAverageRating, totalRatings);
 
-        // 6. Build response
         return CreateOrUpdateRatingResponse.builder()
                 .id(rating.getId().toString())
                 .rating(rating.getRating())
@@ -563,29 +446,14 @@ public class KrawlService {
                 .build();
     }
 
-    /**
-     * Get the current user's rating for a krawl
-     *
-     * @param krawlId The UUID of the krawl
-     * @param userId The UUID of the user
-     * @return Optional containing RatingResponse if user has rated, empty otherwise
-     */
     @Transactional(readOnly = true)
-    public Optional<RatingResponse> getUserRatingForKrawl(UUID krawlId, UUID userId) {
+    public Optional<RatingResponse> getUserRatingForKrawl(@NonNull UUID krawlId, @NonNull UUID userId) {
         return krawlRatingRepository.findByKrawlIdAndUserId(krawlId, userId)
                 .map(this::mapToRatingResponse);
     }
 
-    /**
-     * Get all ratings for a krawl
-     *
-     * @param krawlId The UUID of the krawl
-     * @return List of all ratings for the krawl
-     * @throws ResourceNotFoundException if krawl not found
-     */
     @Transactional(readOnly = true)
-    public List<RatingResponse> getAllRatingsForKrawl(UUID krawlId) {
-        // Verify krawl exists
+    public List<RatingResponse> getAllRatingsForKrawl(@NonNull UUID krawlId) {
         krawlRepository.findById(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
 
@@ -595,12 +463,6 @@ public class KrawlService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Helper method to map KrawlRating entity to RatingResponse DTO
-     *
-     * @param rating The KrawlRating entity
-     * @return RatingResponse DTO
-     */
     private RatingResponse mapToRatingResponse(KrawlRating rating) {
         GemCreatorResponse user = GemCreatorResponse.builder()
                 .id(rating.getUser().getId().toString())
@@ -620,28 +482,17 @@ public class KrawlService {
 
     // ==================== COMMENT METHODS ====================
 
-    /**
-     * Create a comment on a krawl
-     *
-     * @param krawlId The UUID of the krawl
-     * @param userId The UUID of the user
-     * @param request The comment creation request
-     * @return CommentResponse with created comment
-     * @throws ResourceNotFoundException if krawl or user not found
-     */
     @Transactional
-    public CommentResponse createComment(UUID krawlId, UUID userId, CreateCommentRequest request) {
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+    public CommentResponse createComment(@NonNull UUID krawlId, @NonNull UUID userId, CreateCommentRequest request) {
         log.debug("Creating comment on krawlId: {} by userId: {}", krawlId, userId);
 
-        // Verify krawl exists
         Krawl krawl = krawlRepository.findById(krawlId)
                 .orElseThrow(() -> new ResourceNotFoundException("Krawl", "id", krawlId));
 
-        // Get user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        // Create comment (no self-comment restriction for comments, unlike ratings)
         KrawlComment comment = KrawlComment.builder()
                 .krawl(krawl)
                 .user(user)
@@ -649,33 +500,23 @@ public class KrawlService {
                 .build();
 
         KrawlComment savedComment = krawlCommentRepository.save(comment);
+        Objects.requireNonNull(savedComment, "Comment save failed");
         log.info("Comment created with id: {} on krawlId: {} by userId: {}",
                 savedComment.getId(), krawlId, userId);
 
         return mapToCommentResponse(savedComment);
     }
 
-    /**
-     * Get paginated comments for a krawl
-     *
-     * @param krawlId The UUID of the krawl
-     * @param page Page number (0-indexed)
-     * @param size Page size (max 100)
-     * @return CommentPageResponse with paginated comments
-     * @throws ResourceNotFoundException if krawl not found
-     */
     @Transactional(readOnly = true)
-    public CommentPageResponse getComments(UUID krawlId, int page, int size) {
+    public CommentPageResponse getComments(@NonNull UUID krawlId, int page, int size) {
         log.debug("Fetching comments for krawlId: {}, page: {}, size: {}", krawlId, page, size);
 
-        // Verify krawl exists
         if (!krawlRepository.existsById(krawlId)) {
             throw new ResourceNotFoundException("Krawl", "id", krawlId);
         }
 
-        // Validate page parameters
         if (page < 0) page = 0;
-        if (size < 1 || size > 100) size = 20; // Max 100, default 20
+        if (size < 1 || size > 100) size = 20;
 
         Pageable pageable = PageRequest.of(page, size);
         Page<KrawlComment> commentPage = krawlCommentRepository.findByKrawlIdOrderByCreatedAtDesc(krawlId, pageable);
@@ -693,57 +534,32 @@ public class KrawlService {
                 .build();
     }
 
-    /**
-     * Update a comment (owner only)
-     *
-     * @param commentId The UUID of the comment
-     * @param userId The UUID of the user
-     * @param request The comment update request
-     * @return CommentResponse with updated comment
-     * @throws ForbiddenException if user is not the comment owner
-     */
     @Transactional
-    public CommentResponse updateComment(UUID commentId, UUID userId, UpdateCommentRequest request) {
+    public CommentResponse updateComment(@NonNull UUID commentId, @NonNull UUID userId, UpdateCommentRequest request) {
         log.debug("Updating commentId: {} by userId: {}", commentId, userId);
 
-        // Find comment and verify ownership
         KrawlComment comment = krawlCommentRepository.findByIdAndUserId(commentId, userId)
                 .orElseThrow(() -> new ForbiddenException("You can only edit your own comments"));
 
-        // Update content
         comment.setContent(request.getContent().trim());
-        KrawlComment updatedComment = krawlCommentRepository.save(comment);
+        KrawlComment updatedComment = Objects.requireNonNull(krawlCommentRepository.save(comment));
 
         log.info("Comment updated: {} by userId: {}", commentId, userId);
 
         return mapToCommentResponse(updatedComment);
     }
 
-    /**
-     * Delete a comment (owner only)
-     *
-     * @param commentId The UUID of the comment
-     * @param userId The UUID of the user
-     * @throws ForbiddenException if user is not the comment owner
-     */
     @Transactional
-    public void deleteComment(UUID commentId, UUID userId) {
+    public void deleteComment(@NonNull UUID commentId, @NonNull UUID userId) {
         log.debug("Deleting commentId: {} by userId: {}", commentId, userId);
 
-        // Find comment and verify ownership
         KrawlComment comment = krawlCommentRepository.findByIdAndUserId(commentId, userId)
                 .orElseThrow(() -> new ForbiddenException("You can only delete your own comments"));
 
-        krawlCommentRepository.delete(comment);
+        krawlCommentRepository.delete(Objects.requireNonNull(comment));
         log.info("Comment deleted: {} by userId: {}", commentId, userId);
     }
 
-    /**
-     * Helper method to map KrawlComment entity to CommentResponse DTO
-     *
-     * @param comment The KrawlComment entity
-     * @return CommentResponse DTO
-     */
     private CommentResponse mapToCommentResponse(KrawlComment comment) {
         GemCreatorResponse userResponse = GemCreatorResponse.builder()
                 .id(comment.getUser().getId().toString())
@@ -763,5 +579,3 @@ public class KrawlService {
                 .build();
     }
 }
-
-

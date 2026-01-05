@@ -8,11 +8,11 @@ import lombok.Data;
 @Schema(description = "Request to update location during Krawl Mode")
 public class LocationUpdateRequest {
 
-    @Schema(description = "Latitude coordinate", example = "10.3157", required = true)
+    @Schema(description = "Latitude coordinate", example = "10.3157", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Latitude is required")
     private Double latitude;
 
-    @Schema(description = "Longitude coordinate", example = "123.8854", required = true)
+    @Schema(description = "Longitude coordinate", example = "123.8854", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Longitude is required")
     private Double longitude;
 
@@ -25,4 +25,5 @@ public class LocationUpdateRequest {
     @Schema(description = "Speed in meters per second", example = "1.2")
     private Double speed;
 }
+
 

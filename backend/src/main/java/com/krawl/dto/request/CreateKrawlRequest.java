@@ -12,7 +12,7 @@ import java.util.List;
 @Schema(description = "Request to create a new Krawl")
 public class CreateKrawlRequest {
 
-    @Schema(description = "Name of the Krawl (3-255 characters)", example = "Historic Downtown Walk", required = true)
+    @Schema(description = "Name of the Krawl (3-255 characters)", example = "Historic Downtown Walk", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String name;
@@ -40,7 +40,7 @@ public class CreateKrawlRequest {
     @Size(max = 255, message = "Cloudinary public ID must not exceed 255 characters")
     private String coverImagePublicId;
 
-    @Schema(description = "List of Gems with order, creator note, and lokal secret", required = true)
+    @Schema(description = "List of Gems with order, creator note, and lokal secret", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Gems are required")
     @Size(min = 2, message = "At least 2 Gems are required")
     @Valid
@@ -52,23 +52,23 @@ public class CreateKrawlRequest {
     @Data
     @Schema(description = "Gem information for Krawl creation")
     public static class GemInKrawlRequest {
-        @Schema(description = "Gem ID", example = "123e4567-e89b-12d3-a456-426614174000", required = true)
+        @Schema(description = "Gem ID", example = "123e4567-e89b-12d3-a456-426614174000", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Gem ID is required")
         private String gemId;
 
-        @Schema(description = "Sequence order in the Krawl (1-based)", example = "1", required = true)
+        @Schema(description = "Sequence order in the Krawl (1-based)", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Sequence order is required")
         @Min(value = 1, message = "Sequence order must be at least 1")
         private Integer sequenceOrder;
 
         @Schema(description = "Creator Note - Practical logistics information (10-500 characters)", 
-                example = "Walk through the yellow gate", required = true)
+                example = "Walk through the yellow gate", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Creator Note is required")
         @Size(min = 10, max = 500, message = "Creator Note must be between 10 and 500 characters")
         private String creatorNote;
 
         @Schema(description = "Lokal Secret - Insider tip (10-500 characters)", 
-                example = "Ask for the off-menu spicy vinegar", required = true)
+                example = "Ask for the off-menu spicy vinegar", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Lokal Secret is required")
         @Size(min = 10, max = 500, message = "Lokal Secret must be between 10 and 500 characters")
         private String lokalSecret;

@@ -8,6 +8,7 @@ import com.krawl.entity.*;
 import com.krawl.exception.AuthException;
 import com.krawl.exception.ResourceNotFoundException;
 import com.krawl.repository.*;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -39,7 +41,8 @@ public class KrawlModeService {
      * @throws AuthException if user not found
      */
     @Transactional
-    public KrawlSessionResponse startSession(UUID krawlId, UUID userId) {
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+    public KrawlSessionResponse startSession(@NonNull UUID krawlId, @NonNull UUID userId) {
         log.debug("Starting Krawl Mode session for krawlId: {}, userId: {}", krawlId, userId);
 
         // Validate krawl exists
@@ -65,7 +68,9 @@ public class KrawlModeService {
                 .totalDistanceMeters(0.0)
                 .build();
 
-        session = krawlSessionRepository.save(session);
+        // JPA save() is guaranteed to return non-null per specification
+        KrawlSession savedSession = krawlSessionRepository.save(session);
+        session = Objects.requireNonNull(savedSession, "Session save failed");
         log.info("Created Krawl Mode session: {}", session.getId());
 
         return buildSessionResponse(session);
@@ -79,7 +84,7 @@ public class KrawlModeService {
      * @return KrawlSessionResponse with updated session information
      */
     @Transactional
-    public KrawlSessionResponse stopSession(UUID krawlId, UUID userId) {
+    public KrawlSessionResponse stopSession(@NonNull UUID krawlId, @NonNull UUID userId) {
         log.debug("Stopping Krawl Mode session for krawlId: {}, userId: {}", krawlId, userId);
 
         KrawlSession session = krawlSessionRepository.findActiveSessionByKrawlAndUser(krawlId, userId)
@@ -100,7 +105,7 @@ public class KrawlModeService {
      * @return KrawlSessionResponse with session information
      */
     @Transactional(readOnly = true)
-    public KrawlSessionResponse getSession(UUID krawlId, UUID userId) {
+    public KrawlSessionResponse getSession(@NonNull UUID krawlId, @NonNull UUID userId) {
         log.debug("Getting Krawl Mode session for krawlId: {}, userId: {}", krawlId, userId);
 
         KrawlSession session = krawlSessionRepository.findActiveSessionByKrawlAndUser(krawlId, userId)
@@ -118,7 +123,7 @@ public class KrawlModeService {
      * @return KrawlSessionResponse with updated session information
      */
     @Transactional
-    public KrawlSessionResponse updateProgress(UUID krawlId, UUID userId, UpdateProgressRequest request) {
+    public KrawlSessionResponse updateProgress(@NonNull UUID krawlId, @NonNull UUID userId, @NonNull UpdateProgressRequest request) {
         log.debug("Updating progress for krawlId: {}, userId: {}", krawlId, userId);
 
         KrawlSession session = krawlSessionRepository.findActiveSessionByKrawlAndUser(krawlId, userId)
@@ -141,19 +146,21 @@ public class KrawlModeService {
      * @return KrawlProgressResponse with updated progress
      */
     @Transactional
-    public KrawlProgressResponse completeGem(UUID krawlId, UUID userId, CompleteGemRequest request) {
+    @SuppressWarnings("null") // JPA save() is guaranteed to return non-null per specification
+    public KrawlProgressResponse completeGem(@NonNull UUID krawlId, @NonNull UUID userId, @NonNull CompleteGemRequest request) {
         log.debug("Completing gem {} for krawlId: {}, userId: {}", request.getGemId(), krawlId, userId);
 
         KrawlSession session = krawlSessionRepository.findActiveSessionByKrawlAndUser(krawlId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Active session", "krawlId and userId", krawlId + "/" + userId));
 
         // Validate gem exists
-        Gem gem = gemRepository.findById(request.getGemId())
-                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", request.getGemId()));
+        UUID gemId = Objects.requireNonNull(request.getGemId(), "Gem ID is required");
+        Gem gem = gemRepository.findById(gemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gem", "id", gemId));
 
         // Check if gem is already completed
-        if (krawlProgressRepository.existsBySessionIdAndGemId(session.getId(), request.getGemId())) {
-            log.debug("Gem {} already completed in session {}", request.getGemId(), session.getId());
+        if (krawlProgressRepository.existsBySessionIdAndGemId(session.getId(), gemId)) {
+            log.debug("Gem {} already completed in session {}", gemId, session.getId());
         } else {
             // Create progress entry
             KrawlProgress.ArrivalMethod arrivalMethod = "MANUAL".equals(request.getArrivalMethod())
@@ -167,8 +174,10 @@ public class KrawlModeService {
                     .arrivalMethod(arrivalMethod)
                     .build();
 
-            krawlProgressRepository.save(progress);
-            log.info("Marked gem {} as completed in session {}", request.getGemId(), session.getId());
+            // JPA save() is guaranteed to return non-null per specification
+            KrawlProgress savedProgress = krawlProgressRepository.save(progress);
+            Objects.requireNonNull(savedProgress, "Progress save failed");
+            log.info("Marked gem {} as completed in session {}", gemId, session.getId());
         }
 
         // Check if all gems are completed
@@ -193,7 +202,7 @@ public class KrawlModeService {
      * @return KrawlProgressResponse with progress information
      */
     @Transactional(readOnly = true)
-    public KrawlProgressResponse getProgress(UUID krawlId, UUID userId) {
+    public KrawlProgressResponse getProgress(@NonNull UUID krawlId, @NonNull UUID userId) {
         log.debug("Getting progress for krawlId: {}, userId: {}", krawlId, userId);
 
         KrawlSession session = krawlSessionRepository.findActiveSessionByKrawlAndUser(krawlId, userId)

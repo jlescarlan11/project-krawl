@@ -1,5 +1,6 @@
 package com.krawl.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class DuplicateCheckResponse {
 
     @Schema(description = "Whether a duplicate was found", example = "true")
+    @JsonProperty("isDuplicate")
     private boolean isDuplicate;
 
     @Schema(description = "Details of the existing Gem if duplicate found")

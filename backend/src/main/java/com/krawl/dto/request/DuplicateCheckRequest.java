@@ -11,12 +11,12 @@ import lombok.Data;
 @Schema(description = "Request to check for duplicate Gems")
 public class DuplicateCheckRequest {
 
-    @Schema(description = "Name of the Gem to check", example = "Basilica del Santo Niño", required = true)
+    @Schema(description = "Name of the Gem to check", example = "Basilica del Santo Niño", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String name;
 
-    @Schema(description = "Coordinates of the Gem location", required = true)
+    @Schema(description = "Coordinates of the Gem location", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Coordinates are required")
     @Valid
     private Coordinates coordinates;
@@ -24,11 +24,11 @@ public class DuplicateCheckRequest {
     @Data
     @Schema(description = "Geographic coordinates")
     public static class Coordinates {
-        @Schema(description = "Latitude (-90 to 90)", example = "10.3157", required = true)
+        @Schema(description = "Latitude (-90 to 90)", example = "10.3157", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Latitude is required")
         private Double latitude;
 
-        @Schema(description = "Longitude (-180 to 180)", example = "123.8854", required = true)
+        @Schema(description = "Longitude (-180 to 180)", example = "123.8854", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Longitude is required")
         private Double longitude;
     }

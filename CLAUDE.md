@@ -53,21 +53,44 @@ npm run test:coverage    # Generate test coverage report
 
 ```bash
 # Development
-./mvnw spring-boot:run   # Start backend server (http://localhost:8080)
+./mvnw spring-boot:run   # Start backend server (http://localhost:8080) - Linux/Mac
+mvnw.cmd spring-boot:run # Start backend server - Windows
 
 # Building
-./mvnw clean install     # Clean and build the project
-./mvnw package           # Package the application
+./mvnw clean install     # Clean and build the project - Linux/Mac
+mvnw.cmd clean install   # Clean and build the project - Windows
+./mvnw package           # Package the application - Linux/Mac
+mvnw.cmd package         # Package the application - Windows
 
 # Testing
-./mvnw test              # Run all tests
-./mvnw test -Dtest=ClassName  # Run a single test class
-./mvnw test -Dtest=ClassName#methodName  # Run a single test method
+./mvnw test              # Run all tests - Linux/Mac
+mvnw.cmd test            # Run all tests - Windows
+./mvnw test -Dtest=ClassName  # Run a single test class - Linux/Mac
+mvnw.cmd test -Dtest=ClassName  # Run a single test class - Windows
+./mvnw test -Dtest=ClassName#methodName  # Run a single test method - Linux/Mac
+mvnw.cmd test -Dtest=ClassName#methodName  # Run a single test method - Windows
 
 # Database
 # Flyway migrations run automatically on startup
-./mvnw flyway:info       # Show migration status
-./mvnw flyway:validate   # Validate migrations
+./mvnw flyway:info       # Show migration status - Linux/Mac
+mvnw.cmd flyway:info     # Show migration status - Windows
+./mvnw flyway:validate   # Validate migrations - Linux/Mac
+mvnw.cmd flyway:validate # Validate migrations - Windows
+```
+
+### E2E Testing (from `e2e/` directory)
+
+```bash
+# Run E2E tests with Playwright
+npm test                 # Run all E2E tests (auto-starts frontend & backend)
+npm run test:ui          # Run tests with Playwright UI
+npm run test:debug       # Run tests in debug mode
+npm run test:headed      # Run tests with browser visible
+npm run test:chromium    # Run tests only in Chromium
+npm run test:firefox     # Run tests only in Firefox
+npm run test:webkit      # Run tests only in WebKit (Safari)
+npm run test:mobile      # Run tests on mobile emulators (iPhone 13, Pixel 5)
+npm run report           # Show test report from last run
 ```
 
 ## Architecture
@@ -80,6 +103,7 @@ com.krawl/
 ├── config/              # Configuration classes (CORS, Security, OpenAPI, WebClient, Async)
 ├── constants/           # Constant values (GemCategory, Landing)
 ├── controller/          # REST API controllers
+│   └── BaseController   # Shared auth/utility methods - extend this for new controllers
 ├── dto/                 # Data Transfer Objects
 │   ├── request/         # Request DTOs
 │   └── response/        # Response DTOs
@@ -92,20 +116,27 @@ com.krawl/
 
 **Key Components:**
 
-1. **Authentication Flow:**
+1. **BaseController Pattern:**
+   - All controllers extend `BaseController` for standardized authentication
+   - Use `getCurrentUserId()` for optional auth (returns null if not authenticated)
+   - Use `requireCurrentUserId()` for required auth (throws AuthException)
+   - Use `parseUUID(id, entityName)` for consistent UUID validation
+   - Never duplicate auth logic - always use inherited methods
+
+2. **Authentication Flow:**
    - Frontend obtains Google OAuth token via NextAuth.js
    - Frontend exchanges Google token for backend JWT via `/api/auth/google` endpoint
    - Backend validates Google token with Google's API
    - Backend returns JWT (access token) + refresh token
    - JWT stored in httpOnly cookies for security
 
-2. **Database Migrations:**
+3. **Database Migrations:**
    - Flyway handles schema changes automatically
    - Migration files: `backend/src/main/resources/db/migration/V{version}__{description}.sql`
    - Migrations run on application startup in sequential order
    - Never modify existing migration files; create new ones for changes
 
-3. **API Documentation:**
+4. **API Documentation:**
    - Swagger UI available at: `http://localhost:8080/swagger-ui.html`
    - OpenAPI spec at: `http://localhost:8080/v3/api-docs`
    - Use Swagger annotations for documenting endpoints
@@ -169,25 +200,49 @@ frontend/
    - Token refresh handled automatically via `lib/token-refresh.ts`
    - Session expiration and multi-tab sync via `lib/session-utils.ts`
 
-2. **Protected Routes:**
-   - Route protection defined in `lib/routes.ts` via `requiresAuth` flag
+2. **Route Constants:**
+   - All routes centralized in `lib/routes.ts` as `ROUTES` constant
+   - Use route functions for dynamic paths: `ROUTES.GEM_DETAIL(id)` not string templates
+   - Never hardcode routes in components - always import from `lib/routes.ts`
+   - Route metadata in `ROUTE_METADATA` defines labels, icons, and auth requirements
+
+3. **Protected Routes:**
+   - Route protection defined in `PROTECTED_ROUTES` array in `lib/routes.ts`
    - `ProtectedRoute` component wraps protected pages
    - Redirects to sign-in with return URL preservation
+   - Use `requiresAuthentication(pathname)` to check if route needs auth
 
-3. **State Management:**
+4. **State Management:**
    - Use Zustand stores for global state (auth, map, UI, creation flows)
    - Stores use `persist` middleware for localStorage persistence
    - Each store has typed actions and selectors
 
-4. **Design Tokens:**
+5. **Design Tokens:**
    - CSS custom properties in `app/globals.css` using Tailwind v4 `@theme`
    - TypeScript exports in `lib/design-tokens.ts` for programmatic access
    - Breakpoints: mobile (<768px), tablet (768-1023px), desktop (≥1024px)
 
-5. **API Communication:**
+6. **API Communication:**
    - Fetch API with error handling via `lib/api-error-handler.ts`
    - JWT token automatically sent in httpOnly cookies
    - Backend API base URL: `process.env.NEXT_PUBLIC_API_URL` (default: http://localhost:8080)
+
+7. **Offline-First Architecture (PWA):**
+   - Service Worker registered at app startup (`public/sw.js`)
+   - IndexedDB for offline data storage (14 utility files in `lib/offline/`)
+   - Offline data schema: `lib/offline/schemas.ts` with versioned migrations
+   - Downloadable krawls with map tiles for offline exploration
+   - Background sync queue for changes made while offline
+   - Auto-upload service syncs data when connectivity restored
+   - Offline map fallback with cached Mapbox tiles
+
+8. **Krawl Mode (Interactive Location Tracking):**
+   - GPS-based location tracking during active krawl sessions
+   - Geofencing to detect gem arrivals (30m radius)
+   - Real-time progress updates stored in `krawl_progress` table
+   - Location history recorded in `krawl_location_history` for route playback
+   - Battery-aware tracking with configurable update intervals
+   - Completion statistics and achievements
 
 ## Database Schema
 
@@ -203,8 +258,13 @@ The database uses PostgreSQL with PostGIS extension for geospatial features.
 - `krawl_gems` - Junction table for krawl stops with ordering
 - `krawl_drafts` - Draft krawls before approval
 - `krawl_ratings` - User ratings for krawls
+- `krawl_sessions` - Active krawl mode sessions
+- `krawl_progress` - User progress through krawls
+- `krawl_location_history` - GPS tracking during krawl mode
 - `gem_comments` - Comments on gems
 - `krawl_comments` - Comments on krawls
+- `reports` - User-submitted content reports for moderation
+- `saved_krawls` - User-saved krawls for later
 - `revoked_tokens` - JWT token revocation for sign-out
 
 **Important Constraints:**
@@ -213,15 +273,61 @@ The database uses PostgreSQL with PostGIS extension for geospatial features.
 - Photos stored in Cloudinary with `cloudinary_public_id`
 - Geospatial queries use PostGIS `geography` type
 
+## Key Architectural Patterns
+
+### Next.js API Routes as Backend Proxy
+- All frontend API calls go through Next.js API routes (`app/api/*/route.ts`)
+- API routes forward requests to Spring Boot backend with JWT cookies
+- This pattern solves CORS issues and centralizes auth token handling
+- Never call Spring Boot backend directly from client-side code
+
+### IndexedDB Offline Storage Schema
+The offline system uses a structured IndexedDB schema with versioned migrations:
+- **downloadedKrawls** - Full krawl data for offline access
+- **syncQueue** - Pending changes to sync when online
+- **drafts** - Locally created gems/krawls before upload
+- **mapTiles** - Cached Mapbox tiles for offline maps
+- **userSettings** - Offline-accessible user preferences
+
+Migrations managed in `lib/offline/migrations.ts` - follow pattern when adding new stores.
+
+### Multi-Tab Session Synchronization
+- Session state synced across browser tabs via `BroadcastChannel`
+- Implemented in `lib/session-utils.ts`
+- Prevents auth state desync when user signs out in one tab
+- Critical for PWA installability and multi-window usage
+
+### Guest Mode System
+- Unauthenticated users can browse and interact with limited features
+- Guest-created content saved in localStorage until upgrade
+- Upon sign-in, guest data migrated to authenticated user account
+- See `lib/guest-mode.ts` and `hooks/useGuestMode.ts`
+
+### Krawl Creation Multi-Step Form
+- 3-step wizard: Basic Info → Gem Selection → Review
+- State managed via Zustand store (`stores/krawl-creation-store.ts`)
+- Drag-and-drop gem reordering with @dnd-kit
+- Draft auto-save every 30 seconds
+- Validates 2-12 gems minimum/maximum
+
+### Gem Creation Multi-Step Form
+- 5-step wizard: Basic Info → Location → Media → Additional Details → Preview
+- State managed via Zustand store (`stores/gem-creation-store.ts`)
+- Photos uploaded to Cloudinary with progress tracking
+- Duplicate detection using coordinate proximity (100m radius)
+- Draft auto-save with resume capability
+
 ## Common Development Tasks
 
 ### Adding a New API Endpoint
 
 1. Create request/response DTOs in `backend/src/main/java/com/krawl/dto/`
-2. Add controller method in appropriate controller with Swagger annotations
-3. Implement service layer logic in `service/` package
-4. Add repository method if database access needed
-5. Test endpoint via Swagger UI at `http://localhost:8080/swagger-ui.html`
+2. Add controller method in appropriate controller (must extend `BaseController`)
+3. Use `getCurrentUserId()` or `requireCurrentUserId()` from BaseController for auth
+4. Add Swagger annotations (`@Operation`, `@ApiResponses`, `@Parameter`)
+5. Implement service layer logic in `service/` package
+6. Add repository method if database access needed
+7. Test endpoint via Swagger UI at `http://localhost:8080/swagger-ui.html`
 
 ### Adding a Database Migration
 
@@ -299,6 +405,13 @@ BREVO_API_KEY=<your-brevo-api-key>
 - Repository tests: Test database queries with test database
 - Service tests: Mock repositories, test business logic
 
+**E2E Testing:**
+- Playwright with 6 browser configurations (Chrome, Firefox, Safari, Edge, iPhone 13, Pixel 5)
+- Playwright auto-starts both frontend (port 3000) and backend (port 8080)
+- Tests located in `e2e/tests/`
+- Accessibility testing with @axe-core/playwright
+- Global setup in `e2e/global-setup.ts` for fixtures and test data
+
 ## Common Pitfalls
 
 1. **Authentication:**
@@ -325,6 +438,19 @@ BREVO_API_KEY=<your-brevo-api-key>
    - Images uploaded to Cloudinary, store `cloudinary_public_id` in database
    - Validate file types and sizes on both frontend and backend
    - Handle upload failures gracefully with user feedback
+
+6. **Offline/PWA:**
+   - Service Worker updates require cache busting - increment version in `sw.js`
+   - IndexedDB operations are asynchronous - always await or handle promises
+   - Map tiles can consume significant storage - monitor quota usage
+   - Background sync only works in HTTPS (localhost exception)
+   - Test offline functionality with DevTools Network throttling
+
+7. **Geospatial:**
+   - Always validate coordinates are within Cebu City bounds before saving
+   - PostGIS distance queries use meters (not degrees)
+   - Geofencing radius for krawl mode: 30 meters
+   - Use `ST_DWithin` for proximity queries (more efficient than `ST_Distance`)
 
 ## Project Documentation
 
@@ -353,9 +479,23 @@ Key documentation files:
 - Use `cn()` from `lib/utils.ts` for className merging
 - Prefer server components unless interactivity needed
 - Use `'use client'` directive only when necessary
+- **NEVER use `any` type in TypeScript** - Always use proper types, `unknown`, or generics instead
+- **Package patches:** If you need to patch a node_module, use `patch-package` (configured via postinstall hook). Patches stored in `frontend/patches/`
 
 **General:**
 - Write self-documenting code with clear variable names
 - Keep functions small and focused (single responsibility)
 - Handle errors explicitly (don't swallow exceptions)
 - Write tests for complex business logic
+
+## Git Workflow
+
+**Branch Strategy:**
+- Main branch: `main` - production-ready code
+- Feature branches: `{feature_name}` (e.g., `add_offline_feature`, `implement_krawl_mode_frontend`)
+- Create pull requests targeting `main` branch
+
+**Current Development:**
+- Working on offline features and krawl mode
+- Multiple modified files awaiting commit (see git status)
+- Use descriptive commit messages following conventional commits format

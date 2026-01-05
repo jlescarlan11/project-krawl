@@ -151,4 +151,31 @@ public interface GemRepository extends JpaRepository<Gem, UUID> {
      * Find gems created by a user, ordered by creation date
      */
     org.springframework.data.domain.Page<Gem> findByCreatedByIdOrderByCreatedAtDesc(UUID userId, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Find popular Gems ordered by Gem Score: (vouches × 1) + (krawl_inclusions × 5)
+     * Only returns VERIFIED gems.
+     * 
+     * @param limit Maximum number of results
+     * @return List of Gems with their gem scores
+     */
+    @Query(value = """
+            SELECT g.*, 
+                   (COALESCE(v.vouch_count, 0) * 1 + COALESCE(kg.krawl_count, 0) * 5) as gem_score
+            FROM gems g
+            LEFT JOIN (
+                SELECT gem_id, COUNT(*) as vouch_count
+                FROM vouches
+                GROUP BY gem_id
+            ) v ON g.id = v.gem_id
+            LEFT JOIN (
+                SELECT gem_id, COUNT(DISTINCT krawl_id) as krawl_count
+                FROM krawl_gems
+                GROUP BY gem_id
+            ) kg ON g.id = kg.gem_id
+            WHERE g.status = 'VERIFIED'
+            ORDER BY gem_score DESC, g.view_count DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Object[]> findPopularGems(@Param("limit") int limit);
 }

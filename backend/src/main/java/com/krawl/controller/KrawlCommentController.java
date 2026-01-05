@@ -18,9 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -30,7 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Krawl Comments", description = "API endpoints for managing comments on Krawls")
-public class KrawlCommentController {
+public class KrawlCommentController extends BaseController {
 
     private final KrawlService krawlService;
 
@@ -172,30 +169,5 @@ public class KrawlCommentController {
         return ResponseEntity.noContent().build();
     }
 
-    // Helper methods
-    private UUID parseUUID(String id, String resourceName) {
-        try {
-            return UUID.fromString(id);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid UUID format: {}", id);
-            throw new IllegalArgumentException("Invalid " + resourceName + " ID format. Must be a valid UUID.");
-        }
-    }
-
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication and UUID parsing methods inherited from BaseController
 }

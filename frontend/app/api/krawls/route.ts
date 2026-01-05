@@ -1,7 +1,7 @@
 "use server";
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/nextauth";
 import type { MapKrawl } from "@/components/map/krawl-types";
 import type { CreateKrawlRequest } from "@/lib/api/krawls";
 
@@ -16,13 +16,27 @@ export async function GET() {
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     
-    const backendResponse = await fetch(`${API_URL}/api/landing/featured-krawls?limit=10`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store", // Always fetch fresh data
-    });
+    let backendResponse: Response;
+    try {
+      backendResponse = await fetch(`${API_URL}/api/landing/featured-krawls?limit=10`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store", // Always fetch fresh data
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      });
+    } catch (error: any) {
+      // Handle ECONNREFUSED, ECONNRESET, and other network errors
+      if (error?.code === "ECONNREFUSED" || error?.code === "ECONNRESET" || error?.name === "AbortError") {
+        console.warn(`[GET /api/krawls] Backend unavailable: ${error.message || error}`);
+        return NextResponse.json({
+          krawls: [],
+          total: 0,
+        });
+      }
+      throw error; // Re-throw unexpected errors
+    }
 
     if (!backendResponse.ok) {
       console.error(`[GET /api/krawls] Backend returned ${backendResponse.status}`);

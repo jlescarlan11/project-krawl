@@ -28,3 +28,9 @@ WHERE search_vector IS NULL;
 
 
 
+
+
+
+
+
+

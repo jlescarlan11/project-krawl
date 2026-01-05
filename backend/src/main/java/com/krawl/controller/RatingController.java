@@ -3,6 +3,7 @@ package com.krawl.controller;
 import com.krawl.dto.request.CreateOrUpdateRatingRequest;
 import com.krawl.dto.response.CreateOrUpdateRatingResponse;
 import com.krawl.dto.response.RatingResponse;
+import com.krawl.exception.AuthException;
 import com.krawl.service.GemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,7 +36,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Ratings", description = "API endpoints for managing ratings on Gems")
-public class RatingController {
+public class RatingController extends BaseController {
 
     private final GemService gemService;
 
@@ -112,7 +113,7 @@ public class RatingController {
         // Get current user ID (required for rating)
         UUID userId = getCurrentUserId();
         if (userId == null) {
-            throw new IllegalStateException("Authentication required to rate a gem");
+            throw new AuthException("Authentication required to rate a gem", HttpStatus.UNAUTHORIZED);
         }
 
         log.debug("Creating/updating rating for gemId: {} by userId: {}", gemUuid, userId);
@@ -259,20 +260,5 @@ public class RatingController {
      *
      * @return UUID of current user, or null if not authenticated
      */
-    private UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return UUID.fromString(userDetails.getUsername());
-        } catch (Exception e) {
-            log.warn("Failed to extract user ID from authentication", e);
-            return null;
-        }
-    }
+    // Authentication methods inherited from BaseController
 }

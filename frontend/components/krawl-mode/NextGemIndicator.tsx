@@ -53,3 +53,9 @@ export function NextGemIndicator({
   return null; // Marker is rendered on map
 }
 
+
+
+
+
+
+
