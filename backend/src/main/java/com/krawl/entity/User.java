@@ -12,10 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_users_email", columnList = "email"),
-    @Index(name = "idx_users_google_id", columnList = "google_id")
-})
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +24,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     
-    @Column(nullable = false, unique = true)
+    @Column
     private String email;
     
     @Column(name = "display_name")
@@ -36,22 +33,22 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
     
-    @Column(name = "bio", columnDefinition = "TEXT")
+    @Column(name = "bio")
     private String bio;
     
-    @Column(name = "notification_preferences", columnDefinition = "JSONB")
+    @Column(name = "notification_preferences")
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> notificationPreferences;
     
-    @Column(name = "privacy_settings", columnDefinition = "JSONB")
+    @Column(name = "privacy_settings")
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> privacySettings;
     
-    @Column(name = "app_preferences", columnDefinition = "JSONB")
+    @Column(name = "app_preferences")
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> appPreferences;
     
-    @Column(name = "google_id", unique = true)
+    @Column(name = "google_id")
     private String googleId;
     
     @CreationTimestamp

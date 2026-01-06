@@ -14,10 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "gem_drafts", indexes = {
-        @Index(name = "idx_gem_draft_user_id", columnList = "user_id"),
-        @Index(name = "idx_gem_draft_expires_at", columnList = "expires_at")
-})
+@Table(name = "gem_drafts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,10 +26,10 @@ public class GemDraft {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false, columnDefinition = "JSONB")
+    @Column
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> data;
 
@@ -40,10 +37,10 @@ public class GemDraft {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "expires_at", nullable = false)
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
     /**

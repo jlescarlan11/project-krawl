@@ -14,12 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "krawl_sessions", indexes = {
-        @Index(name = "idx_krawl_session_krawl_id", columnList = "krawl_id"),
-        @Index(name = "idx_krawl_session_user_id", columnList = "user_id"),
-        @Index(name = "idx_krawl_session_status", columnList = "status"),
-        @Index(name = "idx_krawl_session_started_at", columnList = "started_at")
-})
+@Table(name = "krawl_sessions")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,11 +26,11 @@ public class KrawlSession {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "krawl_id", nullable = false)
+    @JoinColumn(name = "krawl_id")
     private Krawl krawl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "started_at", nullable = false, updatable = false)
@@ -45,7 +40,7 @@ public class KrawlSession {
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 
-    @Column(nullable = false, length = 20)
+    @Column
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private SessionStatus status = SessionStatus.ACTIVE;

@@ -11,13 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "krawl_progress", indexes = {
-        @Index(name = "idx_krawl_progress_session_id", columnList = "session_id"),
-        @Index(name = "idx_krawl_progress_gem_id", columnList = "gem_id"),
-        @Index(name = "idx_krawl_progress_completed_at", columnList = "completed_at")
-},
-        uniqueConstraints = @UniqueConstraint(name = "uk_session_gem", columnNames = {"session_id", "gem_id"})
-)
+@Table(name = "krawl_progress")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,11 +23,11 @@ public class KrawlProgress {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id", nullable = false)
+    @JoinColumn(name = "session_id")
     private KrawlSession session;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gem_id", nullable = false)
+    @JoinColumn(name = "gem_id")
     private Gem gem;
 
     @Column(name = "completed_at", nullable = false, updatable = false)
@@ -43,7 +37,7 @@ public class KrawlProgress {
     @Column(name = "distance_to_gem_meters")
     private Double distanceToGemMeters;
 
-    @Column(name = "arrival_method", length = 20)
+    @Column(name = "arrival_method")
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ArrivalMethod arrivalMethod = ArrivalMethod.AUTOMATIC;

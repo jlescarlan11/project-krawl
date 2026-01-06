@@ -12,12 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "gem_comments",
-       indexes = {
-           @Index(name = "idx_gem_comment_gem_id", columnList = "gem_id"),
-           @Index(name = "idx_gem_comment_user_id", columnList = "user_id"),
-           @Index(name = "idx_gem_comment_created_at", columnList = "gem_id, created_at")
-       })
+@Table(name = "gem_comments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,14 +24,14 @@ public class GemComment {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gem_id", nullable = false)
+    @JoinColumn(name = "gem_id")
     private Gem gem;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column
     private String content;
 
     @CreationTimestamp

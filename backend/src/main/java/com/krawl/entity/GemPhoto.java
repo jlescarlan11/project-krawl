@@ -11,10 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "gem_photos", indexes = {
-        @Index(name = "idx_gem_photo_gem_id", columnList = "gem_id"),
-        @Index(name = "idx_gem_photo_order", columnList = "gem_id, display_order")
-})
+@Table(name = "gem_photos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,16 +23,16 @@ public class GemPhoto {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gem_id", nullable = false)
+    @JoinColumn(name = "gem_id")
     private Gem gem;
 
-    @Column(name = "url", nullable = false, length = 500)
+    @Column(name = "url")
     private String url;
 
-    @Column(name = "cloudinary_public_id", length = 255)
+    @Column(name = "cloudinary_public_id")
     private String cloudinaryPublicId;
 
-    @Column(length = 500)
+    @Column
     private String caption;
 
     @Column
@@ -49,7 +46,7 @@ public class GemPhoto {
     private Integer displayOrder = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by_id", nullable = false)
+    @JoinColumn(name = "uploaded_by_id")
     private User uploadedBy;
 
     @CreationTimestamp

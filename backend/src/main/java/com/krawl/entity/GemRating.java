@@ -12,12 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "ratings",
-       uniqueConstraints = @UniqueConstraint(name = "uk_rating_gem_user", columnNames = {"gem_id", "user_id"}),
-       indexes = {
-           @Index(name = "idx_rating_gem_id", columnList = "gem_id"),
-           @Index(name = "idx_rating_user_id", columnList = "user_id")
-       })
+@Table(name = "ratings")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,17 +24,17 @@ public class GemRating {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gem_id", nullable = false)
+    @JoinColumn(name = "gem_id")
     private Gem gem;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    @Column
     private Integer rating; // 1-5 stars
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     private String comment;
 
     @CreationTimestamp

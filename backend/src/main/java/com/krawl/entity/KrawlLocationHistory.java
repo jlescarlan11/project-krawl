@@ -11,10 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "krawl_location_history", indexes = {
-        @Index(name = "idx_krawl_location_session_id", columnList = "session_id"),
-        @Index(name = "idx_krawl_location_recorded_at", columnList = "recorded_at")
-})
+@Table(name = "krawl_location_history")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,13 +23,13 @@ public class KrawlLocationHistory {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id", nullable = false)
+    @JoinColumn(name = "session_id")
     private KrawlSession session;
 
-    @Column(nullable = false)
+    @Column
     private Double latitude;
 
-    @Column(nullable = false)
+    @Column
     private Double longitude;
 
     @Column

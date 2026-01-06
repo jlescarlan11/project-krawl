@@ -13,10 +13,7 @@ import java.util.UUID;
  * Entity representing a revoked token in the blacklist.
  */
 @Entity
-@Table(name = "revoked_tokens", indexes = {
-    @Index(name = "idx_revoked_tokens_token", columnList = "token"),
-    @Index(name = "idx_revoked_tokens_expires_at", columnList = "expires_at")
-})
+@Table(name = "revoked_tokens")
 @Data
 @Builder
 @NoArgsConstructor
@@ -27,13 +24,13 @@ public class RevokedToken {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     
-    @Column(name = "token", nullable = false, unique = true, length = 500)
+    @Column(name = "token")
     private String token;
     
-    @Column(name = "expires_at", nullable = false)
+    @Column(name = "expires_at")
     private Instant expiresAt;
     
-    @Column(name = "revoked_at", nullable = false)
+    @Column(name = "revoked_at")
     private Instant revokedAt;
 }
 

@@ -15,13 +15,7 @@ import java.util.UUID;
  * Allows users to save/favorite Krawls for later reference.
  */
 @Entity
-@Table(name = "saved_krawls",
-       uniqueConstraints = @UniqueConstraint(name = "uk_saved_krawl_user_krawl", columnNames = {"user_id", "krawl_id"}),
-       indexes = {
-           @Index(name = "idx_saved_krawl_user_id", columnList = "user_id"),
-           @Index(name = "idx_saved_krawl_krawl_id", columnList = "krawl_id"),
-           @Index(name = "idx_saved_krawl_saved_at", columnList = "saved_at")
-       })
+@Table(name = "saved_krawls")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,11 +27,11 @@ public class SavedKrawl {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "krawl_id", nullable = false)
+    @JoinColumn(name = "krawl_id")
     private Krawl krawl;
 
     @CreationTimestamp

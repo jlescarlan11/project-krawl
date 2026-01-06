@@ -13,13 +13,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reports",
-       indexes = {
-           @Index(name = "idx_report_content", columnList = "content_type, content_id"),
-           @Index(name = "idx_report_status", columnList = "status"),
-           @Index(name = "idx_report_created_at", columnList = "created_at"),
-           @Index(name = "idx_report_user_id", columnList = "user_id")
-       })
+@Table(name = "reports")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,28 +25,28 @@ public class Report {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "content_type", nullable = false, length = 10)
+    @Column(name = "content_type")
     @Enumerated(EnumType.STRING)
     @NotNull
     private ContentType contentType;
 
-    @Column(name = "content_id", nullable = false)
+    @Column(name = "content_id")
     @NotNull
     private UUID contentId;
 
-    @Column(nullable = false, length = 20)
+    @Column
     @Enumerated(EnumType.STRING)
     @NotNull
     private ReportReason reason;
 
-    @Column(columnDefinition = "TEXT")
+    @Column
     @Size(max = 500)
     private String description;
 
-    @Column(nullable = false, length = 20)
+    @Column
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ReportStatus status = ReportStatus.PENDING;

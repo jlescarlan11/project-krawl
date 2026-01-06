@@ -12,12 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "krawl_comments",
-       indexes = {
-           @Index(name = "idx_krawl_comment_krawl_id", columnList = "krawl_id"),
-           @Index(name = "idx_krawl_comment_user_id", columnList = "user_id"),
-           @Index(name = "idx_krawl_comment_created_at", columnList = "krawl_id, created_at")
-       })
+@Table(name = "krawl_comments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,14 +24,14 @@ public class KrawlComment {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "krawl_id", nullable = false)
+    @JoinColumn(name = "krawl_id")
     private Krawl krawl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column
     private String content;
 
     @CreationTimestamp

@@ -9,12 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "krawl_gems",
-       uniqueConstraints = @UniqueConstraint(name = "uk_krawl_gem", columnNames = {"krawl_id", "gem_id"}),
-       indexes = {
-           @Index(name = "idx_krawl_gem_krawl_id", columnList = "krawl_id"),
-           @Index(name = "idx_krawl_gem_order", columnList = "krawl_id, \"order\"")
-       })
+@Table(name = "krawl_gems")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,20 +21,20 @@ public class KrawlGem {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "krawl_id", nullable = false)
+    @JoinColumn(name = "krawl_id")
     private Krawl krawl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gem_id", nullable = false)
+    @JoinColumn(name = "gem_id")
     private Gem gem;
 
-    @Column(name = "\"order\"", nullable = false, columnDefinition = "INTEGER")
+    @Column(name = "\"order\"")
     private Integer order;
 
-    @Column(name = "creator_note", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "creator_note")
     private String creatorNote;
 
-    @Column(name = "lokal_secret", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "lokal_secret")
     private String lokalSecret;
 }
 

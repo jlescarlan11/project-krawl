@@ -14,12 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "gems", indexes = {
-        @Index(name = "idx_gem_category", columnList = "category"),
-        @Index(name = "idx_gem_district", columnList = "district"),
-        @Index(name = "idx_gem_status", columnList = "status"),
-        @Index(name = "idx_gem_created_by", columnList = "created_by_id")
-})
+@Table(name = "gems")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,46 +25,46 @@ public class Gem {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 255)
+    @Column
     private String name;
 
-    @Column(nullable = false, length = 100)
+    @Column
     private String category;
 
-    @Column(nullable = false, length = 100)
+    @Column
     private String district;
 
-    @Column(name = "short_description", length = 500)
+    @Column(name = "short_description")
     private String shortDescription;
 
-    @Column(name = "full_description", columnDefinition = "TEXT")
+    @Column(name = "full_description")
     private String fullDescription;
 
-    @Column(name = "cultural_significance", columnDefinition = "TEXT")
+    @Column(name = "cultural_significance")
     private String culturalSignificance;
 
-    @Column(nullable = false)
+    @Column
     private Double latitude;
 
-    @Column(nullable = false)
+    @Column
     private Double longitude;
 
-    @Column(length = 500)
+    @Column
     private String address;
 
-    @Column(length = 200)
+    @Column
     private String hours;
 
-    @Column(length = 500)
+    @Column
     private String website;
 
-    @Column(length = 50)
+    @Column
     private String phone;
 
-    @Column(name = "thumbnail_url", length = 500)
+    @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
-    @Column(nullable = false, length = 20)
+    @Column
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private GemStatus status = GemStatus.PENDING;
@@ -85,7 +80,7 @@ public class Gem {
     private List<String> tags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", nullable = false)
+    @JoinColumn(name = "created_by_id")
     private User createdBy;
 
     @OneToMany(mappedBy = "gem", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -14,12 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "krawls", indexes = {
-        @Index(name = "idx_krawl_category", columnList = "category"),
-        @Index(name = "idx_krawl_difficulty", columnList = "difficulty"),
-        @Index(name = "idx_krawl_created_by", columnList = "created_by_id"),
-        @Index(name = "idx_krawl_created_at", columnList = "created_at")
-})
+@Table(name = "krawls")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,25 +25,25 @@ public class Krawl {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 255)
+    @Column
     private String name;
 
-    @Column(length = 500)
+    @Column
     private String description;
 
-    @Column(name = "full_description", columnDefinition = "TEXT")
+    @Column(name = "full_description")
     private String fullDescription;
 
-    @Column(length = 100)
+    @Column
     private String category;
 
-    @Column(length = 50)
+    @Column
     private String difficulty;
 
-    @Column(name = "cover_image", length = 500)
+    @Column(name = "cover_image")
     private String coverImage;
 
-    @Column(name = "cloudinary_public_id", length = 255)
+    @Column(name = "cloudinary_public_id")
     private String cloudinaryPublicId;
 
     @Column(name = "estimated_duration_minutes")
@@ -57,7 +52,7 @@ public class Krawl {
     @Column(name = "estimated_distance_km")
     private Double estimatedDistanceKm;
 
-    @Column(name = "route_polyline", columnDefinition = "TEXT")
+    @Column(name = "route_polyline")
     private String routePolyline;
 
     @Column(name = "view_count", nullable = false)
@@ -71,7 +66,7 @@ public class Krawl {
     private List<String> tags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", nullable = false)
+    @JoinColumn(name = "created_by_id")
     private User createdBy;
 
     @OneToMany(mappedBy = "krawl", cascade = CascadeType.ALL, orphanRemoval = true)

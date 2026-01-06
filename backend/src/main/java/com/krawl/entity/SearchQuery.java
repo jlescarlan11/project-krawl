@@ -17,11 +17,7 @@ import java.util.UUID;
  * Used to power the "Popular Searches" feature by analyzing search frequency.
  */
 @Entity
-@Table(name = "search_queries", indexes = {
-    @Index(name = "search_queries_query_idx", columnList = "query"),
-    @Index(name = "search_queries_created_at_idx", columnList = "created_at"),
-    @Index(name = "search_queries_user_id_idx", columnList = "user_id")
-})
+@Table(name = "search_queries")
 @Data
 @Builder
 @NoArgsConstructor
@@ -38,7 +34,7 @@ public class SearchQuery {
     /**
      * The search query text entered by the user
      */
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column
     private String query;
 
     /**
