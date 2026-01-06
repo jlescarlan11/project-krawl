@@ -6,196 +6,18 @@
 
 ## 📋 Project Overview
 
-Krawl is a Progressive Web App designed to help users discover and share authentic Filipino cultural experiences in Cebu City. The platform enables community members to:
+Krawl is a Progressive Web App designed to help users discover and share authentic Filipino cultural experiences, starting with Cebu City. The platform enables community members to:
 
-- **Discover Gems** - Authentic cultural locations and experiences
-- **Follow Krawls** - Guided cultural trails connecting multiple Gems
-- **Share Culture** - Create and contribute to the living map of Filipino culture
-- **Explore Offline** - Download Krawls for offline exploration
+- **Discover Gems** - Authentic cultural locations and experiences.
+- **Follow Krawls** - Guided cultural trails connecting multiple Gems.
+- **Share Culture** - Create and contribute to the living map of Filipino culture.
+- **Explore Offline** - Download Krawls for offline exploration with integrated map tiles.
+- **Krawl Mode** - Location-aware, interactive guided experience.
 
-### Key Features
-
-- 🧭 **Krawl Mode** - Interactive, location-aware guided experience
-- 📴 **Offline-First** - Downloadable Krawls for areas with inconsistent connectivity
-- 👥 **Community-Curated** - User-driven content with quality control mechanisms
-- 🎓 **Guided Onboarding** - Optional 5-step intro that explains value props, permissions, and quick-start paths ✅ **Implemented** (TASK-046)
-- 🌅 **Landing Hero & Trust Stats** - The new hero experience crowns the landing page with the value proposition, dual call-to-action buttons, and animated trust indicators that spotlight Gems, Krawls, and community growth. Authenticated users see a personalized variant with their activity and statistics.
-- 🇵🇭 **Hyperlocal Focus** - Authentic, non-commercial Filipino cultural experiences
-
-### Launch Area
-
-**Cebu City, Philippines** - Initial launch focused exclusively on Cebu City boundaries.
-
-### Landing Page Hero
-
-The landing experience now centers on the `HeroSection` and `HeroStatsSection` components from `frontend/components/hero`. The hero section carries the tagline _"The Living Map of Filipino Culture"_, renders the hero illustration (`public/hero-cebu.svg`) via `HeroVisual`, and offers conditional call-to-action buttons via the `HeroCTAs` component. The CTAs adapt based on authentication state: always showing "Explore Cebu City" (primary), and conditionally showing "Create Your First Gem" and "Start Krawl Mode" for authenticated users or "Sign In" for guests. Directly below, animated trust indicators highlight Gems mapped, Krawls shared, and active Krawlers while formatting large numbers and remaining accessible to screen readers. See [`frontend/components/hero/README.md`](./frontend/components/hero/README.md) for usage notes, accessibility considerations, and extension points.
-
----
-
-## 📚 Documentation
-
-This project includes comprehensive documentation organized in the `docs/` directory.
-
-### Core Documentation
-
-- **[PROJECT_BRIEF.md](./docs/PROJECT_BRIEF.md)** - High-level project overview, objectives, stakeholders, success metrics, and budget
-- **[SCOPE_OF_WORK.md](./docs/SCOPE_OF_WORK.md)** - Detailed project specification including all pages, features, technology stack, and system integrations
-- **[TIMELINE_AND_MILESTONES.md](./docs/TIMELINE_AND_MILESTONES.md)** - Comprehensive 15-week development timeline with detailed phase breakdowns and milestones
-- **[SITEMAP.md](./docs/SITEMAP.md)** - Visual sitemap covering navigation hierarchy, user journeys, and routing structure
-- **[DOCUMENTATION_TEMPLATE.md](./docs/DOCUMENTATION_TEMPLATE.md)** - Template for creating new project documentation
-
-### Design System
-
-- **[UI_UX_DESIGN_SYSTEM.md](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Comprehensive UI/UX design system with component library, spacing, typography, color usage, and interaction patterns
-- **[WIREFRAMES.md](./docs/design/WIREFRAMES.md)** - Low-fidelity wireframes for all pages, including UI states, accessibility specifications, and micro-interaction patterns. Includes Figma wireframe integration guide.
-- **[FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md](./docs/design/FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md)** - Step-by-step guide for creating Figma wireframes with component library, page wireframes, and Dev Mode annotations
-- **[FIGMA_AI_PROMPT.md](./docs/design/FIGMA_AI_PROMPT.md)** - AI prompt for generating Figma wireframes using Figma Make or similar AI tools
-- **[DESIGN_DELIVERABLES.md](./docs/design/DESIGN_DELIVERABLES.md)** - Design evolution guide: wireframes → mockups → prototypes with tool recommendations
-- **[ACCESSIBILITY_GUIDELINES.md](./docs/design/ACCESSIBILITY_GUIDELINES.md)** - Comprehensive WCAG 2.1 Level AA accessibility guidelines with implementation examples, testing procedures, and common patterns
-- **[ACCESSIBILITY_CHECKLIST.md](./docs/design/ACCESSIBILITY_CHECKLIST.md)** - Developer and QA checklists for accessibility compliance during development and testing
-- **[DESIGN_TOKENS.md](./frontend/docs/DESIGN_TOKENS.md)** - Developer reference for design tokens (colors, typography, spacing) - Quick reference for using design tokens in code
-- **[Component Library](./frontend/components/README.md)** - Reusable UI component library (buttons, cards, forms) with TypeScript support and accessibility features
-- **[Hero Components](./frontend/components/hero/README.md)** - Landing hero experience with CTA buttons, value proposition copy, hero illustration, and animated trust indicators.
-- **[Landing Components](./frontend/components/landing/README.md)** - Landing page components including authenticated variant with personalized content, user activity sections, and statistics display.
-- **[TASK-029_SOLUTION_DESIGN.md](./docs/design/TASK-029_SOLUTION_DESIGN.md)** - Full onboarding flow specs, edge cases, and testing strategy
-- **[USER_PERSONA_PROFILES.md](./docs/user-research/USER_PERSONA_PROFILES.md)** - Comprehensive user persona profiles for design and development decisions
-- **[USER_JOURNEY_MAP.md](./docs/user-research/USER_JOURNEY_MAP.md)** - Comprehensive user journey maps highlighting user actions, motivations, pain points, and touchpoints
-- **[FEATURE_LIST_AND_USER_STORIES.md](./docs/user-research/FEATURE_LIST_AND_USER_STORIES.md)** - Comprehensive feature list with corresponding user stories
-
-### SEO & Marketing
-
-- **[SEO_PLAN_AND_KEYWORD_STRATEGY.md](./docs/private-docs/SEO_PLAN_AND_KEYWORD_STRATEGY.md)** - Comprehensive SEO plan and keyword strategy for improving search engine visibility
-- **[TASK-038_SEO_IMPLEMENTATION_PLAN.md](./docs/private-docs/tasks/TASK-038_SEO_IMPLEMENTATION_PLAN.md)** - Detailed SEO implementation roadmap with code templates, best practices, and phase-by-phase tasks
-
-### Content Strategy
-
-- **[CONTENT_SEEDING_STRATEGY.md](./docs/content/CONTENT_SEEDING_STRATEGY.md)** - Guidelines for creating and seeding initial content (100+ Gems, 10+ Krawls)
-- **[CONTENT_INVENTORY_AND_PLAN.md](./docs/content/CONTENT_INVENTORY_AND_PLAN.md)** - Full content inventory covering text, imagery, and video needs for every page
-
-### Logo & Branding
-
-- **[BRAND_BRIEF.md](./docs/design/BRAND_BRIEF.md)** - Comprehensive brand strategy including mission, vision, target audience, tone of voice, brand story, and unique selling points
-- **[BRAND_GUIDELINES.md](./docs/design/BRAND_GUIDELINES.md)** - Complete visual identity standards including color palette, typography, logo usage, buttons, iconography, spacing, and imagery
-- **[logo/README.md](./docs/design/logo/README.md)** - Logo assets overview and quick start guide
-- **[logo/LOGO_GUIDELINES.md](./docs/design/logo/LOGO_GUIDELINES.md)** - Complete logo usage guidelines and brand standards
-- **[logo/LOGO_REVIEW.md](./docs/design/logo/LOGO_REVIEW.md)** - Logo quality assessment and recommendations
-- **[logo/PNG_EXPORT_GUIDE.md](./docs/design/logo/PNG_EXPORT_GUIDE.md)** - Instructions for exporting PNG versions of logos
-
----
-
-## 🏗️ Project Structure
-
-```
-project-krawl/
-├── README.md                          # This file - project overview
-├── CHANGELOG.md                       # Project changelog
-│
-├── frontend/                          # Frontend application
-│   ├── app/                           # Next.js app directory
-│   │   ├── globals.css                # Design tokens (Tailwind CSS v4 @theme)
-│   │   ├── layout.tsx                 # Root layout with navigation components
-│   │   ├── page.tsx                   # Home page placeholder
-│   │   ├── map/page.tsx               # Map view page
-│   │   ├── search/page.tsx            # Search & discovery page
-│   │   ├── gems/[id]/page.tsx         # Gem detail page (dynamic)
-│   │   ├── gems/create/page.tsx       # Gem creation page (protected)
-│   │   ├── krawls/[id]/page.tsx       # Krawl detail page (dynamic)
-│   │   ├── krawls/[id]/mode/page.tsx  # Krawl mode page (dynamic)
-│   │   ├── krawls/create/page.tsx     # Krawl creation page (protected)
-│   │   ├── users/[id]/page.tsx        # User profile page (dynamic)
-│   │   ├── users/settings/page.tsx    # Profile settings page (protected)
-│   │   ├── offline/page.tsx            # Offline downloads page (protected)
-│   │   ├── onboarding/page.tsx         # Five-step onboarding flow
-│   │   ├── auth/sign-in/page.tsx      # Sign in page
-│   │   ├── auth/signout/page.tsx      # Sign out page
-│   │   └── auth/callback/page.tsx     # OAuth callback handler
-│   ├── components/                   # Component library
-│   │   ├── navigation/                # Navigation components (TASK-034)
-│   │   │   ├── Header.tsx             # Desktop top navigation
-│   │   │   ├── Footer.tsx              # Site footer
-│   │   │   ├── MobileMenu.tsx          # Mobile slide-in menu
-│   │   │   ├── BottomNav.tsx          # Mobile bottom navigation
-│   │   │   ├── Breadcrumbs.tsx        # Dynamic breadcrumbs
-│   │   │   ├── NavLink.tsx            # Reusable navigation link
-│   │   │   ├── ProtectedRoute.tsx     # Client-side route protection
-│   │   │   └── README.md              # Navigation documentation
-│   │   ├── layout/                    # Layout components (TASK-035)
-│   │   │   ├── Container.tsx          # Max-width container with responsive padding
-│   │   │   ├── Section.tsx            # Section with spacing and background variants
-│   │   │   ├── PageLayout.tsx         # Page wrapper with breadcrumbs, title, description
-│   │   │   ├── index.ts               # Barrel exports
-│   │   │   └── README.md              # Layout components documentation
-│   │   ├── ui/                        # Base UI components
-│   │   │   ├── button.tsx            # Button component
-│   │   │   ├── card.tsx              # Card component
-│   │   │   ├── input.tsx             # Input component
-│   │   │   ├── textarea.tsx          # Textarea component
-│   │   │   ├── select.tsx            # Select component
-│   │   │   ├── checkbox.tsx          # Checkbox component
-│   │   │   ├── radio.tsx             # Radio component
-│   │   │   ├── file-upload.tsx       # FileUpload component
-│   │   │   ├── spinner.tsx            # Spinner component
-│   │   │   ├── loading-skeleton.tsx  # LoadingSkeleton component
-│   │   │   ├── progress-bar.tsx       # ProgressBar component
-│   │   │   ├── empty-state.tsx       # EmptyState component
-│   │   │   ├── error-display.tsx     # ErrorDisplay component
-│   │   │   └── toast.tsx             # Toast notification system
-│   │   ├── index.ts                   # Barrel exports
-│   │   └── README.md                 # Component library documentation
-│   ├── lib/                           # Utility libraries
-│   │   ├── breakpoints.ts             # Responsive breakpoints and React hooks
-│   │   ├── design-tokens.ts           # TypeScript design token exports
-│   │   ├── routes.ts                  # Route constants and metadata (TASK-034)
-│   │   ├── route-utils.ts             # Route utility functions (TASK-034)
-│   │   └── utils.ts                   # Utility functions (cn helper)
-│   ├── middleware.ts                  # Next.js middleware for route protection (TASK-034)
-│   ├── hooks/                         # Custom React hooks
-│   │   └── index.ts                   # Barrel export for hooks
-│   ├── types/                         # Shared TypeScript types
-│   │   └── index.ts                   # Barrel export for types
-│   ├── docs/                          # Frontend documentation
-│   │   ├── DESIGN_TOKENS.md           # Design tokens quick reference
-│   │   └── HOT_RELOAD_VERIFICATION.md # Hot reload verification guide
-│   ├── .prettierrc.json               # Prettier configuration
-│   ├── .prettierignore                # Prettier ignore patterns
-│   └── README.md                      # Frontend setup and usage guide
-│
-└── docs/                              # Documentation directory
-    ├── PROJECT_BRIEF.md               # Project brief and objectives
-    ├── SCOPE_OF_WORK.md               # Detailed scope of work
-    ├── TIMELINE_AND_MILESTONES.md     # Development timeline
-    ├── SITEMAP.md                     # Visual sitemap and IA reference
-    ├── DOCUMENTATION_TEMPLATE.md      # Documentation template
-    ├── GLOSSARY.md                    # Project terminology
-    │
-    ├── design/                        # Design system and branding
-    │   ├── UI_UX_DESIGN_SYSTEM.md     # UI/UX design system
-    │   ├── WIREFRAMES.md              # Page wireframes (with Figma integration)
-    │   ├── FIGMA_WIREFRAMES_IMPLEMENTATION_GUIDE.md  # Figma wireframe creation guide
-    │   ├── FIGMA_AI_PROMPT.md        # AI prompt for Figma wireframe generation
-    │   ├── BRAND_BRIEF.md             # Brand strategy
-    │   ├── BRAND_GUIDELINES.md        # Visual identity
-    │   ├── DESIGN_DELIVERABLES.md     # Design deliverables (wireframes → mockups → prototypes)
-    │   └── logo/                      # Logo assets
-    │       ├── README.md
-    │       ├── LOGO_GUIDELINES.md
-    │       └── *.svg
-    │
-    ├── user-research/                 # User research documentation
-    │   ├── USER_PERSONA_PROFILES.md   # User personas
-    │   ├── USER_JOURNEY_MAP.md        # User journey maps
-    │   └── FEATURE_LIST_AND_USER_STORIES.md # Features and user stories
-    │
-    ├── content/                       # Content strategy
-    │   ├── CONTENT_SEEDING_STRATEGY.md # Content creation guidelines
-    │   └── CONTENT_INVENTORY_AND_PLAN.md # Content inventory
-    │
-    └── private-docs/                  # Internal documentation [Internal]
-        ├── technical/                 # Technical documentation
-        ├── tasks/                     # Task management
-        ├── operations/                # Operations and planning
-        └── GIT_WORKFLOW.md            # Git workflow guide
-```
+### Current Status
+- **Date:** January 6, 2026
+- **Phase:** Core Development & Community Features (Week 8+)
+- **Status:** Active development. Authentication, SEO, UI Component Library, Landing Page, and Gem Creation are implemented. Krawl Mode and Offline features are in progress.
 
 ---
 
@@ -204,250 +26,147 @@ project-krawl/
 ### Backend
 - **Language:** Java 25 LTS
 - **Framework:** Spring Boot 3.5.7
-- **Build Tool:** Maven 3.9.x
-- **Database:** Aiven PostgreSQL (free tier)
+- **Database:** PostgreSQL with PostGIS (Aiven/Local)
+- **Migration:** Flyway
+- **Security:** Spring Security OAuth2 + JWT (JJWT)
+- **Documentation:** SpringDoc OpenAPI (Swagger)
+- **Email/SMS:** Brevo
 
 ### Frontend
-- **Framework:** Next.js 16.0.3
+- **Framework:** Next.js 16.0.3 (App Router)
 - **Language:** TypeScript 5.x
 - **React:** React 19.2.0
-- **Styling:** Tailwind CSS v4 (CSS-based configuration with `@theme` directive)
-- **Code Quality:** ESLint 9.x (with eslint-config-next), Prettier 3.6.2 (code formatter)
-- **Fonts:** Inter (primary), Plus Jakarta Sans (secondary) - Optimized via `next/font/google`
-- **Design Tokens:** CSS custom properties and TypeScript exports covering colors, typography, spacing, shadows, transitions, z-index layers, borders, and breakpoints (see `frontend/docs/DESIGN_TOKENS.md`)
-- **State Management:** Zustand 4.5.x (installed)
-- **Maps:** Mapbox GL JS 3.x (planned)
+- **Styling:** Tailwind CSS v4 (CSS-based configuration)
+- **State Management:** Zustand 5.x
+- **Authentication:** NextAuth.js v5 (Auth.js)
+- **Maps:** Mapbox GL JS 3.x
+- **Monitoring:** Sentry
 
-### Services & Infrastructure
-- **Backend Hosting:** Oracle Cloud Infrastructure (Always Free Tier)
-- **Frontend Hosting:** Vercel (free tier)
-- **Authentication:** Google OAuth 2.0 via NextAuth.js v5 (Auth.js) on the frontend ✅ **Implemented** (TASK-040) and Spring Security OAuth on the backend ✅ **Implemented** (TASK-039)
-- **Session Management:** Comprehensive session management with automatic refresh, expiration handling, and multi-tab synchronization ✅ **Implemented** (TASK-042)
-- **Image Management:** Cloudinary (free tier)
-- **Email:** Brevo (free tier: 300 emails/day)
-- **Maps & Location:** Mapbox (free tier: 50,000 map loads/month)
-- **CI/CD:** GitHub Actions (free tier)
-- **Monitoring:** Spring Boot Actuator + Sentry (free tier) ✅ **Configured** (see [SENTRY_SETUP.md](./docs/private-docs/operations/SENTRY_SETUP.md) and [frontend/docs/SENTRY_INSTALLATION.md](./frontend/docs/SENTRY_INSTALLATION.md))
+### Testing
+- **Frontend:** Vitest + Testing Library
+- **Backend:** JUnit 5 + Mockito
+- **E2E:** Playwright (6 browser configurations)
 
 ---
 
-## 📅 Project Timeline
-
-**Duration:** 15 weeks (14 weeks development + 1 week launch)
-
-### Phases
-
-1. **Foundation** (Weeks 1-2) - Architecture, Design System, Project Setup
-2. **Core Development** (Weeks 3-7) - Authentication, Maps, Gem/Krawl Creation, Search
-3. **Community Features** (Weeks 8-9) - Vouching, Krawl Rating, Gem Score, Creator Reputation, Comments, Reporting
-4. **Krawl Mode & Offline** (Weeks 10-12) - Location Tracking, Offline Downloads
-5. **Testing & Polish** (Weeks 13-14) - QA, Optimization, Accessibility
-6. **Launch Preparation** (Week 15) - Content Seeding, Deployment, Go-Live
-
-For detailed timeline, see [TIMELINE_AND_MILESTONES.md](./docs/TIMELINE_AND_MILESTONES.md).
-
----
-
-## 🎯 Key Objectives
-
-1. **Develop & Launch MVP** - Deploy functional PWA with core features
-2. **Seed Initial Content** - Populate Cebu City with 100+ Gems and 10+ Krawls
-3. **Validate Core Loop** - Achieve 100-500 active users in Cebu City
-4. **Gather User Feedback** - Collect qualitative and quantitative data
-5. **Test Revenue Model** - Onboard 5-10 local Cebu businesses
-
----
-
-## 💰 Budget
-
-**Total MVP Budget (15 weeks):**
-- **MVP Development:** ₱0 (solo development using free tools)
-- **Post-Launch Monthly:** ₱0 (all services within free tiers)
-- **Post-Launch Annual:** ₱1,200 (domain renewal only)
-
-**Key Costs:**
-- Domain Registration: ₱1,200/year (approximately ₱230 prorated for 15-week MVP period)
-- All Other Services: ₱0 (free tiers sufficient)
-- **Note:** Budget assumes solo development (sweat equity). If hiring freelancers, costs would increase significantly.
-
-For detailed budget breakdown, see BUDGET_AND_RESOURCE_PLAN.md [Internal].
-
----
-
-## 📖 Document Relationships
+## 🏗️ Project Structure
 
 ```
-PROJECT_BRIEF.md (High-level overview)
-    ↓
-SCOPE_OF_WORK.md (Detailed specifications)
-    ↓
-TIMELINE_AND_MILESTONES.md (Implementation plan)
-    ↓
-CONTENT_SEEDING_STRATEGY.md (Content guidelines)
-    ↓
-CONTENT_INVENTORY_AND_PLAN.md (Detailed page-by-page content needs)
-
-BRAND_BRIEF.md (Brand strategy & positioning)
-    ↕ (informs all documents)
-BRAND_GUIDELINES.md (Visual identity & design system)
-    ↕ (visual identity tokens)
-UI_UX_DESIGN_SYSTEM.md (UI components & implementation)
-    ↕ (implements BRAND_GUIDELINES and informs frontend)
-
-USER_PERSONA_PROFILES.md (User personas)
-    ↕ (informs)
-USER_JOURNEY_MAP.md (User journey maps)
-    ↕ (informs)
-UI_UX_DESIGN_SYSTEM.md (UI components & implementation)
+project-krawl/
+├── backend/                # Spring Boot REST API
+│   ├── src/main/java       # Java source code
+│   ├── src/main/resources  # Configuration & Flyway migrations
+│   └── scripts/            # Database and refactoring scripts
+├── frontend/               # Next.js Application
+│   ├── app/                # App Router pages and layouts
+│   ├── components/         # UI Component Library
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utilities and API clients
+│   └── stores/             # Zustand state management
+├── e2e/                    # Playwright E2E tests
+└── docs/                   # Comprehensive project documentation
 ```
-
-**How to Use:**
-1. Start with **PROJECT_BRIEF.md** for project overview
-2. Review **SCOPE_OF_WORK.md** for detailed feature specifications
-3. Follow **TIMELINE_AND_MILESTONES.md** for development schedule
-4. Reference **CONTENT_SEEDING_STRATEGY.md** when sourcing or validating cultural submissions
-5. Use **CONTENT_INVENTORY_AND_PLAN.md** to confirm every page’s content requirements
-6. Reference **BRAND_BRIEF.md** for brand strategy, tone of voice, and messaging guidelines
 
 ---
 
 ## 🚀 Getting Started
 
-### For Developers
+### Prerequisites
+- **Node.js:** 20.x or 22.x LTS
+- **Java:** 25 LTS
+- **Maven:** 3.9.x
+- **PostgreSQL:** 15+ (with PostGIS extension)
 
-1. Review [SCOPE_OF_WORK.md](./docs/SCOPE_OF_WORK.md) for technical specifications
-2. Follow [TIMELINE_AND_MILESTONES.md](./docs/TIMELINE_AND_MILESTONES.md) for development phases
-3. Set up development environment
-4. Configure service accounts
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd project-krawl
+```
 
-### For Project Managers
-
-1. Review [PROJECT_BRIEF.md](./docs/PROJECT_BRIEF.md) for objectives and metrics
-2. Track progress using [TIMELINE_AND_MILESTONES.md](./docs/TIMELINE_AND_MILESTONES.md) milestones
-3. Monitor free tier usage (see appendices in SCOPE_OF_WORK.md)
-
-### For Content Creators
-
-1. Review [CONTENT_SEEDING_STRATEGY.md](./docs/content/CONTENT_SEEDING_STRATEGY.md) for guidelines
-2. Follow quality standards for Gems and Krawls
-3. Ensure all content is within Cebu City boundaries
-
----
-
-## ⚡ Quick Start
-
-### Prerequisites Checklist
-
-- [ ] Node.js 20.x LTS installed
-- [ ] Java 25 LTS installed
-- [ ] Maven 3.9.x installed
-- [ ] Git installed and configured
-- [ ] IDE configured (VS Code, IntelliJ IDEA, or preferred IDE)
-- [ ] PostgreSQL client (for database access)
-
-### Step-by-Step Setup
-
-1. **Clone the repository**
+### 2. Backend Setup
+1. Navigate to the backend directory:
    ```bash
-   git clone <repository-url>
-   cd project-krawl
+   cd backend
    ```
+2. Create a `.env` file based on `env-example`.
+3. Start the backend using the recommended script (Windows):
+   ```powershell
+   .\start-backend.ps1
+   ```
+   *Note: This script loads environment variables and runs `mvn spring-boot:run`.*
 
-2. **Verify project structure**
-   - Check that all documentation files are present in the `docs/` directory
-   - Review this README for documentation overview
-
-3. **Set up service accounts**
-   - Create Aiven PostgreSQL database
-   - Set up Google OAuth credentials
-   - Create Cloudinary account
-   - Create Brevo account
-   - [x] Create Mapbox account ✅ (see [MAPBOX_SETUP.md](./docs/private-docs/operations/MAPBOX_SETUP.md))
-   - [x] Create Sentry account ✅ (see [SENTRY_SETUP.md](./docs/private-docs/operations/SENTRY_SETUP.md))
-   - [x] Set up Sentry monitoring ✅ (see [frontend/docs/SENTRY_INSTALLATION.md](./frontend/docs/SENTRY_INSTALLATION.md))
-   - [x] Set up Oracle Cloud Infrastructure account ✅ (see [OCI_SETUP.md](./docs/private-docs/operations/OCI_SETUP.md))
-
-4. **Initialize projects**
-   - Initialize backend project
-   - Initialize frontend project
-   - Configure development environment
-
----
-
-## 🔧 Troubleshooting
-
-### Broken Cross-References
-
-**Issue:** Broken links in documentation
-
-**Solution:**
-1. Check that referenced files exist in the correct location
-2. Verify markdown link syntax: `[text](./docs/filename.md)` or `[text](./docs/path/filename.md)`
-3. For anchor links, verify the target header exists in the referenced file
-4. Update broken links or create missing files
-
-### Documentation Inconsistencies
-
-**Issue:** Dates, versions, or references don't match across files
-
-**Solution:**
-1. Review [CHANGELOG.md](./CHANGELOG.md) for recent changes
-2. Check individual document version history sections
-3. Update all affected files to maintain consistency
+### 3. Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env.local` file based on `env-example`.
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   *The frontend will be available at [http://localhost:3000](http://localhost:3000).*
 
 ---
 
-## 📝 Key Terms
+## ⚙️ Environment Variables
 
-- **Gem** - A point of interest representing authentic Filipino cultural location or experience
-- **Krawl** - A guided trail connecting multiple Gems in a specific sequence
-- **Krawl Mode** - Location-aware guided experience that helps users follow a Krawl in real-time
-- **Vouching** - Community quality control mechanism where users vouch for authenticity/quality
-- **PWA** - Progressive Web App - provides app-like experience with offline capabilities
+### Backend (`backend/.env`)
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`: Database connection details.
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: OAuth2 credentials.
+- `JWT_SECRET`: Secret for signing JWT tokens.
+- `CLOUDINARY_URL`, `BREVO_API_KEY`: Third-party service credentials.
 
-For complete glossary, see [GLOSSARY.md](./docs/GLOSSARY.md).
-
----
-
-## 🔗 Related Resources
-
-- **Glossary:** See [GLOSSARY.md](./docs/GLOSSARY.md) for all project terminology
-- **Changelog:** See [CHANGELOG.md](./CHANGELOG.md) for project changes and version history
-- **Logo Assets:** See [logo/README.md](./docs/design/logo/README.md)
-- **Core Feature Specification:** CORE_FEATURE_SPECIFICATION.md [Internal] - Complete technical specifications for all 8 core features, including duplicate detection, Mapbox clustering, zoom-dependent visibility, Creator Notes/Lokal Secrets, and Stop Detail Card implementation
-- **API Documentation:** API_DOCUMENTATION.md [Internal]
-- **Database Schema:** DATABASE_SCHEMA.md [Internal]
-- **System Design:** SYSTEM_DESIGN.md [Internal]
-- **Deployment Guide:** DEPLOYMENT_GUIDE.md [Internal]
-- **Testing Strategy:** TESTING_STRATEGY.md [Internal]
-- **Comprehensive Testing Plan:** COMPREHENSIVE_TESTING_PLAN.md [Internal]
+### Frontend (`frontend/.env.local`)
+- `NEXT_PUBLIC_API_URL`: Backend API URL (default: `http://localhost:8080`).
+- `NEXTAUTH_SECRET`, `NEXTAUTH_URL`: NextAuth.js configuration.
+- `NEXT_PUBLIC_MAPBOX_TOKEN`: Mapbox API token.
+- `NEXT_PUBLIC_SENTRY_DSN`: Sentry error tracking DSN.
 
 ---
 
-## 📝 Documentation Versioning
+## 🧪 Running Tests
 
-**Version Numbering Strategy:**
-- Version numbers (e.g., 1.0.0, 2.0.0) indicate significant updates to each document
-- Documents are versioned independently based on their update frequency
-- Major version increments indicate substantial changes (e.g., new sections, major feature additions)
-- Minor version increments indicate moderate updates (e.g., feature enhancements, clarifications)
-- Patch version increments indicate minor fixes or corrections
+### Frontend
+```bash
+cd frontend
+npm test                 # Run Vitest tests
+npm run test:coverage    # Check coverage
+```
+
+### Backend
+```bash
+cd backend
+mvn test                 # Run JUnit tests
+```
+
+### E2E (Root)
+```bash
+cd e2e
+npm test                 # Run Playwright tests
+```
 
 ---
 
-## 📞 Contact
+## 📚 Documentation
 
-**Project Team:** Solo Developer – contact `hello@krawl.app` (update with full roster before Week 3)  
-**Last Updated:** November 23, 2025  
-**Status:** Development Phase - Week 2
+Detailed documentation is available in the `docs/` and `frontend/docs/` directories:
+
+- **[Architecture & Design](./docs/SYSTEM_DESIGN.md)** - System architecture and data flow.
+- **[API Documentation](http://localhost:8080/swagger-ui.html)** - Available when backend is running.
+- **[UI/UX Design System](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Design principles and components.
+- **[Offline-First Guide](./frontend/docs/PWA_TEST_PLAN.md)** - PWA and offline implementation details.
+- **[SEO Strategy](./docs/private-docs/tasks/TASK-038_SEO_IMPLEMENTATION_PLAN.md)** - Search engine optimization roadmap.
 
 ---
 
 ## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details (to be added).
 
-MIT License (to be confirmed with stakeholders prior to MVP launch)
-
----
-
-*This README provides an overview of the Krawl MVP project. For detailed information, refer to the specific documentation files listed above.*
-
+## 📞 Contact
+Project Team: Solo Developer – `hello@krawl.app`
+Last Updated: January 6, 2026
