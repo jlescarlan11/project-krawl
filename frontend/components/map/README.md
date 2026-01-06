@@ -18,40 +18,43 @@ The map components provide a fully-featured interactive map with:
 
 Main interactive map component built on Mapbox GL JS 3.x.
 
+### MapWithBoundary
+
+Wrapper around Map that adds:
+- Cebu City boundary enforcement
+- Gem Marker management
+- Krawl Trail visualization
+- Responsive popups and mobile bottom sheets
+
+### GemMarkerLayer & useGemMarkers
+
+Modular pin rendering system.
+
 **Features:**
-- Interactive pan, zoom, and click
-- Navigation controls (zoom, compass)
-- Geolocate control
-- Customizable style and configuration
-- Event handlers for user interactions
-- Automatic error recovery
+- **Dynamic Fetching:** Fetches gems based on current map bounds and zoom.
+- **Clustering:** Automatically clusters nearby gems at low zoom levels.
+- **Marker Icons:** Status-based SVG icons (Verified, Pending, Stale).
+- **Interactivity:** Click to select, hover for cursor change.
+- **Performance:** Optimized GeoJSON source updates and debounced fetching.
 
 **Usage:**
 
 ```tsx
-import { Map } from '@/components/map';
-
-// Basic usage
-<Map className="h-screen" />
-
-// With custom configuration
-<Map
-  initialCenter={[123.8854, 10.3157]} // Cebu City
-  initialZoom={14}
-  showNavigationControl
-  showGeolocateControl
-  onLoad={(map) => {
-    console.log('Map loaded', map);
-    // Add markers, layers, etc.
-  }}
-  onError={(error) => {
-    console.error('Map error', error);
-  }}
-  onClick={(event) => {
-    console.log('Clicked at', event.lngLat);
-  }}
+<MapWithBoundary
+  showGemMarkers={true}
+  gemCategories={['food-drink']}
+  onGemMarkerClick={(gem) => console.log(gem)}
 />
 ```
+
+### GemPopup & GemPopupMobile
+
+Detail display for selected gems.
+
+**Features:**
+- **Desktop:** Floating sidebar popup.
+- **Mobile:** Animated bottom sheet.
+- **Content:** Thumbnail, rating, distance, and "View Details" navigation.
 
 ### MapLoadingState
 
@@ -186,10 +189,9 @@ const Map = dynamic(
 
 ## Future Enhancements
 
-- Map markers (TASK-052)
-- Map clustering (TASK-053)
-- Map popups (TASK-054)
-- Map filters (TASK-055)
+- Offline map support (TASK-088)
+- Real-time location sharing
+- 3D terrain and building visualization
 
 ---
 
