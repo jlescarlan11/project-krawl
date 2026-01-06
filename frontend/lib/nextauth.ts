@@ -6,7 +6,6 @@ import type {
   User,
 } from "@auth/core/types";
 import type { JWT } from "@auth/core/jwt";
-import * as Sentry from "@sentry/nextjs";
 import { exchangeToken } from "@/lib/auth";
 import { refreshTokens } from "@/lib/token-refresh";
 import { revokeTokens } from "@/lib/token-revoke";
@@ -41,15 +40,7 @@ function validateEnvironmentVariables(): void {
     const error = new Error(
       `Missing required environment variables: ${missing.join(", ")}`
     );
-    // Log to Sentry in production, console in development
-    if (process.env.NODE_ENV === "production") {
-      Sentry.captureException(error, {
-        tags: { component: "nextauth-config" },
-        level: "fatal",
-      });
-    } else {
-      console.error("[NextAuth] Configuration Error:", error.message);
-    }
+    console.error("[NextAuth] Configuration Error:", error.message);
     throw error;
   }
 }
@@ -165,24 +156,14 @@ export const authConfig: NextAuthConfig = {
           const authError = error as AuthError;
           const authErrorCode = authError?.authErrorCode || "Verification";
 
-          // Log with auth error code
-          Sentry.captureException(
-            error instanceof Error ? error : new Error(String(error)),
-            {
-              tags: {
-                component: "nextauth-signin",
-                provider: "google",
-                authErrorCode,
-              },
-              extra: {
-                hasAccessToken: !!account?.access_token,
-                provider: account?.provider,
-                authErrorCode,
-                apiError: authError?.apiError,
-              },
-              level: "error",
-            }
-          );
+          // Log error
+          console.error("[NextAuth] SignIn Error:", {
+            error: error instanceof Error ? error.message : String(error),
+            authErrorCode,
+            hasAccessToken: !!account?.access_token,
+            provider: account?.provider,
+            apiError: authError?.apiError,
+          });
 
           // Sign-in fails if token exchange fails
           // Error code will be passed via NextAuth error page redirect
@@ -263,13 +244,6 @@ export const authConfig: NextAuthConfig = {
                 if (expiresIn <= 0) {
                   // Token was expired and refresh failed - invalidate session
                   console.error('[Session] Token expired and refresh failed, session will be invalidated');
-                  // Log to Sentry in production
-                  if (process.env.NODE_ENV === "production") {
-                    Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-                      tags: { component: "token-refresh", expired: "true" },
-                      level: "error",
-                    });
-                  }
                   // Don't update expiration, let NextAuth handle invalidation
                   return token;
                 }
@@ -278,14 +252,6 @@ export const authConfig: NextAuthConfig = {
                 const newExpiresAt = new Date();
                 newExpiresAt.setHours(newExpiresAt.getHours() + 24);
                 token.exp = Math.floor(newExpiresAt.getTime() / 1000);
-                
-                // Log to Sentry in production
-                if (process.env.NODE_ENV === "production") {
-                  Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-                    tags: { component: "token-refresh" },
-                    level: "warning",
-                  });
-                }
               }
             } else {
               // No refresh token available
@@ -366,14 +332,6 @@ export const authConfig: NextAuthConfig = {
         } catch (error) {
           // Log error but don't throw (sign-out should succeed even if revocation fails)
           console.error("[SignOut] Token revocation failed:", error);
-          
-          // Log to Sentry in production
-          if (process.env.NODE_ENV === "production") {
-            Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-              tags: { component: "token-revoke" },
-              level: "warning",
-            });
-          }
         }
       }
       // Session cookies are automatically cleared by NextAuth.js
@@ -385,4 +343,3 @@ export const authConfig: NextAuthConfig = {
 const { handlers, auth } = NextAuth(authConfig);
 
 export { handlers, auth };
-

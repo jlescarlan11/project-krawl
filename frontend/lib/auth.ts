@@ -6,7 +6,6 @@
  */
 
 import type { Session } from "next-auth";
-import * as Sentry from "@sentry/nextjs";
 import { handleApiError, type ApiError } from "./api-error-handler";
 import {
   mapBackendErrorToAuthError,
@@ -188,15 +187,6 @@ export async function refreshSession(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[Session Refresh] Failed:", errorMessage);
-    
-    // Log to Sentry in production
-    if (process.env.NODE_ENV === "production") {
-      Sentry.captureException(error instanceof Error ? error : new Error(errorMessage), {
-        tags: { component: "session-refresh" },
-        level: "error",
-      });
-    }
-    
     throw error;
   }
 }
@@ -284,4 +274,3 @@ export function syncSessionToZustand(
     authStore.syncFromNextAuth(null, null, null);
   }
 }
-

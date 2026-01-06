@@ -6,8 +6,6 @@ import { ToastProvider } from "@/components";
 import { GuestUpgradeSuccessToast } from "@/components/auth/GuestUpgradeSuccessToast";
 import { ServiceWorkerUpdateToast } from "@/components/system/ServiceWorkerUpdateToast";
 import { ServiceWorkerRegistration } from "@/components/system/ServiceWorkerRegistration";
-import { SentryErrorBoundary } from "@/components/system/SentryErrorBoundary";
-import { SentryUserContextSync } from "@/components/system/SentryUserContextSync";
 import { SessionRefreshProvider } from "@/components/system/SessionRefreshProvider";
 import { CookieWarningBanner } from "@/components/system/CookieWarningBanner";
 import { UploadStatus } from "@/components/offline/UploadStatus";
@@ -90,9 +88,7 @@ export default function RootLayout({
           refetchOnWindowFocus={true}
         >
           <SessionRefreshProvider>
-            <SentryErrorBoundary>
-              <SentryUserContextSync />
-              <ServiceWorkerRegistration />
+            <ServiceWorkerRegistration />
             <ToastProvider>
               <GuestUpgradeSuccessToast />
               <div className="flex min-h-screen flex-col bg-bg-white">
@@ -105,7 +101,6 @@ export default function RootLayout({
               <CookieWarningBanner />
               <UploadStatus className="fixed bottom-20 right-4 z-50" />
             </ToastProvider>
-          </SentryErrorBoundary>
           </SessionRefreshProvider>
         </SessionProvider>
       </body>

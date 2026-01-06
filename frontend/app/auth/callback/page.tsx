@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
 import { Spinner } from "@/components/ui/spinner";
 import { ROUTES } from "@/lib/routes";
 import { getReturnUrl } from "@/lib/route-utils";
@@ -118,17 +117,7 @@ function AuthCallbackContent() {
       const errorCode = errorParam || "Verification";
 
       // Log callback failure
-      Sentry.captureException(new Error("Authentication callback failed"), {
-        tags: {
-          component: "auth-callback",
-          errorCode,
-        },
-        extra: {
-          returnUrl,
-          errorCode,
-        },
-        level: "error",
-      });
+      console.error("[AuthCallback] Authentication failed", { errorCode, returnUrl });
 
       // Redirect with specific error code
       const signInUrl = new URL(ROUTES.SIGN_IN, window.location.origin);

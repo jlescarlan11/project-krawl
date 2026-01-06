@@ -15,6 +15,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - **Krawl Mode** - Location-aware, interactive guided experience.
 
 ### Current Status
+
 - **Date:** January 6, 2026
 - **Phase:** Core Development & Community Features (Week 8+)
 - **Status:** Active development. Authentication, SEO, UI Component Library, Landing Page, and Gem Creation are implemented. Krawl Mode and Offline features are in progress.
@@ -24,6 +25,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 ## 🛠️ Technology Stack
 
 ### Backend
+
 - **Language:** Java 25 LTS
 - **Framework:** Spring Boot 3.5.7
 - **Database:** PostgreSQL with PostGIS (Aiven/Local)
@@ -33,6 +35,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - **Email/SMS:** Brevo
 
 ### Frontend
+
 - **Framework:** Next.js 16.0.3 (App Router)
 - **Language:** TypeScript 5.x
 - **React:** React 19.2.0
@@ -43,6 +46,7 @@ Krawl is a Progressive Web App designed to help users discover and share authent
 - **Monitoring:** Sentry
 
 ### Testing
+
 - **Frontend:** Vitest + Testing Library
 - **Backend:** JUnit 5 + Mockito
 - **E2E:** Playwright (6 browser configurations)
@@ -72,18 +76,21 @@ project-krawl/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js:** 20.x or 22.x LTS
 - **Java:** 25 LTS
 - **Maven:** 3.9.x
 - **PostgreSQL:** 15+ (with PostGIS extension)
 
 ### 1. Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd project-krawl
 ```
 
 ### 2. Backend Setup
+
 1. Navigate to the backend directory:
    ```bash
    cd backend
@@ -93,9 +100,10 @@ cd project-krawl
    ```powershell
    .\start-backend.ps1
    ```
-   *Note: This script loads environment variables and runs `mvn spring-boot:run`.*
+   _Note: This script loads environment variables and runs `mvn spring-boot:run`._
 
 ### 3. Frontend Setup
+
 1. Navigate to the frontend directory:
    ```bash
    cd frontend
@@ -109,19 +117,21 @@ cd project-krawl
    ```bash
    npm run dev
    ```
-   *The frontend will be available at [http://localhost:3000](http://localhost:3000).*
+   _The frontend will be available at [http://localhost:3000](http://localhost:3000)._
 
 ---
 
 ## ⚙️ Environment Variables
 
 ### Backend (`backend/.env`)
+
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`: Database connection details.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: OAuth2 credentials.
 - `JWT_SECRET`: Secret for signing JWT tokens.
 - `CLOUDINARY_URL`, `BREVO_API_KEY`: Third-party service credentials.
 
 ### Frontend (`frontend/.env.local`)
+
 - `NEXT_PUBLIC_API_URL`: Backend API URL (default: `http://localhost:8080`).
 - `NEXTAUTH_SECRET`, `NEXTAUTH_URL`: NextAuth.js configuration.
 - `NEXT_PUBLIC_MAPBOX_TOKEN`: Mapbox API token.
@@ -132,6 +142,7 @@ cd project-krawl
 ## 🧪 Running Tests
 
 ### Frontend
+
 ```bash
 cd frontend
 npm test                 # Run Vitest tests
@@ -139,12 +150,14 @@ npm run test:coverage    # Check coverage
 ```
 
 ### Backend
+
 ```bash
 cd backend
 mvn test                 # Run JUnit tests
 ```
 
 ### E2E (Root)
+
 ```bash
 cd e2e
 npm test                 # Run Playwright tests
@@ -152,21 +165,11 @@ npm test                 # Run Playwright tests
 
 ---
 
-## 📚 Documentation
-
-Detailed documentation is available in the `docs/` and `frontend/docs/` directories:
-
-- **[Architecture & Design](./docs/SYSTEM_DESIGN.md)** - System architecture and data flow.
-- **[API Documentation](http://localhost:8080/swagger-ui.html)** - Available when backend is running.
-- **[UI/UX Design System](./docs/design/UI_UX_DESIGN_SYSTEM.md)** - Design principles and components.
-- **[Offline-First Guide](./frontend/docs/PWA_TEST_PLAN.md)** - PWA and offline implementation details.
-- **[SEO Strategy](./docs/private-docs/tasks/TASK-038_SEO_IMPLEMENTATION_PLAN.md)** - Search engine optimization roadmap.
-
----
-
 ## 📄 License
+
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details (to be added).
 
 ## 📞 Contact
-Project Team: Solo Developer – `hello@krawl.app`
+
+Project Team: Solo Developer – `krawl.dev@gmail.com`
 Last Updated: January 6, 2026

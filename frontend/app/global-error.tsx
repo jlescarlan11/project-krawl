@@ -1,6 +1,5 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
 import NextError from "next/error";
 import { useEffect } from "react";
 
@@ -10,20 +9,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
 }) {
   useEffect(() => {
-    // Capture error with additional context for better debugging
-    Sentry.captureException(error, {
-      tags: {
-        errorType: "global",
-        digest: error.digest || "unknown",
-      },
-      contexts: {
-        runtime: {
-          name: "nextjs",
-          version: process.env.NEXT_PUBLIC_APP_VERSION || "unknown",
-        },
-      },
-      level: "fatal", // Global errors are typically fatal
-    });
+    // Log error
+    console.error("[Global Error]", error);
   }, [error]);
 
   return (

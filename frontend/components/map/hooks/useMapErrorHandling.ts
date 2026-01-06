@@ -6,7 +6,6 @@
  */
 
 import { useState, useCallback } from 'react';
-import * as Sentry from '@sentry/nextjs';
 import { classifyMapError } from '@/lib/map/mapUtils';
 import { MAX_RETRY_ATTEMPTS, RETRY_DELAY } from '@/lib/map/constants';
 import { MapErrorCode, type MapError } from '../types';
@@ -43,18 +42,14 @@ export function useMapErrorHandling({
     (mapError: MapError) => {
       setError(mapError);
 
-      // Log to Sentry
-      Sentry.captureException(mapError.originalError || new Error(mapError.message), {
-        tags: {
-          component: 'Map',
-          errorCode: mapError.code,
-          retryable: mapError.retryable,
-        },
-        extra: {
-          retryCount,
-          initialCenter,
-          initialZoom,
-        },
+      // Log error
+      console.error("[Map Error]", {
+        code: mapError.code,
+        message: mapError.message,
+        retryable: mapError.retryable,
+        retryCount,
+        initialCenter,
+        initialZoom,
       });
 
       // Call user-provided error handler
@@ -97,4 +92,3 @@ export function useMapErrorHandling({
     clearError,
   };
 }
-

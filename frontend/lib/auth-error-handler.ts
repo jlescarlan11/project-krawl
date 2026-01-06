@@ -7,7 +7,6 @@
 
 import { handleApiError, type ApiError } from "./api-error-handler";
 import { isCorsError } from "./auth-edge-cases";
-import * as Sentry from "@sentry/nextjs";
 
 /**
  * Authentication error codes.
@@ -325,25 +324,11 @@ const ERROR_INFO_MAP: Record<AuthErrorCode, ErrorInfo> = {
  * Handles authentication errors with comprehensive logging.
  * 
  * Processes errors from various sources (network, backend, NextAuth.js)
- * and maps them to standardized auth error codes. Logs errors to Sentry
- * with appropriate context.
+ * and maps them to standardized auth error codes.
  * 
  * @param error - Unknown error to handle
  * @param context - Context information for logging
  * @returns Promise resolving to auth error code
- * 
- * @example
- * ```typescript
- * try {
- *   await signIn("google");
- * } catch (error) {
- *   const authErrorCode = await handleAuthError(error, {
- *     component: "sign-in-page",
- *     action: "google-sign-in",
- *   });
- *   setError(authErrorCode);
- * }
- * ```
  */
 export async function handleAuthError(
   error: unknown,
@@ -377,23 +362,12 @@ export async function handleAuthError(
     }
   }
 
-  // Log to Sentry with context
-  Sentry.captureException(
-    error instanceof Error ? error : new Error(String(error)),
-    {
-      tags: {
-        component: context.component,
-        action: context.action,
-        authErrorCode,
-      },
-      extra: {
-        ...context,
-        authErrorCode,
-      },
-      level: "error",
-    }
-  );
+  // Log to console with context
+  console.error("[Auth Error]", {
+    error: error instanceof Error ? error.message : String(error),
+    authErrorCode,
+    ...context,
+  });
 
   return authErrorCode;
 }
-

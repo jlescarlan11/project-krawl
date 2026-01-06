@@ -7,7 +7,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **TypeScript:** 5.x
 - **Tailwind CSS:** v4 (CSS-based configuration with @tailwindcss/postcss)
 - **Zustand:** 5.0.8 (state management)
-- **Sentry:** @sentry/nextjs@10.26.0 (error tracking and performance monitoring)
+- **Mapbox GL JS:** ^3.16.0 (interactive map rendering)
+- **NextAuth.js:** ^5.0.0-beta.30 (authentication)
+
 - **ESLint:** 9.x (with eslint-config-next)
 - **Prettier:** 3.x (code formatter)
 
@@ -919,87 +921,16 @@ For more details, see:
 - [TASK-042 Implementation Summary](../../TASK-042_IMPLEMENTATION_SUMMARY.md) - Session management implementation
 - [TASK-042 Solution Design](../../TASK-042_SOLUTION_DESIGN.md) - Session management design
 
-## Error Tracking & Monitoring (Sentry)
-
-Krawl uses [Sentry](https://sentry.io/) for comprehensive error tracking and performance monitoring. The integration provides:
-
-- ✅ **Error Tracking:** Automatic capture of JavaScript errors, React component errors, and API errors
-- ✅ **Performance Monitoring:** Track page load times, API response times, and user interactions
-- ✅ **User Context:** Privacy-first user identification (ID and username only, no email)
-- ✅ **Error Filtering:** Automatic filtering of browser extension errors and rate limiting
-- ✅ **Data Sanitization:** Automatic removal of sensitive data (passwords, tokens, etc.)
-- ✅ **Source Maps:** Production debugging with source map uploads
-- ✅ **Error Boundaries:** React error boundaries with user-friendly error UI
-
-### Configuration
-
-Sentry is configured via environment variables in `.env.local`:
-
-```bash
-# Sentry DSN (required)
-NEXT_PUBLIC_SENTRY_DSN=https://your-dsn@sentry.io/project-id
-
-# Sentry Environment
-NEXT_PUBLIC_SENTRY_ENVIRONMENT=development  # or staging, production
-
-# Optional: Sentry Release (Git commit SHA)
-NEXT_PUBLIC_SENTRY_RELEASE=git-commit-sha
-```
-
-### Configuration Files
-
-- **`sentry.client.config.ts`** - Client-side configuration (browser)
-- **`sentry.server.config.ts`** - Server-side configuration (Node.js)
-- **`sentry.edge.config.ts`** - Edge runtime configuration (middleware)
-- **`instrumentation.ts`** - Runtime detection and config loading
-- **`lib/sentry/error-filtering.ts`** - Error filtering and sanitization logic
-- **`lib/sentry/user-context.ts`** - User context management
-- **`lib/sentry/config-validation.ts`** - DSN validation utilities
-
-### Components
-
-- **`SentryErrorBoundary`** - React error boundary that catches component errors
-- **`SentryUserContextSync`** - Automatically syncs user context from auth store
-
-### Usage
-
-Sentry is automatically initialized when the application starts. No manual setup required.
-
-**Testing Error Tracking:**
-- Visit `/sentry-example-page` to test error tracking
-- Errors are automatically captured and sent to Sentry dashboard
-
-**Manual Error Reporting:**
-```tsx
-import * as Sentry from "@sentry/nextjs";
-
-// Capture an exception
-Sentry.captureException(new Error("Something went wrong"));
-
-// Capture a message
-Sentry.captureMessage("User performed action", "info");
-
-// Add context
-Sentry.setContext("custom", { key: "value" });
-```
-
-### Documentation
-
-For complete Sentry setup and troubleshooting, see:
-- **[SENTRY_INSTALLATION.md](./docs/SENTRY_INSTALLATION.md)** - Installation and configuration guide
-- **[SENTRY_SETUP.md](../../docs/private-docs/operations/SENTRY_SETUP.md)** - Account setup and DSN configuration
-
 ## Error Logging & Handling
 
 Krawl provides centralized error logging and error handling utilities for consistent error management throughout the application.
 
 ### Error Logging Utility
 
-The error logging utility (`lib/error-logging.ts`) provides environment-aware error logging:
+The error logging utility (`lib/error-logging.ts`) provides centralized error logging:
 
-- **Development:** Logs to console with appropriate methods (`console.error`, `console.warn`, etc.)
-- **Production:** Sends to Sentry with appropriate severity levels
-- **Automatic Context:** Enriches logs with user context, tags, and extra data
+- **Logging:** Logs to console with appropriate methods (`console.error`, `console.warn`, etc.)
+- **Automatic Context:** Enriched with user context, tags, and extra data
 
 **Available Log Levels:**
 - `logError()` - Critical errors
