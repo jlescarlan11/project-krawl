@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type mapboxgl from 'mapbox-gl';
 
@@ -46,9 +46,6 @@ export function useMapStateUrl(
   map: mapboxgl.Map | null,
   options: UseMapStateUrlOptions = {}
 ) {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:45',message:'useMapStateUrl hook execution',data:{mapExists:!!map,enabled:options.enabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   const { enabled = true, debounceMs = 1000 } = options;
   const router = useRouter();
   
@@ -66,10 +63,6 @@ export function useMapStateUrl(
   // Track if we've already restored state to prevent loops
   const hasRestoredRef = useRef(false);
   
-  // #region agent log
-  const prevDebouncedUpdateUrlRef = useRef<(() => void) | null>(null);
-  // #endregion
-
   /**
    * Restore map state from URL on initial load (only once)
    * Read directly from window.location.search to avoid useSearchParams() rerenders
@@ -82,10 +75,6 @@ export function useMapStateUrl(
     const center = params.get('center');
     const zoom = params.get('zoom');
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:75',message:'Reading search params from window.location',data:{searchParams:window.location.search,center,zoom},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-
     if (center && zoom) {
       try {
         const [lng, lat] = center.split(',').map(Number);
@@ -142,49 +131,42 @@ export function useMapStateUrl(
    * Uses refs internally to maintain stable callback reference
    */
   const updateUrlStateRef = useRef<() => void>(() => {});
-  updateUrlStateRef.current = () => {
-    const currentMap = mapRef.current;
-    const currentEnabled = enabledRef.current;
-    
-    if (!currentMap || !currentEnabled || isRestoringStateRef.current || !currentMap.isStyleLoaded()) return;
+  
+  useEffect(() => {
+    updateUrlStateRef.current = () => {
+      const currentMap = mapRef.current;
+      const currentEnabled = enabledRef.current;
+      
+      if (!currentMap || !currentEnabled || isRestoringStateRef.current || !currentMap.isStyleLoaded()) return;
 
-    const center = currentMap.getCenter();
-    const zoom = currentMap.getZoom();
+      const center = currentMap.getCenter();
+      const zoom = currentMap.getZoom();
 
-    // Format: center=lng,lat&zoom=level
-    const centerParam = `${center.lng.toFixed(6)},${center.lat.toFixed(6)}`;
-    const zoomParam = zoom.toFixed(2);
+      // Format: center=lng,lat&zoom=level
+      const centerParam = `${center.lng.toFixed(6)},${center.lat.toFixed(6)}`;
+      const zoomParam = zoom.toFixed(2);
 
-    // Get current URL params without causing rerender
-    const currentParams = new URLSearchParams(window.location.search);
-    const currentCenter = currentParams.get('center');
-    const currentZoom = currentParams.get('zoom');
+      // Get current URL params without causing rerender
+      const currentParams = new URLSearchParams(window.location.search);
+      const currentCenter = currentParams.get('center');
+      const currentZoom = currentParams.get('zoom');
 
-    // Only update if values actually changed to prevent unnecessary URL updates
-    if (currentCenter === centerParam && currentZoom === zoomParam) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:128',message:'URL update skipped - no change',data:{currentCenter,currentZoom,newCenter:centerParam,newZoom:zoomParam},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      return;
-    }
+      // Only update if values actually changed to prevent unnecessary URL updates
+      if (currentCenter === centerParam && currentZoom === zoomParam) {
+        return;
+      }
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:132',message:'URL update triggered',data:{currentCenter,currentZoom,newCenter:centerParam,newZoom:zoomParam},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
+      // Build new URL
+      const params = new URLSearchParams(currentParams);
+      params.set('center', centerParam);
+      params.set('zoom', zoomParam);
 
-    // Build new URL
-    const params = new URLSearchParams(currentParams);
-    params.set('center', centerParam);
-    params.set('zoom', zoomParam);
-
-    // Update URL without triggering navigation
-    // Mark that we're updating (not restoring) to prevent restore loop
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:154',message:'router.replace called',data:{newUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    routerRef.current.replace(newUrl, { scroll: false });
-  };
+      // Update URL without triggering navigation
+      // Mark that we're updating (not restoring) to prevent restore loop
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      routerRef.current.replace(newUrl, { scroll: false });
+    };
+  }); // Run on every render to ensure ref always has latest logic
 
   // Store debounceMs in ref to keep debouncedUpdateUrl stable
   const debounceMsRef = useRef(debounceMs);
@@ -197,33 +179,24 @@ export function useMapStateUrl(
    * Uses refs internally to access latest values without recreating callback
    */
   const debouncedUpdateUrlRef = useRef<() => void>(() => {});
-  debouncedUpdateUrlRef.current = () => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      updateUrlStateRef.current?.();
-    }, debounceMsRef.current);
-  };
   
-  // #region agent log
   useEffect(() => {
-    if (prevDebouncedUpdateUrlRef.current && prevDebouncedUpdateUrlRef.current !== debouncedUpdateUrlRef.current) {
-      fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:160',message:'debouncedUpdateUrl recreated',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    }
-    prevDebouncedUpdateUrlRef.current = debouncedUpdateUrlRef.current;
-  }, [debouncedUpdateUrlRef.current]);
-  // #endregion
+    debouncedUpdateUrlRef.current = () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
 
+      debounceTimerRef.current = setTimeout(() => {
+        updateUrlStateRef.current?.();
+      }, debounceMsRef.current);
+    };
+  }); // Run on every render
+  
   /**
    * Listen to map move events
    * Uses ref-based callback - effect only runs when map or enabled changes
    */
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c6918e15-136c-49a3-89e2-096a48a94ff5',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useMapStateUrl.ts:159',message:'moveend effect running',data:{mapExists:!!map,enabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     if (!map || !enabled) return;
 
     // Use ref-based callback - doesn't need to be in dependencies

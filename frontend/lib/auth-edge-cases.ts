@@ -2,41 +2,8 @@
  * Authentication edge case detection utilities.
  * 
  * Provides functions to detect and handle edge cases that may prevent
- * successful authentication, such as popup blockers, cookie blocking, etc.
+ * successful authentication, such as cookie blocking, CORS issues, etc.
  */
-
-/**
- * Detects if popup blocker is active.
- * 
- * Attempts to open a test popup and checks if it was blocked.
- * 
- * @returns `true` if popup blocker detected, `false` otherwise
- * 
- * @example
- * ```typescript
- * if (detectPopupBlocker()) {
- *   showError("PopupBlocked");
- * }
- * ```
- */
-export function detectPopupBlocker(): boolean {
-  try {
-    const popup = window.open(
-      "about:blank",
-      "_blank",
-      "width=1,height=1,left=0,top=0"
-    );
-    
-    if (!popup || popup.closed || typeof popup.closed === "undefined") {
-      return true;
-    }
-    
-    popup.close();
-    return false;
-  } catch {
-    return true;
-  }
-}
 
 /**
  * Detects if cookies are enabled using navigator.cookieEnabled.

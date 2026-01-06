@@ -41,7 +41,13 @@ export function useBoundaryLayer(
         // Wait for style load safely
         if (!map.isStyleLoaded()) {
           await new Promise<void>((resolve) => {
-            map.once("styledata", () => resolve());
+            const handler = () => {
+              if (map.isStyleLoaded()) {
+                map.off("styledata", handler);
+                resolve();
+              }
+            };
+            map.on("styledata", handler);
           });
         }
 
@@ -119,7 +125,7 @@ export function useBoundaryLayer(
         if (map.getSource("cebu-city-boundary"))
           map.removeSource("cebu-city-boundary");
 
-      } catch (e) {
+      } catch {
         // ignore — map may already be destroyed
         console.debug("Boundary cleanup skipped, map already destroyed.");
       }

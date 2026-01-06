@@ -19,41 +19,11 @@ import {
   type GuestUpgradeContext,
 } from "@/lib/guest-mode";
 import {
-  detectPopupBlocker,
   testCookieFunctionality,
   checkBrowserCompatibility,
   signInRateLimiter,
 } from "@/lib/auth-edge-cases";
 import { handleAuthError } from "@/lib/auth-error-handler";
-
-/**
- * Guest Limitations Component
- *
- * Displays information about guest mode limitations.
- */
-function GuestLimitations() {
-  return (
-    <div className="mt-6 rounded-lg bg-[var(--color-bg-light)] p-4 text-left">
-      <p className="mb-3 text-sm font-medium text-[var(--color-text-primary)]">
-        Guest mode limitations:
-      </p>
-      <ul className="space-y-2.5 text-sm text-[var(--color-text-secondary)]">
-        <li className="flex items-start gap-3">
-          <span className="mt-0.5 w-2 h-2 rounded-full bg-[var(--color-primary-green)] flex-shrink-0" aria-hidden="true" />
-          <span>Can view Gems and Krawls</span>
-        </li>
-        <li className="flex items-start gap-3">
-          <span className="mt-0.5 w-2 h-2 rounded-full bg-[var(--color-bg-medium)] flex-shrink-0" aria-hidden="true" />
-          <span>Cannot create content</span>
-        </li>
-        <li className="flex items-start gap-3">
-          <span className="mt-0.5 w-2 h-2 rounded-full bg-[var(--color-bg-medium)] flex-shrink-0" aria-hidden="true" />
-          <span>Cannot vouch or comment</span>
-        </li>
-      </ul>
-    </div>
-  );
-}
 
 /**
  * Legal Links Component
@@ -113,11 +83,6 @@ function SignInContent() {
       try {
         const detectedErrors: string[] = [];
 
-        // Check popup blocker
-        if (detectPopupBlocker()) {
-          detectedErrors.push("PopupBlocked");
-        }
-
         // Check cookie blocking
         const cookiesWork = await testCookieFunctionality();
         if (!cookiesWork) {
@@ -141,7 +106,7 @@ function SignInContent() {
           // Show first error
           setError(detectedErrors[0]);
         }
-      } catch (error) {
+      } catch (_error) {
         // Silently handle edge case detection errors to prevent breaking the sign-in flow
         // Log to Sentry in production for monitoring
         if (process.env.NODE_ENV === "production") {

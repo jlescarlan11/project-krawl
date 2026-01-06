@@ -80,10 +80,10 @@ export interface MarkerStyleConfig {
  */
 export const MARKER_STYLES: Record<GemStatus, MarkerStyleConfig> = {
   [GemStatus.PENDING]: {
-    size: { width: 8, height: 8 },
-    color: "#808080",
-    opacity: 0.7,
-    minZoom: 12,
+    size: { width: 12, height: 12 },
+    color: "#666666",
+    opacity: 0.9,
+    minZoom: 10,
     shape: "circle",
   },
   [GemStatus.VERIFIED]: {

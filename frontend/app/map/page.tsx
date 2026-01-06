@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { MapSearchControl } from "@/components/map";
@@ -100,27 +100,27 @@ function MapPageContent() {
   };
 
   // Gem marker callbacks
-  const handleGemMarkerClick = (gem: { name: string }) => {
+  const handleGemMarkerClick = useCallback((gem: { name: string }) => {
     console.log("Gem clicked:", gem.name);
-  };
+  }, []);
 
-  const handleGemMarkersLoad = (gems: unknown[]) => {
+  const handleGemMarkersLoad = useCallback((gems: unknown[]) => {
     console.log(`Loaded ${gems.length} gems`);
-  };
+  }, []);
 
   // Krawl trail callbacks
-  const handleKrawlTrailClick = (krawl: { name: string }) => {
+  const handleKrawlTrailClick = useCallback((krawl: { name: string }) => {
     console.log("Krawl trail clicked:", krawl.name);
-  };
+  }, []);
 
-  const handleKrawlTrailsLoad = (krawls: unknown[]) => {
+  const handleKrawlTrailsLoad = useCallback((krawls: unknown[]) => {
     console.log(`Loaded ${krawls.length} krawl trails`);
-  };
+  }, []);
 
   // Search result callback
-  const handleSearchResultSelect = (result: unknown) => {
+  const handleSearchResultSelect = useCallback((result: unknown) => {
     console.log("Search result selected:", result);
-  };
+  }, []);
 
   // Memoize gemCategories to prevent new array reference on every render
   // Only create array when category is not "all"
